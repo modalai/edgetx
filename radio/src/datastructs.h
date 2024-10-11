@@ -61,6 +61,13 @@ static inline void check_struct()
   CHKSIZE(FrSkyLineData, 4);
   CHKTYPE(TelemetryScreenData, 24);
   CHKSIZE(ModelHeader, 12);
+#elif defined(PCBFC2)
+  CHKSIZE(LimitData, 11);
+  CHKSIZE(TimerData, 12);
+  CHKSIZE(FrSkyBarData, 6);
+  CHKSIZE(FrSkyLineData, 4);
+  CHKTYPE(TelemetryScreenData, 24);
+  CHKSIZE(ModelHeader, 12);
 #elif defined(PCBTARANIS)
   CHKSIZE(LimitData, 13);
   CHKSIZE(TimerData, 17);
