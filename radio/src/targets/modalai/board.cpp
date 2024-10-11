@@ -83,89 +83,16 @@ void boardInit()
   }
 #endif
 
-#if defined(BLUETOOTH) && !defined(PCBX9E)
-  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE, true);
-#endif
-
-#if defined(MANUFACTURER_RADIOMASTER) && defined(STM32F407xx)
   void board_set_bor_level();
   board_set_bor_level();
-#endif
-
-#if !defined(RADIO_MODAL)
-  board_trainer_init();
-#endif
 
   // Sets 'hardwareOption.pcbrev' as well
   pwrInit();
   boardInitModulePorts();
 
-#if defined(INTERNAL_MODULE_PXX1) && defined(PXX_FREQUENCY_HIGH)
-  pxx1SetInternalBaudrate(PXX1_FAST_SERIAL_BAUDRATE);
-#endif
-
-#if defined(INTMODULE_HEARTBEAT) &&                                     \
-  (defined(INTERNAL_MODULE_PXX1) || defined(INTERNAL_MODULE_PXX2))
-  pulsesSetModuleInitCb(_intmodule_heartbeat_init);
-  pulsesSetModuleDeInitCb(_intmodule_heartbeat_deinit);
-  trainerSetChangeCb(_intmodule_heartbeat_trainer_hook);
-#endif
-  
-// #if defined(AUTOUPDATE)
-//   telemetryPortInit(FRSKY_SPORT_BAUDRATE, TELEMETRY_SERIAL_WITHOUT_DMA);
-//   sportSendByteLoop(0x7E);
-// #endif
-
 #if defined(STATUS_LEDS)
   ledInit();
-#if defined(MANUFACTURER_RADIOMASTER) || defined(MANUFACTURER_JUMPER) || defined(RADIO_COMMANDO8)
-  ledBlue();
-#else
   ledGreen();
-#endif
-#endif
-
-// If the radio was powered on by dual use USB, halt the boot process, let battery charge
-// TODO: needs refactoring if any other manufacturer implements either of the following:
-// - function switches and the radio supports charging
-// - single USB for data + charge which powers on radio
-#if defined(MANUFACTURER_JUMPER) && !defined(USB_CHARGE_LED)
-  // This is needed to prevent radio from starting when usb is plugged to charge
-  usbInit();
-  // prime debounce state...
-  usbPlugged();
-
-  if (usbPlugged()) {
-    delaysInit();
-    __enable_irq();
-    adcInit(&_adc_driver);
-    getADC();
-    pwrOn();  // required to get bat adc reads
-    INTERNAL_MODULE_OFF();
-    EXTERNAL_MODULE_OFF();
-    delay_ms(2000); // let this stabilize
-    while (usbPlugged()) {
-      //    // Let it charge ...
-      getADC();  // Warning: the value read does not include VBAT calibration
-      delay_ms(20);
-#if defined(FUNCTION_SWITCHES)
-      // Support for FS Led to indicate battery charge level
-      if (getBatteryVoltage() >= 660) fsLedOn(0);
-      if (getBatteryVoltage() >= 700) fsLedOn(1);
-      if (getBatteryVoltage() >= 740) fsLedOn(2);
-      if (getBatteryVoltage() >= 780) fsLedOn(3);
-      if (getBatteryVoltage() >= 820) fsLedOn(4);
-      if (getBatteryVoltage() >= 842) fsLedOn(5);
-#elif defined(STATUS_LEDS)
-      // Use Status LED to indicate battery charge level instead
-      if (getBatteryVoltage() <= 660) ledRed();         // low discharge
-      else if (getBatteryVoltage() <= 842) ledBlue();   // charging
-      else ledGreen();                                  // charging done
-      delay_ms(1000);
-#endif
-    }
-    pwrOff();
-  }
 #endif
 
   keysInit();
@@ -178,49 +105,21 @@ void boardInit()
   delaysInit();
   __enable_irq();
 
-#if defined(PWM_STICKS)
-  sticksPwmDetect();
-#endif
-
-#if defined(FLYSKY_GIMBAL)
-  flysky_gimbal_init();
-#endif
-
-  if (!adcInit(&_adc_driver))
-    TRACE("adcInit failed");
-
   lcdInit(); // delaysInit() must be called before
-#if !defined(RADIO_MODAL)
-  audioInit();
-#endif
-  timersInit();
-  usbInit();
 
-#if defined(LED_STRIP_GPIO)
-  ws2812_init(&_led_timer, LED_STRIP_LENGTH, WS2812_GRB);
-  for (uint8_t i = 0; i < LED_STRIP_LENGTH; i++) {
-    ws2812_set_color(i, 0, 0, 50);
-  }
-  ws2812_update(&_led_timer);
-#endif
+  timersInit();
+  // usbInit();
 
 #if defined(DEBUG) && defined(AUX_SERIAL)
   serialSetMode(SP_AUX1, UART_MODE_DEBUG);                // indicate AUX1 is used
   serialInit(SP_AUX1, UART_MODE_DEBUG);                   // early AUX1 init
 #endif
 
-#if defined(HAPTIC)
-  hapticInit();
-#endif
-
-#if defined(PXX2_PROBE)
-  intmodulePxx2Probe();
-#endif
-
 #if defined(DEBUG)
   // Freeze timers & watchdog when core is halted
-  DBGMCU->APB1FZ = 0x00E009FF;
-  DBGMCU->APB2FZ = 0x00070003;
+  // DBGMCU->APB1FZ = 0x00E009FF;
+  // DBGMCU->APB2FZ = 0x00070003;
+  // TODO: define these for the H7
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
@@ -229,22 +128,9 @@ void boardInit()
   }
 #endif
 
-#if defined(TOPLCD_GPIO)
-  toplcdInit();
-#endif
-
 #if defined(USB_CHARGER)
   usbChargerInit();
 #endif
-
-#if defined(JACK_DETECT_GPIO)
-  initJackDetect();
-#endif
-
-  initSpeakerEnable();
-  enableSpeaker();
-
-  initHeadphoneTrainerSwitch();
 
 #if defined(RTCLOCK)
   rtcInit(); // RTC must be initialized before rambackupRestore() is called
@@ -266,9 +152,6 @@ void boardOff()
 
   BACKLIGHT_DISABLE();
 
-#if defined(TOPLCD_GPIO) && !defined(BOOT)
-  toplcdOff();
-#endif
 
 #if defined(PWR_BUTTON_PRESS)
   while (pwrPressed()) {
@@ -276,9 +159,9 @@ void boardOff()
   }
 #endif
 
-#if defined(MANUFACTURER_RADIOMASTER) && defined(STM32F407xx)
-  lcdInit(); 
-#endif
+// #if defined(MANUFACTURER_RADIOMASTER) && defined(STM32F407xx)
+//   lcdInit(); 
+// #endif
 
   lcdOff();
   SysTick->CTRL = 0; // turn off systick
@@ -309,65 +192,3 @@ void boardOff()
 
   // this function must not return!
 }
-
-#if defined(AUDIO_SPEAKER_ENABLE_GPIO)
-void initSpeakerEnable()
-{
-  gpio_init(AUDIO_SPEAKER_ENABLE_GPIO, GPIO_OUT, GPIO_PIN_SPEED_LOW);
-}
-
-void enableSpeaker()
-{
-  gpio_set(AUDIO_SPEAKER_ENABLE_GPIO);
-}
-
-void disableSpeaker()
-{
-  gpio_clear(AUDIO_SPEAKER_ENABLE_GPIO);
-}
-#endif
-
-#if defined(HEADPHONE_TRAINER_SWITCH_GPIO)
-void initHeadphoneTrainerSwitch()
-{
-  gpio_init(HEADPHONE_TRAINER_SWITCH_GPIO, GPIO_OUT, GPIO_PIN_SPEED_LOW);
-}
-
-void enableHeadphone()
-{
-  gpio_clear(HEADPHONE_TRAINER_SWITCH_GPIO);
-}
-
-void enableTrainer()
-{
-  gpio_set(HEADPHONE_TRAINER_SWITCH_GPIO);
-}
-#endif
-
-#if defined(JACK_DETECT_GPIO)
-void initJackDetect(void)
-{
-  gpio_init(JACK_DETECT_GPIO, GPIO_IN_PU, GPIO_PIN_SPEED_LOW);
-}
-
-bool isJackPlugged()
-{
-  // debounce
-  static bool debounced_state = 0;
-  static bool last_state = 0;
-
-  if (gpio_read(JACK_DETECT_GPIO)) {
-    if (!last_state) {
-      debounced_state = false;
-    }
-    last_state = false;
-  }
-  else {
-    if (last_state) {
-      debounced_state = true;
-    }
-    last_state = true;
-  }
-  return debounced_state;
-}
-#endif
