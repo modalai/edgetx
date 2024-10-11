@@ -89,8 +89,18 @@
 #  endif
 #endif
 
-
-#if defined(SDMMC1) && defined(SD_SDIO)
+#if defined(SDMMC2) && defined(SD_SDIO_2)
+#  if !defined(SD_SDIO_IRQHandler)
+#    define SD_SDIO_IRQHandler SDMMC2_IRQHandler
+#    define SD_SDIO_IRQn       SDMMC2_IRQn
+#  endif
+#  define SD_SDIO_TypeDef SDMMC_TypeDef
+#  define SD_SDIO_CLOCK_EDGE_RISING SDMMC_CLOCK_EDGE_RISING
+#  define SD_SDIO_CLOCK_POWER_SAVE_DISABLE SDMMC_CLOCK_POWER_SAVE_DISABLE
+#  define SD_SDIO_BUS_WIDE_1B SDMMC_BUS_WIDE_1B
+#  define SD_SDIO_BUS_WIDE_4B SDMMC_BUS_WIDE_4B
+#  define SD_SDIO_HARDWARE_FLOW_CONTROL_DISABLE SDMMC_HARDWARE_FLOW_CONTROL_DISABLE 
+#elif defined(SDMMC1) && defined(SD_SDIO)
 #  if !defined(SD_SDIO_IRQHandler)
 #    define SD_SDIO_IRQHandler SDMMC1_IRQHandler
 #    define SD_SDIO_IRQn       SDMMC1_IRQn

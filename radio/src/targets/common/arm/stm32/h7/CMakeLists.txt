@@ -73,6 +73,10 @@ elseif(CPU_TYPE_FULL STREQUAL STM32H747Ix)
   set(STM32_STDPERIPH_SRC ${STM32_STDPERIPH_SRC}
     boards/generic_stm32/startup/startup_stm32h747xx.s
   )
+elseif(CPU_TYPE_FULL STREQUAL STM32H753II)
+  set(STM32_STDPERIPH_SRC ${STM32_STDPERIPH_SRC}
+    boards/generic_stm32/startup/startup_stm32h753xx.s
+  )
 else()
   message("### ERROR ####: ${CPU_TYPE_FULL}")
 endif()
