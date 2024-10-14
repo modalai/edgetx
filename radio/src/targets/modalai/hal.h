@@ -286,10 +286,11 @@
   #define LCD_A0_GPIO                   GPIO_PIN(GPIOC, 11) // PF.00
   #define LCD_NCS_GPIO                  GPIO_PIN(GPIOA, 15) // PI.16
   #define LCD_RST_GPIO                  GPIO_PIN(GPIOD, 12) // PF.01
-  #define LCD_DMA                       DMA1
-  #define LCD_DMA_Stream                DMA1_Stream7
-  #define LCD_DMA_Stream_IRQn           DMA1_Stream7_IRQn
-  #define LCD_DMA_Stream_IRQHandler     DMA1_Stream7_IRQHandler
+  #define LCD_DMA                       DMA2
+  #define LCD_DMA_Stream                DMA2_Stream0
+  #define LCD_DMA_Stream_IRQn           DMA2_Stream0_IRQn
+  #define LCD_DMA_Stream_IRQHandler     DMA2_Stream0_IRQHandler
+  #define LCD_DMAMUX                    DMAMUX2_Channel0
   #define LCD_DMA_FLAGS                 (DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 | DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7)
   #define LCD_DMA_FLAG_INT              DMA_HIFCR_CTCIF7
   #define LCD_SPI                       SPI6
