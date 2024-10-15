@@ -19,7 +19,7 @@
  * GNU General Public License for more details.
  */
 
-#if defined(STM32F4)
+#if defined(STM32F4) || defined(STM32H7)
 #include "stm32_hal.h"
 
 void board_set_bor_level()

@@ -489,6 +489,7 @@ void editTimerCountdown(int timerIdx, coord_t y, LcdFlags attr, event_t event)
     IF_ACCESS_MODULE_RF(INTERNAL_MODULE, 0),   /* ITEM_MODEL_SETUP_INTERNAL_MODULE_PXX2_RECEIVER_2 */ \
     IF_ACCESS_MODULE_RF(INTERNAL_MODULE, 0),   /* ITEM_MODEL_SETUP_INTERNAL_MODULE_PXX2_RECEIVER_3 */
 #else
+  #error should have internal module
   #define INTERNAL_MODULE_ROWS
 #endif
 
@@ -624,7 +625,8 @@ void menuModelSetup(event_t event)
 
     EXTRA_MODULE_ROWS
 
-    TRAINER_ROWS,
+    TRAINER_ROWS
+    #warning removed ',' since none of these are currently used
 
     // View options
     0,

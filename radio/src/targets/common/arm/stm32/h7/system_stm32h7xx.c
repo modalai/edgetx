@@ -486,7 +486,7 @@ void RTC_Alarm_IRQHandler(void){asm("BKPT");}
 void TIM8_CC_IRQHandler(void){asm("BKPT");}
 void DMA1_Stream7_IRQHandler(void){asm("BKPT");}
 void FMC_IRQHandler(void){asm("BKPT");}
-void TIM5_IRQHandler(void){asm("BKPT");}
+// void TIM5_IRQHandler(void){asm("BKPT");}
 void SPI3_IRQHandler(void){asm("BKPT");}
 void UART5_IRQHandler(void){asm("BKPT");}
 void TIM7_IRQHandler(void){asm("BKPT");}
@@ -547,7 +547,7 @@ void MDIOS_WKUP_IRQHandler(void){asm("BKPT");}
 void MDIOS_IRQHandler(void){asm("BKPT");}
 void JPEG_IRQHandler(void){asm("BKPT");}
 void MDMA_IRQHandler(void){asm("BKPT");}
-void SDMMC2_IRQHandler(void){asm("BKPT");}
+// void SDMMC2_IRQHandler(void){asm("BKPT");}
 void HSEM1_IRQHandler(void){asm("BKPT");}
 // void ADC3_IRQHandler(void){asm("BKPT");}
 void DMAMUX2_OVR_IRQHandler(void){asm("BKPT");}

@@ -80,6 +80,8 @@ void watchdogSuspend(uint32_t timeout)
   watchdogTimeout = timeout;
 }
 
+__weak void per5ms() {}
+
 static inline void _interrupt_1ms()
 {
   static uint8_t pre_scale = 0;
