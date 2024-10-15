@@ -66,7 +66,7 @@ void lcdWriteCommand(uint8_t byte)
   }
   (void)LCD_SPI->TXDR; // Clear receive
   LCD_SPI->TXDR = byte;
-  while ((LCD_SPI->SR & TXC) == 0) {
+  while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
     // Wait
   }
   LCD_NCS_HIGH();
@@ -204,7 +204,7 @@ extern "C" void LCD_DMA_Stream_IRQHandler()
   LCD_SPI->CFG1 &= ~SPI_CFG1_TXDMAEN;
   LCD_DMA_Stream->CR &= ~DMA_SxCR_EN; // Disable DMA
 
-  while ((LCD_SPI->SR & TXC) == 0) {
+  while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
     /* Wait for SPI to finish sending data
     The DMA TX End interrupt comes two bytes before the end of SPI transmission,
     therefore we have to wait here.

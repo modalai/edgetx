@@ -27,6 +27,9 @@ if(PCB STREQUAL FC2)
   set(FONTS_TARGET 9x_fonts_1bit)
   set(LCD_DRIVER lcd_driver_spi.cpp)
   set(HARDWARE_EXTERNAL_MODULE NO)
+  set(INTERNAL_MODULE_CRSF YES)
+  add_definitions(-DHARDWARE_INTERNAL_MODULE)
+  add_definitions(-DINTERNAL_MODULE_CRSF)
   # set(STATUS_LEDS YES)
   add_definitions(-DPCBFC2 -DSOFTWARE_VOLUME)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
@@ -148,6 +151,11 @@ endif()
 if(USE_RTC_CLOCK)
   add_definitions(-DRTCLOCK)
 endif()
+
+set(SRC ${SRC}
+  io/frsky_firmware_update.cpp
+  io/multi_firmware_update.cpp
+)
 
 set(GUI_SRC ${GUI_SRC}
   model_input_edit.cpp

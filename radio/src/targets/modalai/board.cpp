@@ -62,7 +62,7 @@ HardwareOptions hardwareOptions;
 
 void boardInit()
 {
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG); // Unsure what this was for, not defined for H7
+  // LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG); // Unsure what this was for, not defined for H7
 
 #if defined(USB_CHARGE_LED) && !defined(DEBUG)
   usbInit();
@@ -179,9 +179,9 @@ void boardOff()
     if (!pwrPressed()) {
       // Put the CPU into sleep to reduce the consumption,
       // it might help with the RTC reset issue
-      PWR->CR |= PWR_CR_CWUF;
+      //PWR->CR |= PWR_CR_CWUF;
       /* Select STANDBY mode */
-      PWR->CR |= PWR_CR_PDDS;
+      //PWR->CR |= PWR_CR_PDDS;
       /* Set SLEEPDEEP bit of Cortex System Control Register */
       SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
       /* Request Wait For Event */

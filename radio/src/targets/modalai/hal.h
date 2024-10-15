@@ -226,14 +226,14 @@
   #define INTMODULE_USART                  USART1
   #define INTMODULE_USART_IRQHandler       USART1_IRQHandler
   #define INTMODULE_USART_IRQn             USART1_IRQn
-  #define INTMODULE_DMA                    DMA2
-  #define INTMODULE_DMA_STREAM             LL_DMA_STREAM_7
-  #define INTMODULE_DMA_STREAM_IRQ         DMA2_Stream7_IRQn
-  #define INTMODULE_DMA_STREAM_IRQHandler  DMA2_Stream7_IRQHandler
-  #define INTMODULE_DMA_CHANNEL            LL_DMA_CHANNEL_4
-  #define INTMODULE_RX_DMA                 DMA2
-  #define INTMODULE_RX_DMA_STREAM          LL_DMA_STREAM_2
-  #define INTMODULE_RX_DMA_CHANNEL         LL_DMA_CHANNEL_4
+  // #define INTMODULE_DMA                    DMA2
+  // #define INTMODULE_DMA_STREAM             LL_DMA_STREAM_7
+  // #define INTMODULE_DMA_STREAM_IRQ         DMA2_Stream7_IRQn
+  // #define INTMODULE_DMA_STREAM_IRQHandler  DMA2_Stream7_IRQHandler
+  // #define INTMODULE_DMA_CHANNEL            LL_DMA_CHANNEL_4
+  // #define INTMODULE_RX_DMA                 DMA2
+  // #define INTMODULE_RX_DMA_STREAM          LL_DMA_STREAM_2
+  // #define INTMODULE_RX_DMA_CHANNEL         LL_DMA_CHANNEL_4
 #endif
 
 // External Module
@@ -344,12 +344,13 @@
 
 #if defined(RADIO_MODAL)
 //SD - SDIO
-#warning make sure DMA channels are ok (seems fine)
-#define SD_SDIO_DMA                     DMA2
-#define SD_SDIO_DMA_STREAM              DMA2_Stream3
-#define SD_SDIO_DMA_CHANNEL             LL_DMA_CHANNEL_4
-#define SD_SDIO_DMA_IRQn                DMA2_Stream3_IRQn
-#define SD_SDIO_DMA_IRQHANDLER          DMA2_Stream3_IRQHandler
+#warning don't use DMA, use IDMA on peripheral
+// #define SD_SDIO_DMA                     DMA2
+// #define SD_SDIO_DMA_STREAM              DMA2_Stream3
+// #define SD_SDIO_DMA_CHANNEL             LL_DMA_CHANNEL_4
+// #define SD_SDIO_DMA_IRQn                DMA2_Stream3_IRQn
+// #define SD_SDIO_DMA_IRQHANDLER          DMA2_Stream3_IRQHandler
+// #define SD_SDIO_DMAMUX                  DMAMUX1_Channel2
 #define SD_SDIO_CLK_DIV(fq)             ((48000000 / (fq)) - 2)
 #define SD_SDIO_INIT_CLK_DIV            SD_SDIO_CLK_DIV(400000)
 #define SD_SDIO_TRANSFER_CLK_DIV        SD_SDIO_CLK_DIV(24000000)
