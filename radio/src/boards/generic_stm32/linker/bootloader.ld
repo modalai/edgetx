@@ -16,7 +16,7 @@ SECTIONS
 
     . = ALIGN(4);
     _eisr_vector = .;
-  } > REGION_ISR_VECT AT> REGION_TEXT_STORAGE
+  } > REGION_ISR_VECT AT> REGION_ISR_VECT
 
   _isr_load = LOADADDR(.isr_vector);
   /* The program code and other data goes into FLASH */

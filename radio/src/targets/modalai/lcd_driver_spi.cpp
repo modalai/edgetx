@@ -43,7 +43,7 @@
   #define LCD_CONTRAST_OFFSET            160
 #endif
 #define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
-#define WAIT_FOR_DMA_END()             do { } while (lcd_busy)
+#define WAIT_FOR_DMA_END()             // do { } while (lcd_busy) // TODO: Fix this
 
 #define LCD_NCS_HIGH()  gpio_set(LCD_NCS_GPIO)
 #define LCD_NCS_LOW()   gpio_clear(LCD_NCS_GPIO)
@@ -64,8 +64,9 @@ void lcdWriteCommand(uint8_t byte)
   while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
     // Wait
   }
-  (void)LCD_SPI->TXDR; // Clear receive
+  //(void)LCD_SPI->RXDR; // Clear receive
   LCD_SPI->TXDR = byte;
+  LCD_SPI->CR1 |= SPI_CR1_CSTART;
   while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
     // Wait
   }
@@ -78,10 +79,12 @@ void lcdHardwareInit()
   gpio_init_af(LCD_MOSI_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_HIGH);
   gpio_init_af(LCD_CLK_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_HIGH);
 
+
   // APB1 clock / 2 = 133nS per clock
   LCD_SPI->CR1 = 0; // Clear any mode error
   LCD_SPI->CR1 = SPI_CR1_SSI | SPI_CR1_HDDIR;
   LCD_SPI->CR2 = 0;
+  LCD_SPI->CFG1 = 0x00070007;
   LCD_SPI->CFG1 |= ((LCD_SPI_PRESCALER << SPI_CFG1_MBR_Pos) & SPI_CFG1_MBR_Msk);
   LCD_SPI->CFG2 = SPI_CFG2_CPHA | SPI_CFG2_CPOL | SPI_CFG2_SSM | SPI_CFG2_MASTER | (0x3 << SPI_CFG2_COMM_Pos);
   LCD_SPI->CR1 |= SPI_CR1_SPE;

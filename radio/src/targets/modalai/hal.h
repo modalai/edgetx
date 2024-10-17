@@ -21,7 +21,7 @@
 
 #pragma once
 
-#warning TODO: Verify/Set these numbers
+// #warning TODO: Verify/Set these numbers
 #define CPU_FREQ            120000000
 #define PERI1_FREQUENCY     30000000
 #define PERI2_FREQUENCY     60000000
@@ -32,7 +32,7 @@
 
 // Keys
 #if defined(PCBFC2)
-  #warning Add other keys
+  // #warning Add other keys
   #define KEYS_GPIO_REG_PAGEUP          GPIOB
   #define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_10 // PB.10
   #define KEYS_GPIO_REG_PAGEDN          GPIOB
@@ -53,7 +53,7 @@
 
 // Rotary Encoder
 #if defined(RADIO_MODAL)
-  #warning Check these too
+  // #warning Check these too
   #define ROTARY_ENCODER_NAVIGATION
   #define ROTARY_ENCODER_GPIO              GPIOH
   #define ROTARY_ENCODER_GPIO_PIN_A        LL_GPIO_PIN_6 // PH.06
@@ -82,7 +82,7 @@
 
 // Trims
 #if defined(PCBFC2)
-  #warning Disconnect all of these
+  // #warning Disconnect all of these
   #define TRIMS_GPIO_REG_LHL            GPIOH
   #define TRIMS_GPIO_PIN_LHL            LL_GPIO_PIN_15 // PH.15
   #define TRIMS_GPIO_REG_LHR            GPIOH
@@ -103,7 +103,7 @@
 
 // Switches
 #if defined(RADIO_MODAL)
-  #warning Reconnect this
+  // #warning Reconnect this
   #define STORAGE_SWITCH_A
   #define HARDWARE_SWITCH_A
   #define SWITCHES_GPIO_REG_A           GPIOG
@@ -111,7 +111,7 @@
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning Check this too
+  // #warning Check this too
   #define STORAGE_SWITCH_B
   #define HARDWARE_SWITCH_B
   #define SWITCHES_GPIO_REG_B_L         GPIOI
@@ -121,7 +121,7 @@
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning Define this
+  // #warning Define this
   #define STORAGE_SWITCH_C
   #define HARDWARE_SWITCH_C
   #define SWITCHES_GPIO_REG_C_L         GPIOH
@@ -131,7 +131,7 @@
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning More switches
+  // #warning More switches
   #define STORAGE_SWITCH_D
   #define HARDWARE_SWITCH_D
   #define SWITCHES_GPIO_REG_D           GPIOG
@@ -139,7 +139,7 @@
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning And more
+  // #warning And more
   #define STORAGE_SWITCH_E
   #define HARDWARE_SWITCH_E
   #define SWITCHES_GPIO_REG_E           GPIOD
@@ -147,7 +147,7 @@
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning and more
+  // #warning and more
   #define STORAGE_SWITCH_F
   #define HARDWARE_SWITCH_F
   #define SWITCHES_GPIO_REG_F           GPIOD
@@ -159,7 +159,7 @@
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning and this
+  // #warning and this
   #define STORAGE_SWITCH_H
   #define HARDWARE_SWITCH_H
   #define SWITCHES_GPIO_REG_H           GPIOG
@@ -170,7 +170,7 @@
 #define ADC_CHANNEL_RTC_BAT             LL_ADC_CHANNEL_VBAT
 
 #if defined(PCBFC2)
-  #warning ADC Settings
+  // #warning ADC Settings
   // #define HARDWARE_POT1 Not enough exposed pins to use these
   // #define HARDWARE_POT2
   #define ADC_GPIO_PIN_STICK_RV         LL_GPIO_PIN_12  // PF.12
@@ -199,16 +199,16 @@
 // PWR and LED driver
 
 #if defined(RADIO_MODAL)
-  #warning unsure what these do
+  // #warning unsure what these do
   #define PWR_SWITCH_GPIO               GPIO_PIN(GPIOC, 6)  // PC.06
   #define PWR_ON_GPIO                   GPIO_PIN(GPIOC, 7)  // PC.07
 #endif
 
 #if defined(RADIO_MODAL)
-  #warning remove these later
+  // #warning remove these later
   #define STATUS_LEDS
-  #define GPIO_LED_GPIO_ON              gpio_set
-  #define GPIO_LED_GPIO_OFF             gpio_clear
+  #define GPIO_LED_GPIO_ON              gpio_clear
+  #define GPIO_LED_GPIO_OFF             gpio_set
   #define LED_GREEN_GPIO                GPIO_PIN(GPIOE, 4)  // PE.04
   #define LED_RED_GPIO                  GPIO_PIN(GPIOE, 3) // PE.03
   #define LED_BLUE_GPIO                 GPIO_PIN(GPIOE, 5)  // PA.05
@@ -217,7 +217,7 @@
 
 // Internal Module
 #if defined(RADIO_MODAL)
-  #warning definitely check on these
+  // #warning definitely check on these
   #define INTMODULE_BOOTCMD_GPIO           GPIO_PIN(GPIOB, 8) // PB.08
   #define INTMODULE_PWR_GPIO               GPIO_PIN(GPIOB, 9) // PB.09
   #define INTMODULE_BOOTCMD_DEFAULT     0 // RESET
@@ -238,12 +238,12 @@
 
 // External Module
 #if defined(RADIO_MODAL)
-  #warning Remove all EXTMODULE references
+  // #warning Remove all EXTMODULE references
 #endif
 
 
 #if defined(MODAL_RADIO)
-  #warning Make sure this removes TELEMETRY completely (the pins are used elsewhere)
+  // #warning Make sure this removes TELEMETRY completely (the pins are used elsewhere)
   #undef TELEMETRY_USART
 #endif
 
@@ -268,7 +268,7 @@
 
 // BackLight
 #if defined(PCBFC2)
-  #warning Backlight settings
+  // #warning Backlight settings
   #define BACKLIGHT_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
   #define BACKLIGHT_TIMER               TIM3
   #define BACKLIGHT_GPIO                GPIO_PIN(GPIOA, 6) // PA.06
@@ -280,7 +280,7 @@
 
 // LCD driver
 #if defined(RADIO_MODAL)
-  #warning LCD settings
+  // #warning LCD settings
   #define LCD_MOSI_GPIO                 GPIO_PIN(GPIOC, 12) // PG.14
   #define LCD_CLK_GPIO                  GPIO_PIN(GPIOC, 10) // PB.03
   #define LCD_A0_GPIO                   GPIO_PIN(GPIOC, 11) // PF.00
@@ -303,12 +303,12 @@
 // #define I2C_B1                          I2C1
 // #define I2C_B1_GPIO_AF                  LL_GPIO_AF_4
 
-#warning remove eeprom
+// #warning remove eeprom
 // #define I2C_B1_SCL_GPIO               GPIO_PIN(GPIOB, 8)  // PB.08
 // #define I2C_B1_SDA_GPIO               GPIO_PIN(GPIOB, 9)  // PB.09
 
 // EEPROM
-#warning remove eeprom
+// #warning remove eeprom
 // #define EEPROM_WP_GPIO                GPIOD
 // #define EEPROM_WP_GPIO_PIN            LL_GPIO_PIN_10  // PD.10
 
@@ -322,7 +322,7 @@
 
 // EEPROM
 #if defined(RADIO_MODAL)
-#warning remove this
+// #warning remove this
 //#define EEPROM_I2C_ADDRESS              0x51
 //#define EEPROM_I2C_BUS                  I2C_Bus_1
 //#define EEPROM_PAGESIZE                 64
@@ -344,7 +344,7 @@
 
 #if defined(RADIO_MODAL)
 //SD - SDIO
-#warning don't use DMA, use IDMA on peripheral
+// #warning don't use DMA, use IDMA on peripheral
 // #define SD_SDIO_DMA                     DMA2
 // #define SD_SDIO_DMA_STREAM              DMA2_Stream3
 // #define SD_SDIO_DMA_CHANNEL             LL_DMA_CHANNEL_4
@@ -376,7 +376,7 @@
 #endif // Radio_Modal SD
 
 // Audio
-#warning Disable audio and haptics
+// #warning Disable audio and haptics
 #define HAPTIC_GPIO                   GPIO_PIN(GPIOC, 12) // PC.12
 
 // To avoid change in modelsize, todo: remove me

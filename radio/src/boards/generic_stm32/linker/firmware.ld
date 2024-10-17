@@ -22,7 +22,7 @@ SECTIONS
 
     . = ALIGN(4);
     _eisr_vector = .;
-  } > REGION_ISR_VECT AT> REGION_TEXT_STORAGE
+  } > REGION_ISR_VECT
 
   _isr_load = LOADADDR(.isr_vector);
 
@@ -39,7 +39,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;
-  } > REGION_TEXT AT> REGION_TEXT_STORAGE
+  } > REGION_TEXT_STORAGE AT> REGION_TEXT_STORAGE
 
   _text_load = LOADADDR(.text);
 

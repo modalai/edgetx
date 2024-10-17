@@ -1,6 +1,6 @@
 
 /* Highest address of the user mode stack */
-STACK_ADDRESS = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);
+STACK_ADDRESS = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM) - 16;    /* end of RAM */
 
 /* Required amount of stack for interrupt stack (Main stack) */
 MAIN_STACK_SIZE = 8192;
@@ -9,10 +9,10 @@ MAIN_STACK_SIZE = 8192;
 BOOTLOADER_SIZE = 0x20000;
 
 /* Minimum Heap Size (indicative) */
-MIN_HEAP_SIZE = 4096k;      /* required amount of heap  */
+MIN_HEAP_SIZE = 0;      /* required amount of heap  */
 
 /* Highest heap address */
-HEAP_ADDRESS = ORIGIN(RAM) + LENGTH(RAM);
+HEAP_ADDRESS = ORIGIN(RAM_D2) + LENGTH(RAM_D2);
 
 /* Specify the memory areas */
 MEMORY
@@ -26,10 +26,10 @@ FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 2048K
 }
 
 REGION_ALIAS("REGION_BOOTLOADER",   FLASH);
-REGION_ALIAS("REGION_ISR_VECT",     FLASH);
+REGION_ALIAS("REGION_ISR_VECT",     ITCMRAM);
 REGION_ALIAS("REGION_TEXT",         FLASH);
 REGION_ALIAS("REGION_TEXT_STORAGE", FLASH);
 
-REGION_ALIAS("REGION_DATA", RAM_D2);
-REGION_ALIAS("REGION_BSS", RAM_D2);
-REGION_ALIAS("REGION_RAM", RAM_D2);
+REGION_ALIAS("REGION_DATA", RAM);
+REGION_ALIAS("REGION_BSS", RAM);
+REGION_ALIAS("REGION_RAM", RAM);

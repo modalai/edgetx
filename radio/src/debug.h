@@ -30,6 +30,10 @@
 
 #include "serial.h"
 
+#if !defined(SIMU) && defined(DEBUG_SEGGER_RTT)
+  #include "thirdparty/Segger_RTT/RTT/SEGGER_RTT.h"
+#endif
+
 EXTERN_C(extern volatile uint32_t g_tmr10ms);
 
 #if defined(SIMU)

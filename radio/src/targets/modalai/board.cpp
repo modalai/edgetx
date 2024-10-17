@@ -59,10 +59,27 @@ HardwareOptions hardwareOptions;
 
 #if !defined(BOOT)
 
+#if defined(SEMIHOSTING)
+extern "C" void initialise_monitor_handles();
+#endif
+
 
 void boardInit()
 {
-  // LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG); // Unsure what this was for, not defined for H7
+#if defined(SEMIHOSTING)
+  initialise_monitor_handles();
+#elif defined(DEBUG_SEGGER_RTT)
+  SEGGER_RTT_Init();
+  // SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);
+#endif
+  //LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
+  LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SYSCFG);
+
+  SCB_EnableDCache();
+
+  RCC->PLL1DIVR |= (0xA0000U & RCC_PLL1DIVR_Q1_Msk); // Set prescaler to 6 (~21 MHz after scaling)
+  RCC->CR |= RCC_CR_PLL1ON;
+  while (RCC->CR & RCC_CR_PLL1ON == 0) { }
 
 #if defined(USB_CHARGE_LED) && !defined(DEBUG)
   usbInit();
@@ -105,6 +122,9 @@ void boardInit()
   delaysInit();
   __enable_irq();
 
+  if (!adcInit(&_adc_driver))
+    TRACE("adcInit failed");
+
   lcdInit(); // delaysInit() must be called before
 
   timersInit();
@@ -122,7 +142,7 @@ void boardInit()
   // TODO: define these for the H7
 #endif
 
-#if defined(PWR_BUTTON_PRESS)
+#if defined(PWR_BUTTON_PRESS) // TODO: re-enable
   if (WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
     pwrOn();
   }

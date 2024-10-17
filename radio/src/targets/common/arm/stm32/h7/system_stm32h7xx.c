@@ -300,6 +300,9 @@ void SystemInit (void)
   /* Configure the Vector Table location -------------------------------------*/
 #if defined(USER_VECT_TAB_ADDRESS)
   SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal D1 AXI-RAM or in Internal FLASH */
+#else
+  extern uint32_t g_pfnVectors ;
+  SCB->VTOR = (uint32_t) &g_pfnVectors ; /* Vector Table Relocation in Internal FLASH */
 #endif /* USER_VECT_TAB_ADDRESS */
 
 #endif /*DUAL_CORE && CORE_CM4*/
@@ -442,133 +445,133 @@ void SystemCoreClockUpdate (void)
 }
 
 // TODO: better exception handler
-void NMI_Handler(void){asm("BKPT");}
-void HardFault_Handler(void){asm("BKPT");}
-void MemManage_Handler(void){asm("BKPT");}
-void BusFault_Handler(void){asm("BKPT");}
-void UsageFault_Handler(void){asm("BKPT");}
-//void SVC_Handler(void){asm("BKPT");}
-void DebugMon_Handler(void){asm("BKPT");}
-//void PendSV_Handler(void){asm("BKPT");}
-//void SysTick_Handler(void){asm("BKPT");}
-void WWDG_IRQHandler(void){asm("BKPT");}
-void PVD_AVD_IRQHandler(void){asm("BKPT");}
-void TAMP_STAMP_IRQHandler(void){asm("BKPT");}
-void RTC_WKUP_IRQHandler(void){asm("BKPT");}
-void FLASH_IRQHandler(void){asm("BKPT");}
-void RCC_IRQHandler(void){asm("BKPT");}
-void EXTI0_IRQHandler(void){asm("BKPT");}
-void EXTI1_IRQHandler(void){asm("BKPT");}
-void DMA1_Stream1_IRQHandler(void){asm("BKPT");}
-void DMA1_Stream2_IRQHandler(void){asm("BKPT");}
-void DMA1_Stream3_IRQHandler(void){asm("BKPT");}
-void DMA1_Stream4_IRQHandler(void){asm("BKPT");}
-//void ADC_IRQHandler(void){asm("BKPT");}
-void FDCAN1_IT0_IRQHandler(void){asm("BKPT");}
-void FDCAN2_IT0_IRQHandler(void){asm("BKPT");}
-void FDCAN1_IT1_IRQHandler(void){asm("BKPT");}
-void FDCAN2_IT1_IRQHandler(void){asm("BKPT");}
-void TIM1_BRK_IRQHandler(void){asm("BKPT");}
-void TIM1_UP_IRQHandler(void){asm("BKPT");}
-void TIM1_TRG_COM_IRQHandler(void){asm("BKPT");}
-void TIM1_CC_IRQHandler(void){asm("BKPT");}
-void TIM2_IRQHandler(void){asm("BKPT");}
-void TIM3_IRQHandler(void){asm("BKPT");}
-// void TIM4_IRQHandler(void){asm("BKPT");}
-void I2C1_EV_IRQHandler(void){asm("BKPT");}
-void I2C1_ER_IRQHandler(void){asm("BKPT");}
-void I2C2_EV_IRQHandler(void){asm("BKPT");}
-void I2C2_ER_IRQHandler(void){asm("BKPT");}
-void SPI1_IRQHandler(void){asm("BKPT");}
-void SPI2_IRQHandler(void){asm("BKPT");}
-void EXTI15_10_IRQHandler(void){asm("BKPT");}
-void RTC_Alarm_IRQHandler(void){asm("BKPT");}
-void TIM8_CC_IRQHandler(void){asm("BKPT");}
-void DMA1_Stream7_IRQHandler(void){asm("BKPT");}
-void FMC_IRQHandler(void){asm("BKPT");}
-// void TIM5_IRQHandler(void){asm("BKPT");}
-void SPI3_IRQHandler(void){asm("BKPT");}
-void UART5_IRQHandler(void){asm("BKPT");}
-void TIM7_IRQHandler(void){asm("BKPT");}
-//void DMA2_Stream0_IRQHandler(void){asm("BKPT");}
-void DMA2_Stream2_IRQHandler(void){asm("BKPT");}
-void DMA2_Stream3_IRQHandler(void){asm("BKPT");}
-//void DMA2_Stream4_IRQHandler(void){asm("BKPT");}
-void ETH_IRQHandler(void){asm("BKPT");}
-void ETH_WKUP_IRQHandler(void){asm("BKPT");}
-void FDCAN_CAL_IRQHandler(void){asm("BKPT");}
-void DMA2_Stream5_IRQHandler(void){asm("BKPT");}
-void DMA2_Stream6_IRQHandler(void){asm("BKPT");}
-void DMA2_Stream7_IRQHandler(void){asm("BKPT");}
-void I2C3_EV_IRQHandler(void){asm("BKPT");}
-void I2C3_ER_IRQHandler(void){asm("BKPT");}
-void OTG_HS_EP1_OUT_IRQHandler(void){asm("BKPT");}
-void OTG_HS_EP1_IN_IRQHandler(void){asm("BKPT");}
-void OTG_HS_WKUP_IRQHandler(void){asm("BKPT");}
-void OTG_HS_IRQHandler(void){asm("BKPT");}
-void DCMI_IRQHandler(void){asm("BKPT");}
-void CRYP_IRQHandler(void){asm("BKPT");}
-void HASH_RNG_IRQHandler(void){asm("BKPT");}
-void FPU_IRQHandler(void){asm("BKPT");}
-void UART8_IRQHandler(void){asm("BKPT");}
-void SPI4_IRQHandler(void){asm("BKPT");}
-void SPI5_IRQHandler(void){asm("BKPT");}
-void SPI6_IRQHandler(void){asm("BKPT");}
-void SAI1_IRQHandler(void){asm("BKPT");}
-void LTDC_ER_IRQHandler(void){asm("BKPT");}
-void DMA2D_IRQHandler(void){asm("BKPT");}
-void SAI2_IRQHandler(void){asm("BKPT");}
-void QUADSPI_IRQHandler(void){asm("BKPT");}
-void LPTIM1_IRQHandler(void){asm("BKPT");}
-void CEC_IRQHandler(void){asm("BKPT");}
-void I2C4_EV_IRQHandler(void){asm("BKPT");}
-void I2C4_ER_IRQHandler(void){asm("BKPT");}
-void SPDIF_RX_IRQHandler(void){asm("BKPT");}
-void OTG_FS_EP1_OUT_IRQHandler(void){asm("BKPT");}
-void OTG_FS_EP1_IN_IRQHandler(void){asm("BKPT");}
-void OTG_FS_WKUP_IRQHandler(void){asm("BKPT");}
-void DMAMUX1_OVR_IRQHandler(void){asm("BKPT");}
-void HRTIM1_Master_IRQHandler(void){asm("BKPT");}
-void HRTIM1_TIMA_IRQHandler(void){asm("BKPT");}
-void HRTIM1_TIMB_IRQHandler(void){asm("BKPT");}
-void HRTIM1_TIMC_IRQHandler(void){asm("BKPT");}
-void HRTIM1_TIMD_IRQHandler(void){asm("BKPT");}
-void HRTIM1_TIME_IRQHandler(void){asm("BKPT");}
-void HRTIM1_FLT_IRQHandler(void){asm("BKPT");}
-void DFSDM1_FLT0_IRQHandler(void){asm("BKPT");}
-void DFSDM1_FLT1_IRQHandler(void){asm("BKPT");}
-void DFSDM1_FLT2_IRQHandler(void){asm("BKPT");}
-void DFSDM1_FLT3_IRQHandler(void){asm("BKPT");}
-void SAI3_IRQHandler(void){asm("BKPT");}
-void SWPMI1_IRQHandler(void){asm("BKPT");}
-void TIM15_IRQHandler(void){asm("BKPT");}
-void TIM16_IRQHandler(void){asm("BKPT");}
-void MDIOS_WKUP_IRQHandler(void){asm("BKPT");}
-void MDIOS_IRQHandler(void){asm("BKPT");}
-void JPEG_IRQHandler(void){asm("BKPT");}
-void MDMA_IRQHandler(void){asm("BKPT");}
-// void SDMMC2_IRQHandler(void){asm("BKPT");}
-void HSEM1_IRQHandler(void){asm("BKPT");}
-// void ADC3_IRQHandler(void){asm("BKPT");}
-void DMAMUX2_OVR_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel0_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel1_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel2_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel3_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel4_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel5_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel6_IRQHandler(void){asm("BKPT");}
-void BDMA_Channel7_IRQHandler(void){asm("BKPT");}
-void COMP1_IRQHandler(void){asm("BKPT");}
-void LPTIM2_IRQHandler(void){asm("BKPT");}
-void LPTIM3_IRQHandler(void){asm("BKPT");}
-void LPTIM4_IRQHandler(void){asm("BKPT");}
-void LPTIM5_IRQHandler(void){asm("BKPT");}
-void LPUART1_IRQHandler(void){asm("BKPT");}
-void CRS_IRQHandler(void){asm("BKPT");}
-void ECC_IRQHandler(void){asm("BKPT");}
-void SAI4_IRQHandler(void){asm("BKPT");}
-void WAKEUP_PIN_IRQHandler(void){asm("BKPT");}
+__weak void NMI_Handler(void){asm("BKPT");}
+__weak void HardFault_Handler(void){asm("BKPT");}
+__weak void MemManage_Handler(void){asm("BKPT");}
+__weak void BusFault_Handler(void){asm("BKPT");}
+__weak void UsageFault_Handler(void){asm("BKPT");}
+//__weak void SVC_Handler(void){asm("BKPT");}
+__weak void DebugMon_Handler(void){asm("BKPT");}
+//__weak void PendSV_Handler(void){asm("BKPT");}
+//__weak void SysTick_Handler(void){asm("BKPT");}
+__weak void WWDG_IRQHandler(void){asm("BKPT");}
+__weak void PVD_AVD_IRQHandler(void){asm("BKPT");}
+__weak void TAMP_STAMP_IRQHandler(void){asm("BKPT");}
+__weak void RTC_WKUP_IRQHandler(void){asm("BKPT");}
+__weak void FLASH_IRQHandler(void){asm("BKPT");}
+__weak void RCC_IRQHandler(void){asm("BKPT");}
+__weak void EXTI0_IRQHandler(void){asm("BKPT");}
+__weak void EXTI1_IRQHandler(void){asm("BKPT");}
+__weak void DMA1_Stream1_IRQHandler(void){asm("BKPT");}
+__weak void DMA1_Stream2_IRQHandler(void){asm("BKPT");}
+__weak void DMA1_Stream3_IRQHandler(void){asm("BKPT");}
+__weak void DMA1_Stream4_IRQHandler(void){asm("BKPT");}
+//__weak void ADC_IRQHandler(void){asm("BKPT");}
+__weak void FDCAN1_IT0_IRQHandler(void){asm("BKPT");}
+__weak void FDCAN2_IT0_IRQHandler(void){asm("BKPT");}
+__weak void FDCAN1_IT1_IRQHandler(void){asm("BKPT");}
+__weak void FDCAN2_IT1_IRQHandler(void){asm("BKPT");}
+__weak void TIM1_BRK_IRQHandler(void){asm("BKPT");}
+__weak void TIM1_UP_IRQHandler(void){asm("BKPT");}
+__weak void TIM1_TRG_COM_IRQHandler(void){asm("BKPT");}
+__weak void TIM1_CC_IRQHandler(void){asm("BKPT");}
+__weak void TIM2_IRQHandler(void){asm("BKPT");}
+__weak void TIM3_IRQHandler(void){asm("BKPT");}
+//__weak void TIM4_IRQHandler(void){asm("BKPT");}
+__weak void I2C1_EV_IRQHandler(void){asm("BKPT");}
+__weak void I2C1_ER_IRQHandler(void){asm("BKPT");}
+__weak void I2C2_EV_IRQHandler(void){asm("BKPT");}
+__weak void I2C2_ER_IRQHandler(void){asm("BKPT");}
+__weak void SPI1_IRQHandler(void){asm("BKPT");}
+__weak void SPI2_IRQHandler(void){asm("BKPT");}
+__weak void EXTI15_10_IRQHandler(void){asm("BKPT");}
+__weak void RTC_Alarm_IRQHandler(void){asm("BKPT");}
+__weak void TIM8_CC_IRQHandler(void){asm("BKPT");}
+__weak void DMA1_Stream7_IRQHandler(void){asm("BKPT");}
+__weak void FMC_IRQHandler(void){asm("BKPT");}
+//__weak void TIM5_IRQHandler(void){asm("BKPT");}
+__weak void SPI3_IRQHandler(void){asm("BKPT");}
+__weak void UART5_IRQHandler(void){asm("BKPT");}
+__weak void TIM7_IRQHandler(void){asm("BKPT");}
+//__weak void DMA2_Stream0_IRQHandler(void){asm("BKPT");}
+__weak void DMA2_Stream2_IRQHandler(void){asm("BKPT");}
+__weak void DMA2_Stream3_IRQHandler(void){asm("BKPT");}
+//__weak void DMA2_Stream4_IRQHandler(void){asm("BKPT");}
+__weak void ETH_IRQHandler(void){asm("BKPT");}
+__weak void ETH_WKUP_IRQHandler(void){asm("BKPT");}
+__weak void FDCAN_CAL_IRQHandler(void){asm("BKPT");}
+__weak void DMA2_Stream5_IRQHandler(void){asm("BKPT");}
+__weak void DMA2_Stream6_IRQHandler(void){asm("BKPT");}
+__weak void DMA2_Stream7_IRQHandler(void){asm("BKPT");}
+__weak void I2C3_EV_IRQHandler(void){asm("BKPT");}
+__weak void I2C3_ER_IRQHandler(void){asm("BKPT");}
+__weak void OTG_HS_EP1_OUT_IRQHandler(void){asm("BKPT");}
+__weak void OTG_HS_EP1_IN_IRQHandler(void){asm("BKPT");}
+__weak void OTG_HS_WKUP_IRQHandler(void){asm("BKPT");}
+__weak void OTG_HS_IRQHandler(void){asm("BKPT");}
+__weak void DCMI_IRQHandler(void){asm("BKPT");}
+__weak void CRYP_IRQHandler(void){asm("BKPT");}
+__weak void HASH_RNG_IRQHandler(void){asm("BKPT");}
+__weak void FPU_IRQHandler(void){asm("BKPT");}
+__weak void UART8_IRQHandler(void){asm("BKPT");}
+__weak void SPI4_IRQHandler(void){asm("BKPT");}
+__weak void SPI5_IRQHandler(void){asm("BKPT");}
+__weak void SPI6_IRQHandler(void){asm("BKPT");}
+__weak void SAI1_IRQHandler(void){asm("BKPT");}
+__weak void LTDC_ER_IRQHandler(void){asm("BKPT");}
+__weak void DMA2D_IRQHandler(void){asm("BKPT");}
+__weak void SAI2_IRQHandler(void){asm("BKPT");}
+__weak void QUADSPI_IRQHandler(void){asm("BKPT");}
+__weak void LPTIM1_IRQHandler(void){asm("BKPT");}
+__weak void CEC_IRQHandler(void){asm("BKPT");}
+__weak void I2C4_EV_IRQHandler(void){asm("BKPT");}
+__weak void I2C4_ER_IRQHandler(void){asm("BKPT");}
+__weak void SPDIF_RX_IRQHandler(void){asm("BKPT");}
+__weak void OTG_FS_EP1_OUT_IRQHandler(void){asm("BKPT");}
+__weak void OTG_FS_EP1_IN_IRQHandler(void){asm("BKPT");}
+__weak void OTG_FS_WKUP_IRQHandler(void){asm("BKPT");}
+__weak void DMAMUX1_OVR_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_Master_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_TIMA_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_TIMB_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_TIMC_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_TIMD_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_TIME_IRQHandler(void){asm("BKPT");}
+__weak void HRTIM1_FLT_IRQHandler(void){asm("BKPT");}
+__weak void DFSDM1_FLT0_IRQHandler(void){asm("BKPT");}
+__weak void DFSDM1_FLT1_IRQHandler(void){asm("BKPT");}
+__weak void DFSDM1_FLT2_IRQHandler(void){asm("BKPT");}
+__weak void DFSDM1_FLT3_IRQHandler(void){asm("BKPT");}
+__weak void SAI3_IRQHandler(void){asm("BKPT");}
+__weak void SWPMI1_IRQHandler(void){asm("BKPT");}
+__weak void TIM15_IRQHandler(void){asm("BKPT");}
+__weak void TIM16_IRQHandler(void){asm("BKPT");}
+__weak void MDIOS_WKUP_IRQHandler(void){asm("BKPT");}
+__weak void MDIOS_IRQHandler(void){asm("BKPT");}
+__weak void JPEG_IRQHandler(void){asm("BKPT");}
+__weak void MDMA_IRQHandler(void){asm("BKPT");}
+//__weak void SDMMC2_IRQHandler(void){asm("BKPT");}
+__weak void HSEM1_IRQHandler(void){asm("BKPT");}
+//__weak void ADC3_IRQHandler(void){asm("BKPT");}
+__weak void DMAMUX2_OVR_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel0_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel1_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel2_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel3_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel4_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel5_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel6_IRQHandler(void){asm("BKPT");}
+__weak void BDMA_Channel7_IRQHandler(void){asm("BKPT");}
+__weak void COMP1_IRQHandler(void){asm("BKPT");}
+__weak void LPTIM2_IRQHandler(void){asm("BKPT");}
+__weak void LPTIM3_IRQHandler(void){asm("BKPT");}
+__weak void LPTIM4_IRQHandler(void){asm("BKPT");}
+__weak void LPTIM5_IRQHandler(void){asm("BKPT");}
+__weak void LPUART1_IRQHandler(void){asm("BKPT");}
+__weak void CRS_IRQHandler(void){asm("BKPT");}
+__weak void ECC_IRQHandler(void){asm("BKPT");}
+__weak void SAI4_IRQHandler(void){asm("BKPT");}
+__weak void WAKEUP_PIN_IRQHandler(void){asm("BKPT");}
 
 /**
   * @}
