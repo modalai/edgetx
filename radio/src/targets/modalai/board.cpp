@@ -77,9 +77,20 @@ void boardInit()
 
   SCB_EnableDCache();
 
+  // Setup pll1
   RCC->PLL1DIVR |= (0xA0000U & RCC_PLL1DIVR_Q1_Msk); // Set prescaler to 6 (~21 MHz after scaling)
   RCC->CR |= RCC_CR_PLL1ON;
   while (RCC->CR & RCC_CR_PLL1ON == 0) { }
+
+  // Setup pll2
+  RCC->PLLCKSELR &= ~(0x10000 & RCC_PLLCKSELR_DIVM2);
+  RCC->PLLCKSELR |= (0x10000 & RCC_PLLCKSELR_DIVM2);
+  //DIVN2 = 200
+  //DIVP2 = 8
+  RCC->PLL2DIVR |= ((0x1000 & RCC_PLL2DIVR_P2) | (0xC8 & RCC_PLL2DIVR_N2));
+  RCC->CR |= RCC_CR_PLL2ON;
+  while (RCC->CR & RCC_CR_PLL2ON == 0) { }
+
 
 #if defined(USB_CHARGE_LED) && !defined(DEBUG)
   usbInit();
@@ -157,6 +168,8 @@ void boardInit()
 #endif
 
   backlightInit();
+
+  gpio_set(GPIO_PIN(GPIOH, 2));
 
 #if defined(GUI)
   lcdSetContrast(true);

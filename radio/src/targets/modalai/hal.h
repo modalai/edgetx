@@ -166,11 +166,17 @@
   #define SWITCHES_GPIO_PIN_H           LL_GPIO_PIN_4 // PG.4
 #endif
 
-#define ADC_SAMPTIME                    LL_ADC_SAMPLINGTIME_28CYCLES
+#define ADC_SAMPTIME                    LL_ADC_SAMPLINGTIME_8CYCLES_5
 #define ADC_CHANNEL_RTC_BAT             LL_ADC_CHANNEL_VBAT
 
 #if defined(PCBFC2)
   // #warning ADC Settings
+  #define ADC_MAIN                      ADC1
+  #define ADC_DMA                       DMA1
+  #define ADC_DMA_CHANNEL               LL_DMAMUX1_REQ_ADC1
+  #define ADC_DMA_STREAM                LL_DMA_STREAM_0
+  #define ADC_DMA_STREAM_IRQ            DMA1_Stream0_IRQn
+  #define ADC_DMA_STREAM_IRQHandler     DMA1_Stream0_IRQHandler
   // #define HARDWARE_POT1 Not enough exposed pins to use these
   // #define HARDWARE_POT2
   #define ADC_GPIO_PIN_STICK_RV         LL_GPIO_PIN_12  // PF.12
