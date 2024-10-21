@@ -527,6 +527,12 @@ void pulsesSendNextFrame(uint8_t module)
 
   uint8_t protocol = getRequiredProtocol(module);
 
+  // TODO: Remove, hack to start CRSF pulses without screen
+  if(module == INTERNAL_MODULE)
+  {
+    g_model.moduleData[module].type = MODULE_TYPE_CROSSFIRE;
+  }
+
   auto& state = moduleState[module];
   if (state.protocol != protocol || state.forced_off) {
 

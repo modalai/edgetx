@@ -91,6 +91,10 @@ void boardInit()
   RCC->CR |= RCC_CR_PLL2ON;
   while (RCC->CR & RCC_CR_PLL2ON == 0) { }
 
+  // Select UART clock source as HSI:
+  RCC->D2CCIP2R &= ~(0x18);
+  RCC->D2CCIP2R |= 0x18;
+
 
 #if defined(USB_CHARGE_LED) && !defined(DEBUG)
   usbInit();

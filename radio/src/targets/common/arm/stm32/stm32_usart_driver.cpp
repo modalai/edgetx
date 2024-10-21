@@ -377,6 +377,12 @@ bool stm32_usart_init(const stm32_usart_t* usart, const etx_serial_init* params)
     usartInit.TransferDirection |= LL_USART_DIRECTION_TX;
 
   LL_USART_Init(usart->USARTx, &usartInit);
+
+  #if defined(STM32H7)
+  // Enable FIFO Mode
+  usart->USARTx->CR1 |= USART_CR1_FIFOEN;
+  #endif
+
   LL_USART_Enable(usart->USARTx);
 
   if (params->direction & ETX_Dir_TX) {
