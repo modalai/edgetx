@@ -615,12 +615,62 @@ HAL_StatusTypeDef HAL_SD_DeInit(SD_HandleTypeDef *hsd)
   */
 __weak void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(hsd);
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  if(hsd->Instance==SDMMC2)
+  {
+  /* USER CODE BEGIN SDMMC2_MspInit 0 */
 
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_SD_MspInit could be implemented in the user file
-   */
+  /* USER CODE END SDMMC2_MspInit 0 */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC;
+    PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* Peripheral clock enable */
+    __HAL_RCC_SDMMC2_CLK_ENABLE();
+
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    /**SDMMC2 GPIO Configuration
+    PB4 (NJTRST)     ------> SDMMC2_D3
+    PD7     ------> SDMMC2_CMD
+    PG11     ------> SDMMC2_D2
+    PD6     ------> SDMMC2_CK
+    PB14     ------> SDMMC2_D0
+    PB15     ------> SDMMC2_D1
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_14|GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF9_SDIO2;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_6;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_SDIO2;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF10_SDIO2;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN SDMMC2_MspInit 1 */
+
+  /* USER CODE END SDMMC2_MspInit 1 */
+  }
 }
 
 /**
@@ -3324,11 +3374,16 @@ static uint32_t SD_SendSDStatus(SD_HandleTypeDef *hsd, uint32_t *pSDstatus)
   uint32_t count;
   uint32_t *pData = pSDstatus;
 
+  //__SDMMC_CLEAR_FLAG(hsd->Instance, SDMMC_FLAG_DTIMEOUT);
+  //volatile uint32_t flags = hsd->Instance->STA;
+
   /* Check SD response */
   if ((SDMMC_GetResponse(hsd->Instance, SDMMC_RESP1) & SDMMC_CARD_LOCKED) == SDMMC_CARD_LOCKED)
   {
     return HAL_SD_ERROR_LOCK_UNLOCK_FAILED;
   }
+
+  //flags = hsd->Instance->STA;
 
   /* Set block size for card if it is not equal to current block size for card */
   errorstate = SDMMC_CmdBlockLength(hsd->Instance, 64U);
@@ -3338,6 +3393,8 @@ static uint32_t SD_SendSDStatus(SD_HandleTypeDef *hsd, uint32_t *pSDstatus)
     return errorstate;
   }
 
+  //flags = hsd->Instance->STA;
+
   /* Send CMD55 */
   errorstate = SDMMC_CmdAppCommand(hsd->Instance, (uint32_t)(hsd->SdCard.RelCardAdd << 16U));
   if (errorstate != HAL_SD_ERROR_NONE)
@@ -3345,6 +3402,8 @@ static uint32_t SD_SendSDStatus(SD_HandleTypeDef *hsd, uint32_t *pSDstatus)
     hsd->ErrorCode |= HAL_SD_ERROR_NONE;
     return errorstate;
   }
+
+  //flags = hsd->Instance->STA;
 
   /* Configure the SD DPSM (Data Path State Machine) */
   config.DataTimeOut   = SDMMC_DATATIMEOUT;
@@ -3375,8 +3434,9 @@ static uint32_t SD_SendSDStatus(SD_HandleTypeDef *hsd, uint32_t *pSDstatus)
       }
     }
 
-    if ((HAL_GetTick() - tickstart) >=  SDMMC_DATATIMEOUT)
+    if ((HAL_GetTick() - tickstart) >=  10000)
     {
+      // flags = hsd->Instance->STA;
       return HAL_SD_ERROR_TIMEOUT;
     }
   }

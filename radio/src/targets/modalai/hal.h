@@ -287,11 +287,11 @@
 // LCD driver
 #if defined(RADIO_MODAL)
   // #warning LCD settings
-  #define LCD_MOSI_GPIO                 GPIO_PIN(GPIOC, 12) // PG.14
-  #define LCD_CLK_GPIO                  GPIO_PIN(GPIOC, 10) // PB.03
-  #define LCD_A0_GPIO                   GPIO_PIN(GPIOC, 11) // PF.00
-  #define LCD_NCS_GPIO                  GPIO_PIN(GPIOA, 15) // PI.16
-  #define LCD_RST_GPIO                  GPIO_PIN(GPIOD, 12) // PF.01
+  #define LCD_MOSI_GPIO                 GPIO_PIN(GPIOG, 14) // PG.14
+  #define LCD_CLK_GPIO                  GPIO_PIN(GPIOB, 03) // PB.03
+  #define LCD_A0_GPIO                   GPIO_PIN(GPIOF, 00) // PF.00
+  #define LCD_NCS_GPIO                  GPIO_PIN(GPIOI, 16) // PI.16
+  #define LCD_RST_GPIO                  GPIO_PIN(GPIOF, 01) // PF.01
   #define LCD_DMA                       DMA2
   #define LCD_DMA_Stream                DMA2_Stream0
   #define LCD_DMA_Stream_IRQn           DMA2_Stream0_IRQn
