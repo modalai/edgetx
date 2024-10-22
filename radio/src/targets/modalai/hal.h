@@ -33,10 +33,10 @@
 // Keys
 #if defined(PCBFC2)
   // #warning Add other keys
-  #define KEYS_GPIO_REG_PAGEUP          GPIOB
-  #define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_10 // PB.10
-  #define KEYS_GPIO_REG_PAGEDN          GPIOB
-  #define KEYS_GPIO_PIN_PAGEDN          LL_GPIO_PIN_11 // PB.11
+  #define KEYS_GPIO_REG_PAGEUP          GPIOA
+  #define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_11 // PA.11
+  #define KEYS_GPIO_REG_PAGEDN          GPIOa
+  #define KEYS_GPIO_PIN_PAGEDN          LL_GPIO_PIN_12 // PA.12
   #define KEYS_GPIO_REG_EXIT            GPIOC
   #define KEYS_GPIO_PIN_EXIT            LL_GPIO_PIN_12 // PC.12
   #define KEYS_GPIO_REG_ENTER           GPIOD
