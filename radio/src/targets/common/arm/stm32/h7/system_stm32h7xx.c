@@ -493,7 +493,7 @@ __weak void FMC_IRQHandler(void){asm("BKPT");}
 __weak void SPI3_IRQHandler(void){asm("BKPT");}
 __weak void UART5_IRQHandler(void){asm("BKPT");}
 __weak void TIM7_IRQHandler(void){asm("BKPT");}
-//__weak void DMA2_Stream0_IRQHandler(void){asm("BKPT");}
+__weak void DMA2_Stream0_IRQHandler(void){asm("BKPT");}
 __weak void DMA2_Stream2_IRQHandler(void){asm("BKPT");}
 __weak void DMA2_Stream3_IRQHandler(void){asm("BKPT");}
 //__weak void DMA2_Stream4_IRQHandler(void){asm("BKPT");}
@@ -554,7 +554,7 @@ __weak void MDMA_IRQHandler(void){asm("BKPT");}
 __weak void HSEM1_IRQHandler(void){asm("BKPT");}
 //__weak void ADC3_IRQHandler(void){asm("BKPT");}
 __weak void DMAMUX2_OVR_IRQHandler(void){asm("BKPT");}
-__weak void BDMA_Channel0_IRQHandler(void){asm("BKPT");}
+//__weak void BDMA_Channel0_IRQHandler(void){asm("BKPT");}
 __weak void BDMA_Channel1_IRQHandler(void){asm("BKPT");}
 __weak void BDMA_Channel2_IRQHandler(void){asm("BKPT");}
 __weak void BDMA_Channel3_IRQHandler(void){asm("BKPT");}

@@ -39,3 +39,12 @@ void stm32_dma_enable_clock(DMA_TypeDef* DMAx)
   }
 #endif
 }
+
+void stm32_bdma_enable_clock(BDMA_TypeDef* BDMAx)
+{
+#if defined(BDMA)
+  if (BDMAx == BDMA) {
+    LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_BDMA);
+  }
+#endif
+}

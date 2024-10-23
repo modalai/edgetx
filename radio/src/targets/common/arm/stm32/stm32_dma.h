@@ -127,3 +127,4 @@ inline static bool stm32_dma_check_ht_flag(DMA_TypeDef* DMAx, uint32_t DMA_Strea
 #endif // !STM32H7RS
 
 void stm32_dma_enable_clock(DMA_TypeDef* DMAx);
+void stm32_bdma_enable_clock(BDMA_TypeDef* BDMAx);

@@ -80,6 +80,41 @@ void debugPrintf(const char * format, ...)
     " notd",  // INT_OTG_FS_RX_NOT_DEVICE,
 #endif // #if defined(DEBUG_USB_INTERRUPTS)
   };
+#elif defined(PCBFC2)
+  const char * const interruptNames[INT_LAST] = {
+    "Tick ",   // INT_TICK,
+    "5ms  ",   // INT_5MS,
+    "Audio",   // INT_AUDIO,
+    "BlueT",   // INT_BLUETOOTH,
+    "Lcd  ",   // INT_LCD,
+    "T1CC ",   // INT_TIM1CC,
+    "Tim1 ",   // INT_TIM1,
+    "Tim8 ",   // INT_TIM8,
+    "Ser2 ",   // INT_SER2,
+    "TelDm",   // INT_TELEM_DMA,
+    "TelUs",   // INT_TELEM_USART,
+    "Sdio ",   // INT_SDIO,
+    "SdDma",   // INT_SDIO_DMA,
+    "Train",   // INT_TRAINER,
+    "Usb  ",   // INT_OTG_FS,
+#if defined(DEBUG_USB_INTERRUPTS)
+    " spur",  // INT_OTG_FS_SPURIOUS,
+    "  out",  // INT_OTG_FS_OUT_EP,
+    "   in",  // INT_OTG_FS_IN_EP,
+    " miss",  // INT_OTG_FS_MODEMISMATCH,
+    " wake",  // INT_OTG_FS_WAKEUP,
+    " susp",  // INT_OTG_FS_SUSPEND,
+    "  sof",  // INT_OTG_FS_SOF,
+    " rxst",  // INT_OTG_FS_RX_STAT,
+    "  rst",  // INT_OTG_FS_RESET,
+    " enum",  // INT_OTG_FS_ENUM,
+    " inci",  // INT_OTG_FS_INCOMPLETE_IN,
+    " inco",  // INT_OTG_FS_INCOMPLETE_OUT,
+    " sess",  // INT_OTG_FS_SESSION,
+    "  otg",  // INT_OTG_FS_OTG,
+    " notd",  // INT_OTG_FS_RX_NOT_DEVICE,
+#endif // #if defined(DEBUG_USB_INTERRUPTS)
+  };
 #elif defined(PCBTARANIS)
   const char * const interruptNames[INT_LAST] = {
     "Tick ",   // INT_TICK,

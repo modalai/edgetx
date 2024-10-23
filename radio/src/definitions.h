@@ -61,6 +61,12 @@
   #define __DMA               __attribute__((section(".ram"), aligned(4)))
 #endif
 
+#if defined(SIMU)
+  #define __BDMA
+#else
+  #define __BDMA               __attribute__((section(".sram4"), aligned(4)))
+#endif
+
 #if defined(CCMRAM) && !defined(SIMU)
   #define __CCMRAM            __attribute__((section(".ccm"), aligned(4)))
 #else

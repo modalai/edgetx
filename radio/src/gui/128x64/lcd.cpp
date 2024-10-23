@@ -40,7 +40,11 @@
   #include "switches.h"
 #endif
 
+#if !defined(RADIO_MODAL)
 pixel_t displayBuf[DISPLAY_BUFFER_SIZE] __DMA;
+#else
+pixel_t displayBuf[DISPLAY_BUFFER_SIZE] __BDMA;
+#endif
 
 void lcdClear()
 {

@@ -77,6 +77,9 @@ void boardInit()
 
   SCB_EnableDCache();
 
+  RCC->D3CFGR = (0x5 << 4);
+  RCC->APB4ENR |= RCC_APB4ENR_SPI6EN;
+
   // Setup pll1
   RCC->PLL1DIVR |= (0xA0000U & RCC_PLL1DIVR_Q1_Msk); // Set prescaler to 6 (~21 MHz after scaling)
   RCC->CR |= RCC_CR_PLL1ON;

@@ -34,6 +34,12 @@ _stext_iram = LOADADDR(.iram);
   *(.sram2)
 } > RAM
 
+.sram4 (NOLOAD) : 
+{
+  . = ALIGN(4);
+  *(.sram4)
+} > RAM_D3
+
 .sdram(NOLOAD) :
 {
   . = ALIGN(4);

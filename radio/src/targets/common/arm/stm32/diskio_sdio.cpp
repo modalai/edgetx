@@ -559,7 +559,7 @@ extern "C" void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
 
 extern "C" void SD_SDIO_IRQHandler(void)
 {
-  DEBUG_INTERRUPT(INT_SDIO);
+  // DEBUG_INTERRUPT(INT_SDIO);
   HAL_SD_IRQHandler(&sdio);
 }
 

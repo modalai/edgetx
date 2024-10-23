@@ -35,7 +35,7 @@
   // #warning Add other keys
   #define KEYS_GPIO_REG_PAGEUP          GPIOA
   #define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_11 // PA.11
-  #define KEYS_GPIO_REG_PAGEDN          GPIOa
+  #define KEYS_GPIO_REG_PAGEDN          GPIOA
   #define KEYS_GPIO_PIN_PAGEDN          LL_GPIO_PIN_12 // PA.12
   #define KEYS_GPIO_REG_EXIT            GPIOC
   #define KEYS_GPIO_PIN_EXIT            LL_GPIO_PIN_12 // PC.12
@@ -288,17 +288,17 @@
 #if defined(RADIO_MODAL)
   // #warning LCD settings
   #define LCD_MOSI_GPIO                 GPIO_PIN(GPIOG, 14) // PG.14
-  #define LCD_CLK_GPIO                  GPIO_PIN(GPIOB, 03) // PB.03
-  #define LCD_A0_GPIO                   GPIO_PIN(GPIOF, 00) // PF.00
-  #define LCD_NCS_GPIO                  GPIO_PIN(GPIOI, 16) // PI.16
-  #define LCD_RST_GPIO                  GPIO_PIN(GPIOF, 01) // PF.01
-  #define LCD_DMA                       DMA2
-  #define LCD_DMA_Stream                DMA2_Stream0
-  #define LCD_DMA_Stream_IRQn           DMA2_Stream0_IRQn
-  #define LCD_DMA_Stream_IRQHandler     DMA2_Stream0_IRQHandler
+  #define LCD_CLK_GPIO                  GPIO_PIN(GPIOB, 3) // PB.03
+  #define LCD_A0_GPIO                   GPIO_PIN(GPIOF, 0) // PF.00
+  #define LCD_NCS_GPIO                  GPIO_PIN(GPIOI, 10) // PI.10
+  #define LCD_RST_GPIO                  GPIO_PIN(GPIOF, 1) // PF.01
+  #define LCD_DMA                       BDMA
+  #define LCD_DMA_Stream                BDMA_Channel0
+  #define LCD_DMA_Stream_IRQn           BDMA_Channel0_IRQn
+  #define LCD_DMA_Stream_IRQHandler     BDMA_Channel0_IRQHandler
   #define LCD_DMAMUX                    DMAMUX2_Channel0
-  #define LCD_DMA_FLAGS                 (DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 | DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7)
-  #define LCD_DMA_FLAG_INT              DMA_HIFCR_CTCIF7
+  #define LCD_DMA_FLAGS                 ( BDMA_IFCR_CGIF0 | BDMA_IFCR_CTCIF0 | BDMA_IFCR_CHTIF0 | BDMA_IFCR_CTEIF0)
+  #define LCD_DMA_FLAG_INT              BDMA_IFCR_CGIF0
   #define LCD_SPI                       SPI6
   #define LCD_GPIO_AF                   GPIO_AF5 // For SPI6
   #define LCD_VERTICAL_INVERT

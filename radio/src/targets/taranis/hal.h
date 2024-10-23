@@ -2665,7 +2665,7 @@
 #if defined(SSD1309_LCD)
   #define LCD_SPI_PRESCALER             SPI_CR1_BR_1
 #else
-  #define LCD_SPI_PRESCALER             0
+  #define LCD_SPI_PRESCALER             4
 #endif
 
 // I2C Bus 1: EEPROM and CAT5137 digital pot for volume control

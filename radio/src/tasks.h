@@ -27,14 +27,14 @@
 #if defined (COLORLCD)
   #define MENUS_STACK_SIZE     (8 * 1024)
 #else
-  #define MENUS_STACK_SIZE     2000
+  #define MENUS_STACK_SIZE     4096
 #endif
 
 #if !defined(DEBUG)
 #define MIXER_STACK_SIZE       400
 #define AUDIO_STACK_SIZE       400
 #else
-#define MIXER_STACK_SIZE       512
+#define MIXER_STACK_SIZE       1024
 #define AUDIO_STACK_SIZE       512
 #endif
 
@@ -43,7 +43,7 @@
 #if defined(FREE_RTOS)
 #define MIXER_TASK_PRIO        (tskIDLE_PRIORITY + 4)
 #define AUDIO_TASK_PRIO        (tskIDLE_PRIORITY + 3) // Note: FreeRTOSConfig.h defines software timers as priority 2
-#define MENUS_TASK_PRIO        (tskIDLE_PRIORITY + 1)
+#define MENUS_TASK_PRIO        (tskIDLE_PRIORITY + 5)
 #define CLI_TASK_PRIO          (tskIDLE_PRIORITY + 1)
 #else
 #define MIXER_TASK_PRIO        (4)

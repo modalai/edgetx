@@ -1,5 +1,5 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
-option(PXX1 "PXX1 protocol support" OFF)
+option(PXX1 "PXX1 protocol support" ON)
 option(PXX2 "PXX2 protocol support" OFF)
 option(AFHDS3 "AFHDS3 TX Module" OFF)
 option(GHOST "Ghost TX Module" ON)
@@ -151,6 +151,8 @@ endif()
 if(USE_RTC_CLOCK)
   add_definitions(-DRTCLOCK)
 endif()
+
+add_definitions(-DDEBUG_INTERRUPTS)
 
 set(SRC ${SRC}
   io/frsky_firmware_update.cpp
