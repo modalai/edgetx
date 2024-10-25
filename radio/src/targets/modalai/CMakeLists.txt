@@ -152,8 +152,6 @@ if(USE_RTC_CLOCK)
   add_definitions(-DRTCLOCK)
 endif()
 
-add_definitions(-DDEBUG_INTERRUPTS)
-
 set(SRC ${SRC}
   io/frsky_firmware_update.cpp
   io/multi_firmware_update.cpp

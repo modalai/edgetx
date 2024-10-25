@@ -42,8 +42,8 @@
 
 #if defined(FREE_RTOS)
 #define MIXER_TASK_PRIO        (tskIDLE_PRIORITY + 4)
-#define AUDIO_TASK_PRIO        (tskIDLE_PRIORITY + 3) // Note: FreeRTOSConfig.h defines software timers as priority 2
-#define MENUS_TASK_PRIO        (tskIDLE_PRIORITY + 5)
+#define AUDIO_TASK_PRIO        (tskIDLE_PRIORITY + 1) // Note: FreeRTOSConfig.h defines software timers as priority 2
+#define MENUS_TASK_PRIO        (tskIDLE_PRIORITY + 3)
 #define CLI_TASK_PRIO          (tskIDLE_PRIORITY + 1)
 #else
 #define MIXER_TASK_PRIO        (4)

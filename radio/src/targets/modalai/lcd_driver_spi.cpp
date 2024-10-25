@@ -77,7 +77,7 @@ void lcdWriteCommand(uint8_t byte)
     // Wait
   }
   //(void)LCD_SPI->RXDR; // Clear receive
-  LCD_SPI->TXDR = byte;
+  *((volatile uint8_t *)&LCD_SPI->TXDR) = byte; // Must limit to 8-bit bus transaction
   LCD_SPI->CR1 |= SPI_CR1_CSTART;
   while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
     // Wait
@@ -103,7 +103,7 @@ void lcdHardwareInit()
   LCD_SPI->CR1 = SPI_CR1_SSI | SPI_CR1_HDDIR;
   LCD_SPI->CR2 = 0;
   LCD_SPI->CFG1 = 0x00070007;
-  LCD_SPI->CFG1 |= 0x40000000;
+  LCD_SPI->CFG1 |= 0x10000000;
   LCD_SPI->CFG2 = SPI_CFG2_CPHA | SPI_CFG2_CPOL | SPI_CFG2_SSM | SPI_CFG2_MASTER | (0x3 << SPI_CFG2_COMM_Pos);
   // LCD_SPI->CFG2 = SPI_CFG2_CPHA | SPI_CFG2_CPOL | SPI_CFG2_SSM | SPI_CFG2_MASTER;
   LCD_SPI->CR1 |= SPI_CR1_SPE;
@@ -150,7 +150,7 @@ void lcdStart()
     lcdWriteCommand(0xa3); // Set bias=1/6
     lcdWriteCommand(0x22); // Set internal rb/ra=5.0
     lcdWriteCommand(0x2f); // All built-in power circuits on
-    lcdWriteCommand(0x24); // Power control set
+    // lcdWriteCommand(0x24); // Power control set
     lcdWriteCommand(0x81); // Set contrast
     lcdWriteCommand(0x0A); // Set Vop
     lcdWriteCommand(0xa6); // Set display mode
