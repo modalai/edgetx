@@ -7,12 +7,13 @@ INCLUDE definitions.ld
 /* Define output sections */
 SECTIONS
 {
-  .bootloader :
+/*  .bootloader :
   {
     FILL(0xFFFF)
     KEEP(*(.bootloader))
     . = BOOTLOADER_SIZE;
   } > REGION_BOOTLOADER
+*/
 
   /* ISR vector to be loaded */
   .isr_vector :
