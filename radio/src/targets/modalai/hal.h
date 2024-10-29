@@ -302,7 +302,7 @@
   #define LCD_SPI                       SPI6
   #define LCD_GPIO_AF                   GPIO_AF5 // For SPI6
   #define LCD_VERTICAL_INVERT
-  #define LCD_SPI_PRESCALER             0
+  #define LCD_SPI_PRESCALER             0x20000000
 #endif
 
 // I2C Bus 1: EEPROM and CAT5137 digital pot for volume control

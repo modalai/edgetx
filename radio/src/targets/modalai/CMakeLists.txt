@@ -169,9 +169,9 @@ set(GUI_SRC ${GUI_SRC}
   bmp.cpp
 )
 
-#set(FIRMWARE_SRC
-#  ${FIRMWARE_SRC}
-#  targets/common/arm/loadboot.cpp
-#  )
+set(FIRMWARE_SRC
+  ${FIRMWARE_SRC}
+  targets/common/arm/loadboot.cpp
+  )
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})

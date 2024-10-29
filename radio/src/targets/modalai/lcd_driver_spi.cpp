@@ -37,13 +37,13 @@
 
 #if defined(OLED_SCREEN)
   #define LCD_CONTRAST_OFFSET            0
-#elif defined(RADIO_FAMILY_JUMPER_T12) || defined(MANUFACTURER_RADIOMASTER) || defined(RADIO_COMMANDO8) || defined(RADIO_TPRO) || defined(RADIO_T12MAX) || defined(RADIO_V12) || defined(RADIO_V14)
+#elif defined(MANUFACTURER_RADIOMASTER)
   #define LCD_CONTRAST_OFFSET            -10
 #else
   #define LCD_CONTRAST_OFFSET            160
 #endif
 #define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
-#define WAIT_FOR_DMA_END()             do { lcd_sr = LCD_SPI->SR; lcd_cfg1 = LCD_SPI->CFG1; lcd_dma_isr = LCD_DMA->ISR; lcd_stream_cr = LCD_DMA_Stream->CCR; lcd_stream_ndtr = LCD_DMA_Stream->CNDTR; } while (lcd_busy) // TODO: Fix this
+#define WAIT_FOR_DMA_END()             do {  } while (lcd_busy) // TODO: Fix this
 
 #define LCD_NCS_HIGH()  gpio_set(LCD_NCS_GPIO)
 #define LCD_NCS_LOW()   gpio_clear(LCD_NCS_GPIO)
@@ -57,20 +57,8 @@
 bool lcdInitFinished = false;
 void lcdInitFinish();
 
-uint32_t lcd_sr;
-uint32_t lcd_cfg1;
-uint32_t lcd_dma_isr;
-uint32_t lcd_stream_cr;
-uint32_t lcd_stream_ndtr;
-
 void lcdWriteCommand(uint8_t byte)
 {
-  uint32_t cr1 = LCD_SPI->CR1;
-  uint32_t cr2 = LCD_SPI->CR2;
-  uint32_t cfg1 = LCD_SPI->CFG1;
-  uint32_t cfg2 = LCD_SPI->CFG2;
-  uint32_t sr = LCD_SPI->SR;
-
   LCD_A0_LOW();
   LCD_NCS_LOW();
   while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
@@ -89,8 +77,8 @@ void lcdHardwareInit()
 {
   // stm32_spi_enable_clock(LCD_SPI);
   LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SPI6);
-  gpio_init_af(LCD_MOSI_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_HIGH);
-  gpio_init_af(LCD_CLK_GPIO, GPIO_AF8, GPIO_PIN_SPEED_HIGH);
+  gpio_init_af(LCD_MOSI_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_VERY_HIGH);
+  gpio_init_af(LCD_CLK_GPIO, GPIO_AF8, GPIO_PIN_SPEED_VERY_HIGH);
   gpio_init(LCD_NCS_GPIO, GPIO_OUT, GPIO_PIN_SPEED_MEDIUM);
   gpio_init(LCD_RST_GPIO, GPIO_OUT, GPIO_PIN_SPEED_MEDIUM);
   gpio_init(LCD_A0_GPIO, GPIO_OUT, GPIO_PIN_SPEED_HIGH);
@@ -103,7 +91,7 @@ void lcdHardwareInit()
   LCD_SPI->CR1 = SPI_CR1_SSI | SPI_CR1_HDDIR;
   LCD_SPI->CR2 = 0;
   LCD_SPI->CFG1 = 0x00070007;
-  LCD_SPI->CFG1 |= 0x10000000;
+  LCD_SPI->CFG1 |= LCD_SPI_PRESCALER;
   LCD_SPI->CFG2 = SPI_CFG2_CPHA | SPI_CFG2_CPOL | SPI_CFG2_SSM | SPI_CFG2_MASTER | (0x3 << SPI_CFG2_COMM_Pos);
   // LCD_SPI->CFG2 = SPI_CFG2_CPHA | SPI_CFG2_CPOL | SPI_CFG2_SSM | SPI_CFG2_MASTER;
   LCD_SPI->CR1 |= SPI_CR1_SPE;
@@ -136,6 +124,10 @@ void lcdHardwareInit()
 
 void lcdStart()
 {
+//  #if defined(RADIO_MODAL)
+    // lcdWriteCommand(0xa0); // Set seg
+    // lcdWriteCommand(0xaF); // Turn on display
+    // lcdWriteCommand(0xA5); // Turn on whole display
 #if defined(LCD_VERTICAL_INVERT)
   // T12 and TX12 have the screen inverted.
     lcdWriteCommand(0xe2); // (14) Soft reset
@@ -146,7 +138,7 @@ void lcdStart()
 #endif
     lcdWriteCommand(0xc8); // Set com
     lcdWriteCommand(0xf8); // Set booster
-    lcdWriteCommand(0x00); // 5x
+    lcdWriteCommand(0x01); // 5x (0x00 is 4x according to datasheet?)
     lcdWriteCommand(0xa3); // Set bias=1/6
     lcdWriteCommand(0x22); // Set internal rb/ra=5.0
     lcdWriteCommand(0x2f); // All built-in power circuits on
@@ -170,7 +162,7 @@ void lcdStart()
 #if defined(BOOT)
   lcdSetRefVolt(LCD_CONTRAST_DEFAULT);
 #else
-  lcdSetRefVolt(g_eeGeneral.contrast);
+  // lcdSetRefVolt(30);
 #endif
 }
 
@@ -187,11 +179,17 @@ void lcdRefresh(bool wait)
     lcdInitFinish();
   }
 
+  SCB_CleanDCache();
+
   uint8_t * p = displayBuf;
+  uint32_t cfg2 = LCD_SPI->CFG2;
 #if defined(LCD_W_OFFSET)
   lcdWriteCommand(LCD_W_OFFSET);
 #endif
   for (uint8_t y=0; y < 8; y++, p+=LCD_W) {
+
+    __disable_irq();
+
     lcdWriteCommand(0x10); // Column addr 0
     lcdWriteCommand(0xB0 | y); // Page addr y
 #if !defined(LCD_VERTICAL_INVERT)
@@ -214,11 +212,17 @@ void lcdRefresh(bool wait)
     LCD_DMA_Stream->CCR |=  BDMA_CCR_TCIE;
     LCD_DMA_Stream->CCR |= BDMA_CCR_EN; // Enable DMA & TC interrupts
 
+    __enable_irq(); // Don't preempt this thread until the DMA transaction has started
+
     WAIT_FOR_DMA_END();
+
+    __disable_irq();
 
     LCD_NCS_HIGH();
     LCD_A0_HIGH();
   }
+
+  __enable_irq();
 }
 
 extern "C" void LCD_DMA_Stream_IRQHandler()
