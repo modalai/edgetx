@@ -234,7 +234,7 @@ void applyExpos(int16_t * anas, uint8_t mode, int16_t ovwrIdx, int16_t ovwrValue
   }
 }
 
-// #define PREVENT_ARITHMETIC_OVERFLOW
+#define PREVENT_ARITHMETIC_OVERFLOW
 // because of optimizations the reserves before overruns occurs is only the half
 // this defines enables some checks the greatly improves this situation
 // It should nearly prevent all overruns (is still a chance for it, but quite low)

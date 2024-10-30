@@ -165,7 +165,7 @@ void lcdStart()
 #if defined(BOOT)
   lcdSetRefVolt(LCD_CONTRAST_DEFAULT);
 #else
-  // lcdSetRefVolt(30);
+  lcdSetRefVolt(LCD_CONTRAST_DEFAULT);
 #endif
 }
 

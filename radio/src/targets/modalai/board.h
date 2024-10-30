@@ -226,7 +226,7 @@ void ledBlue();
 #define IS_LCD_RESET_NEEDED()           true
 #define LCD_CONTRAST_MIN                10
 #define LCD_CONTRAST_MAX                30
-#define LCD_CONTRAST_DEFAULT          15
+#define LCD_CONTRAST_DEFAULT          30
 
 #define IS_LCD_RESET_NEEDED()           true
 
