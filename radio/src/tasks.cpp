@@ -42,7 +42,7 @@ RTOS_DEFINE_STACK(audioTaskId, audioStack, AUDIO_STACK_SIZE);
 
 RTOS_MUTEX_HANDLE audioMutex;
 
-#define MENU_TASK_PERIOD_TICKS         (100 / RTOS_MS_PER_TICK)    // 50ms
+#define MENU_TASK_PERIOD_TICKS         (50 / RTOS_MS_PER_TICK)    // 50ms
 
 #if defined(COLORLCD) && defined(CLI)
 bool perMainEnabled = true;

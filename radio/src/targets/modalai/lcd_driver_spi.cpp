@@ -43,7 +43,7 @@
   #define LCD_CONTRAST_OFFSET            160
 #endif
 #define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
-#define WAIT_FOR_DMA_END()             do {  } while (lcd_busy) // TODO: Fix this
+#define WAIT_FOR_DMA_END()             do { lcd_sr = LCD_SPI->SR; lcd_dma_sr = LCD_DMA->ISR; } while (lcd_busy) // TODO: Fix this
 
 #define LCD_NCS_HIGH()  gpio_set(LCD_NCS_GPIO)
 #define LCD_NCS_LOW()   gpio_clear(LCD_NCS_GPIO)
@@ -53,6 +53,9 @@
 
 #define LCD_RST_HIGH()  gpio_set(LCD_RST_GPIO)
 #define LCD_RST_LOW()   gpio_clear(LCD_RST_GPIO)
+
+uint32_t lcd_sr;
+uint32_t lcd_dma_sr;
 
 bool lcdInitFinished = false;
 void lcdInitFinish();

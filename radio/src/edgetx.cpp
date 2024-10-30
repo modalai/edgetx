@@ -1395,7 +1395,8 @@ void edgeTxInit()
     pwrOn();
   }
   else {
-    runStartupAnimation();
+    // runStartupAnimation();
+    pwrOn();
   }
 #else // defined(STARTUP_ANIMATION)
   pwrOn();
