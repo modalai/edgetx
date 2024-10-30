@@ -674,8 +674,10 @@ void checkAll(bool isBootCheck)
 
   if (isBootCheck && !g_eeGeneral.disableRtcWarning) {
     // only done once at board start
+#if !defined(PCBFC2)
     enableVBatBridge();
     checkRTCBattery();
+#endif
   }
   disableVBatBridge();
 
