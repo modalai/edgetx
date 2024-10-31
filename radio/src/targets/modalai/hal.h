@@ -391,6 +391,7 @@
 #define PWR_SWITCH_GPIO               GPIO_PIN(GPIOC, 10)  // PC.06
 #define PWR_ON_GPIO                   GPIO_PIN(GPIOC, 11)  // PC.07
 
+#ifdef USE_LEDS
 // #warning remove these later
 #define STATUS_LEDS
 #define GPIO_LED_GPIO_ON              gpio_clear
@@ -398,7 +399,7 @@
 #define LED_GREEN_GPIO                GPIO_PIN(GPIOE, 4)  // PE.04
 #define LED_RED_GPIO                  GPIO_PIN(GPIOE, 3) // PE.03
 #define LED_BLUE_GPIO                 GPIO_PIN(GPIOE, 5)  // PA.05
-
+#endif // USE_LEDS
 
 // Internal Module
 #define INTMODULE_BOOTCMD_GPIO           GPIO_PIN(GPIOI, 6) // PI.06 (Disconnected)
@@ -532,6 +533,16 @@
 // Use SDMMC2
 #define SD_SDIO SDMMC2
 #define SD_SDIO_2
+
+// Power monitoring
+
+// #define POWER_I2C I2C3 // Comment this out to disable I2C
+#define POWER_I2C_PIN_SDA GPIO_PIN(GPIOH, 8) // PH.08
+#define POWER_I2C_SDA_AF GPIO_AF4
+#define POWER_I2C_PIN_SCL GPIO_PIN(GPIOA, 8) // PA.08
+#define POWER_I2C_SCL_AF GPIO_AF4
+#define POWER_I2C_TIMING_REGISTER 0x40707DBDU // 100KHz clock
+#define POWER_I2C_SLAVE_ADDRESS 0x44 << 1 // or 0x45
 
 // Audio
 // #warning Disable audio and haptics

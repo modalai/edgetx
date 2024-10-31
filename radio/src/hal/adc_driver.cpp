@@ -306,6 +306,13 @@ tmr10ms_t jitterResetTime = 0;
 
 uint16_t getBatteryVoltage()
 {
+#if defined(RADIO_MODAL)
+
+  return 800;
+
+#else // !RADIO_MODAL
+
+
 #if defined(CSD203_SENSOR) && !defined(SIMU)
   return getCSD203BatteryVoltage() / 10;
 #else
@@ -334,6 +341,8 @@ uint16_t getBatteryVoltage()
                     BATTERY_DIVIDER);
 #endif
 #endif
+
+#endif // RADIO_MODAL
 }
 
 static uint32_t apply_low_pass_filter(uint32_t v, uint32_t v_prev,

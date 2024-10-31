@@ -72,7 +72,6 @@ void boardInit()
   SEGGER_RTT_Init();
   // SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);
 #endif
-  //LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
   LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SYSCFG);
 
   SCB_EnableDCache();
@@ -97,6 +96,130 @@ void boardInit()
   // Select UART clock source as HSI:
   RCC->D2CCIP2R &= ~(0x18);
   RCC->D2CCIP2R |= 0x18;
+
+#if defined(POWER_I2C)
+  gpio_init(POWER_I2C_PIN_SDA, GPIO_OUT, GPIO_PIN_SPEED_HIGH);
+  gpio_init(POWER_I2C_PIN_SCL, GPIO_OUT, GPIO_PIN_SPEED_HIGH);
+
+  gpio_init_af(POWER_I2C_PIN_SDA, POWER_I2C_SDA_AF, GPIO_PIN_SPEED_HIGH);
+  gpio_init_af(POWER_I2C_PIN_SCL, POWER_I2C_SCL_AF, GPIO_PIN_SPEED_HIGH);
+
+  // RCC->APB1LENR |= 0x800000; // Turn on I2C3 Peripheral Clock
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C3);
+
+  POWER_I2C->TIMINGR = POWER_I2C_TIMING_REGISTER; // Set timing values
+
+  // POWER_I2C->CR2 |= POWER_I2C_SLAVE_ADDRESS; // Set slave address
+
+  // POWER_I2C->CR2 &= ~I2C_CR2_RD_WRN; // Set Write mode
+  POWER_I2C->CR2 |= I2C_CR2_RD_WRN; // Set Read mode
+
+  POWER_I2C->CR2 |= I2C_CR2_AUTOEND; // Automatically send stop condition
+
+  // Empty receive register
+  while(POWER_I2C->ISR & I2C_ISR_RXNE)
+  {
+    uint8_t data = POWER_I2C->RXDR; // Read one data byte out
+  }
+
+  volatile uint32_t status = 0;
+  volatile uint32_t cr1_stat = 0;
+  volatile uint32_t cr2_stat = 0;
+  uint8_t n_bytes = 2;
+  uint8_t rx_buf[3] = {0};
+  uint8_t tx_buf[3] = {0};
+
+  // POWER_I2C->CR2 |= I2C_CR2_START; // START 
+
+  POWER_I2C->ISR |= I2C_ISR_TXE;
+  volatile uint8_t addr = 0x44 << 1;
+
+  POWER_I2C->CR2 &= ~I2C_CR2_START; // Clear START
+
+  while(POWER_I2C->CR2 & I2C_CR2_START) {}; // Wait for start to be 0
+
+  POWER_I2C->CR2 &= ~(n_bytes << I2C_CR2_NBYTES_Pos);
+  POWER_I2C->CR2 |= (n_bytes << I2C_CR2_NBYTES_Pos); // Set number of bytes to transfer
+
+  POWER_I2C->CR2 &= ~(I2C_CR2_SADD_Msk); // Clear slave address
+  POWER_I2C->CR2 |= (uint32_t) addr; // Set slave address
+
+  POWER_I2C->ISR |= I2C_ISR_TXE;
+  POWER_I2C->ICR |= I2C_ICR_NACKCF;
+  POWER_I2C->ICR |= I2C_ICR_STOPCF;
+
+
+  while(!(POWER_I2C->ISR |= I2C_ISR_TXE)) {};
+
+  POWER_I2C->CR1 |= I2C_CR1_PE; // Turn on the peripheral
+  POWER_I2C->TXDR = tx_buf[0];
+  POWER_I2C->CR2 |= I2C_CR2_START; // START
+
+  // while(!(POWER_I2C->ISR & I2C_ISR_RXNE)) {
+  //   status = POWER_I2C->ISR;
+  //   cr1_stat = POWER_I2C->CR1;
+  //   cr2_stat = POWER_I2C->CR2; 
+
+  // }
+
+  for(volatile int i = 1; i <= n_bytes; i++)
+  {
+    while(!(POWER_I2C->ISR & I2C_ISR_TXE)) { status = POWER_I2C->ISR; cr1_stat = POWER_I2C->CR1; cr2_stat = POWER_I2C->CR2; }
+    if(i < n_bytes) POWER_I2C->TXDR = tx_buf[i];
+    if(i > 0) while(!(POWER_I2C->ISR & I2C_ISR_RXNE)) { status = POWER_I2C->ISR; cr1_stat = POWER_I2C->CR1; cr2_stat = POWER_I2C->CR2; }
+    if(i > 0) rx_buf[i - 1] = POWER_I2C->RXDR;
+  }
+
+
+  // for(addr = 0x0; addr < 255; addr++) {
+  //   POWER_I2C->CR2 &= ~I2C_CR2_START; // Clear START
+
+  //   while(POWER_I2C->CR2 & I2C_CR2_START) {}; // Wait for start to be 0
+
+  //   POWER_I2C->CR2 &= ~(n_bytes << I2C_CR2_NBYTES_Pos);
+  //   POWER_I2C->CR2 |= (n_bytes << I2C_CR2_NBYTES_Pos); // Set number of bytes to transfer
+
+  //   POWER_I2C->CR2 &= ~(I2C_CR2_SADD_Msk); // Clear slave address
+  //   POWER_I2C->CR2 |= (uint32_t) addr; // Set slave address
+
+  //   POWER_I2C->ISR |= I2C_ISR_TXE;
+  //   POWER_I2C->ICR |= I2C_ICR_NACKCF;
+  //   POWER_I2C->ICR |= I2C_ICR_STOPCF;
+
+  //   POWER_I2C->CR2 |= I2C_CR2_START; // START
+
+  //   while(!(POWER_I2C->ISR |= I2C_ISR_TXE)) {};
+
+  //   POWER_I2C->TXDR = tx_buf[0];
+
+  //   while(!(POWER_I2C->ISR & I2C_ISR_RXNE)) {
+  //     status = POWER_I2C->ISR;
+  //     cr1_stat = POWER_I2C->CR1;
+  //     cr2_stat = POWER_I2C->CR2; 
+
+  //     if(status & I2C_ISR_NACKF) break;
+  //   }
+
+  //   if(!status & I2C_ISR_NACKF) break;
+
+  //   // for(volatile int i = 0; i <= n_bytes; i++)
+  //   // {
+  //   //   while(!(POWER_I2C->ISR & I2C_ISR_TXE)) {}
+  //   //   if(i < n_bytes) POWER_I2C->TXDR = tx_buf[i];
+  //   //   while(!(POWER_I2C->ISR & I2C_ISR_RXNE)) { status = POWER_I2C->ISR; cr1_stat = POWER_I2C->CR1; cr2_stat = POWER_I2C->CR2; }
+  //   //   if(i > 0) rx_buf[i - 1] = POWER_I2C->RXDR;
+  //   // }
+
+  // }
+
+  // if(status & I2C_ISR_NACKF) while(1) { };
+
+  while(1) {};
+
+  while(!(POWER_I2C->ISR & I2C_ISR_STOPF)) {}
+  POWER_I2C->ICR |= I2C_ICR_STOPCF;
+
+#endif
 
 
 #if defined(USB_CHARGE_LED) && !defined(DEBUG)
