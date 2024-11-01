@@ -22,6 +22,8 @@
 #include "adc_driver.h"
 #include "board.h"
 
+#include "voxlpm_i2c_driver.h"
+
 #include "edgetx.h"
 
 const etx_hal_adc_driver_t* _hal_adc_driver = nullptr;
@@ -308,7 +310,7 @@ uint16_t getBatteryVoltage()
 {
 #if defined(RADIO_MODAL)
 
-  return 800;
+  return voxl_pm_get_voltage();
 
 #else // !RADIO_MODAL
 

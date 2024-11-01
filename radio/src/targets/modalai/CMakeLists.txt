@@ -81,6 +81,7 @@ set(BOARD_COMMON_SRC
   ${TARGET_SRC_DIR}/led_driver.cpp
   ${TARGET_SRC_DIR}/backlight_driver.cpp
   ${TARGET_SRC_DIR}/${LCD_DRIVER}
+  ${TARGET_SRC_DIR}/voxlpm_i2c_driver.cpp
   targets/common/arm/stm32/abnormal_reboot.cpp
   targets/common/arm/stm32/delays_driver.cpp
   targets/common/arm/stm32/flash_driver.cpp
