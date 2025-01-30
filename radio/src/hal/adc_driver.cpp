@@ -309,9 +309,11 @@ tmr10ms_t jitterResetTime = 0;
 uint16_t getBatteryVoltage()
 {
 #if defined(RADIO_MODAL)
-
+#if defined(POWER_I2C)
   return voxl_pm_get_voltage();
-
+#else
+  return 500;
+#endif
 #else // !RADIO_MODAL
 
 
