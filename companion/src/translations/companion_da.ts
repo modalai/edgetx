@@ -7760,37 +7760,37 @@ Vil du fortsætte?</translation>
         <translation>Arrangeret med faner</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="851"/>
         <source>Use tabs to arrange open windows.</source>
         <translation>Brug tab for at arrangere åbne vinduer.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="853"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Tile Windows</source>
         <translation>Arrangeret som fliser</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="853"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Arrange open windows across all the available space.</source>
         <translation>Arrangeret med åbne vinduer fordelt over den mulige plads.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="854"/>
+        <location filename="../mainwindow.cpp" line="853"/>
         <source>Cascade Windows</source>
         <translation>Arrangeret som kaskade vinduer</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="854"/>
+        <location filename="../mainwindow.cpp" line="853"/>
         <source>Arrange all open windows in a stack.</source>
         <translation>Arrangeret ved stabling af åbne vinduer.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="855"/>
+        <location filename="../mainwindow.cpp" line="854"/>
         <source>Close All Windows</source>
         <translation>Luk alle vinduer</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="855"/>
+        <location filename="../mainwindow.cpp" line="854"/>
         <source>Closes all open files (prompts to save if necessary.</source>
         <translation>Luk alle åbne filer (du får mulighed for at gemme først).</translation>
     </message>
