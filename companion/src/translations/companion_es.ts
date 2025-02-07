@@ -7428,42 +7428,42 @@ Do you wish to continue?</source>
         <translation>Carga los ajustes de %1 y del simulador desde un fichero de ajustes exportado previamente</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="851"/>
         <source>Use tabs to arrange open windows.</source>
         <translation>Usa las pestañas para organizar las ventanas abiertas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="851"/>
         <source>Tabbed Windows</source>
         <translation>Ventanas con pestañas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="853"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Tile Windows</source>
         <translation>Ventanas en cascada</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="853"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Arrange open windows across all the available space.</source>
         <translation>Organiza las ventanas en todo el espacio disponible</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="854"/>
+        <location filename="../mainwindow.cpp" line="853"/>
         <source>Cascade Windows</source>
         <translation>Ventanas en cascada</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="854"/>
+        <location filename="../mainwindow.cpp" line="853"/>
         <source>Arrange all open windows in a stack.</source>
         <translation>Organiza todas las ventanas abiertas en una cascada</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="855"/>
+        <location filename="../mainwindow.cpp" line="854"/>
         <source>Close All Windows</source>
         <translation>Cierra todas las ventanas</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="855"/>
+        <location filename="../mainwindow.cpp" line="854"/>
         <source>Closes all open files (prompts to save if necessary.</source>
         <translation>Cierra todos los archivos abiertos (pregunta guardar si es necesario)</translation>
     </message>
