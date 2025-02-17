@@ -3,7 +3,7 @@ name: Run tests and package firmware
 on:
   push:
     branches:
-      - 'main'
+      - '2.11'
     tags:
       - v*
     paths:
