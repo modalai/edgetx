@@ -825,7 +825,8 @@ void menuModelSetup(event_t event)
 
     EXTRA_MODULE_ROWS
 
-    TRAINER_ROWS,
+    TRAINER_ROWS
+    #warning removed ',' since none of these are currently used
 
     // View options
     0,
