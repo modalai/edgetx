@@ -8,7 +8,7 @@ option(AUTOUPDATE "Auto update internal chips from SD" OFF)
 option(BIND_KEY "Enable bind button" OFF)
 option(BLUETOOTH "FrSky BT module support" OFF)
 
-set(USE_RTC_CLOCK YES)
+set(USE_RTC_CLOCK NO)
 set(HARDWARE_EXTERNAL_MODULE YES)
 set(TARGET_DIR modalai)
 
@@ -82,6 +82,8 @@ set(TARGET_SRC_DIR targets/${TARGET_DIR})
 
 set(BOARD_COMMON_SRC
   ${TARGET_SRC_DIR}/board.cpp
+  ${TARGET_SRC_DIR}/system_init.cpp
+  ${TARGET_SRC_DIR}/system_clock.cpp
   ${TARGET_SRC_DIR}/led_driver.cpp
   ${TARGET_SRC_DIR}/backlight_driver.cpp
   ${TARGET_SRC_DIR}/${LCD_DRIVER}

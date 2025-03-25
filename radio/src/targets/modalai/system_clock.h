@@ -19,10 +19,5 @@
  * GNU General Public License for more details.
  */
 
-#pragma once
+extern "C" void SystemClock_Config();
 
-#if defined(RADIO_MODAL)
-  #define USB_NAME                     "ModalAI Zorro Blue"
-  #define USB_MANUFACTURER             'M', 'o', 'd', 'a', 'l', 'A', 'I', ' '  /* 8 bytes */
-  #define USB_PRODUCT                  'B', 'l', 'u', 'e', ' ', 'Z', ' ', ' '  /* 8 Bytes */
-#endif

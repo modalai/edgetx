@@ -23,7 +23,8 @@
 
 #include "stm32_hal_ll.h"
 
-#define __REBOOT_DATA __attribute__((section(".rebootdata"), aligned(4)))
+// #define __REBOOT_DATA __attribute__((section(".rebootdata"), aligned(4)))
+#define __REBOOT_DATA __attribute__((aligned(4)))
 
 // This variable is define at a fixed memory location
 // and is used in bootloader and firmware to pass

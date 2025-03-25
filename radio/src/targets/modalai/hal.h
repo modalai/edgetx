@@ -183,8 +183,8 @@
 // PWR and LED driver
 
 // #warning unsure what these do, TODO: Remove these buttons completely
-// #define PWR_SWITCH_GPIO               GPIO_PIN(GPIOC, 10)  // PC.06
-// #define PWR_ON_GPIO                   GPIO_PIN(GPIOC, 11)  // PC.07
+#define PWR_SWITCH_GPIO               GPIO_PIN(GPIOA, 5)  // PC.06
+#define PWR_ON_GPIO                   GPIO_PIN(GPIOA, 6)  // PC.07
 
 #define USE_LEDS
 #ifdef USE_LEDS
@@ -192,9 +192,9 @@
 #define STATUS_LEDS
 #define GPIO_LED_GPIO_ON              gpio_clear
 #define GPIO_LED_GPIO_OFF             gpio_set
-#define LED_GREEN_GPIO                GPIO_PIN(GPIOI, 5)  // PE.04
-#define LED_RED_GPIO                  GPIO_PIN(GPIOI, 6) // PE.03
-#define LED_BLUE_GPIO                 GPIO_PIN(GPIOI, 7)  // PA.05
+#define LED_GREEN_GPIO                GPIO_PIN(GPIOI, 7)  // PI.07
+#define LED_RED_GPIO                  GPIO_PIN(GPIOI, 6) // PI.06
+#define LED_BLUE_GPIO                 GPIO_PIN(GPIOI, 5)  // PI.05
 #endif // USE_LEDS
 
 // Internal Module
@@ -355,7 +355,7 @@
 #define VOXLPM_INA231_VBAT_I_LSB		(VOXLPM_INA231_VBAT_MAX_AMPS/32768.0f)
 #define VOXLPM_INA231_VREG_I_LSB		(VOXLPM_INA231_VREG_MAX_AMPS/32768.0f)
 
-#define POWER_I2C I2C1 // Comment this out to disable I2C
+// #define POWER_I2C I2C1 // Comment this out to disable I2C
 #define POWER_I2C_PIN_SDA GPIO_PIN(GPIOB, 9) // PB.09
 #define POWER_I2C_SDA_AF GPIO_AF4
 #define POWER_I2C_PIN_SCL GPIO_PIN(GPIOB, 8) // PB.08

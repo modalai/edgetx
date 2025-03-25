@@ -78,28 +78,28 @@ void boardInit()
 #endif
   LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SYSCFG);
 
-  SCB_EnableDCache();
+  // SCB_EnableDCache();
 
   RCC->D3CFGR = (0x5 << 4);
   RCC->APB4ENR |= RCC_APB4ENR_SPI6EN;
 
   // Setup pll1
-  // RCC->PLL1DIVR |= (0xA0000U & RCC_PLL1DIVR_Q1_Msk); // Set prescaler to 6 (~21 MHz after scaling)
-  // RCC->CR |= RCC_CR_PLL1ON;
-  // while (RCC->CR & RCC_CR_PLL1ON == 0) { }
+  RCC->PLL1DIVR |= (0xA0000U & RCC_PLL1DIVR_Q1_Msk); // Set prescaler to 6 (~21 MHz after scaling)
+  RCC->CR |= RCC_CR_PLL1ON;
+  while (RCC->CR & RCC_CR_PLL1ON == 0) { }
 
   // Setup pll2
-  // RCC->PLLCKSELR &= ~(0x10000 & RCC_PLLCKSELR_DIVM2);
-  // RCC->PLLCKSELR |= (0x10000 & RCC_PLLCKSELR_DIVM2);
-  //DIVN2 = 200
-  //DIVP2 = 8
-  // RCC->PLL2DIVR |= ((0x1000 & RCC_PLL2DIVR_P2) | (0xC8 & RCC_PLL2DIVR_N2));
-  // RCC->CR |= RCC_CR_PLL2ON;
-  // while (RCC->CR & RCC_CR_PLL2ON == 0) { }
+  RCC->PLLCKSELR &= ~(0x10000 & RCC_PLLCKSELR_DIVM2);
+  RCC->PLLCKSELR |= (0x10000 & RCC_PLLCKSELR_DIVM2);
+  // DIVN2 = 200
+  // DIVP2 = 8
+  RCC->PLL2DIVR |= ((0x1000 & RCC_PLL2DIVR_P2) | (0xC8 & RCC_PLL2DIVR_N2));
+  RCC->CR |= RCC_CR_PLL2ON;
+  while (RCC->CR & RCC_CR_PLL2ON == 0) { }
 
   // Select UART clock source as HSI:
-  // RCC->D2CCIP2R &= ~(0x18);
-  // RCC->D2CCIP2R |= 0x18;
+  RCC->D2CCIP2R &= ~(0x18);
+  RCC->D2CCIP2R |= 0x18;
 
 #if defined(POWER_I2C)
 
@@ -170,9 +170,9 @@ void boardInit()
 #endif
 
 #if defined(PWR_BUTTON_PRESS) // TODO: re-enable
-  if (WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
-    pwrOn();
-  }
+  // if (WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
+    // pwrOn();
+  // }
 #endif
 
 #if defined(USB_CHARGER)
@@ -180,6 +180,7 @@ void boardInit()
 #endif
 
 #if defined(RTCLOCK)
+  #error RTC
   rtcInit(); // RTC must be initialized before rambackupRestore() is called
 #endif
 
