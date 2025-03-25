@@ -28,6 +28,8 @@
 
 static volatile uint32_t _ms_ticks;
 
+__weak void per5ms() {}
+
 static void _init_1ms_timer()
 {
   stm32_timer_enable_clock(MS_TIMER);

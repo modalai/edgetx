@@ -1,0 +1,384 @@
+/*
+ * Copyright (C) EdgeTX
+ *
+ * Based on code named
+ *   opentx - https://github.com/opentx/opentx
+ *   th9x - http://code.google.com/p/th9x
+ *   er9x - http://code.google.com/p/er9x
+ *   gruvin9x - http://code.google.com/p/gruvin9x
+ *
+ * License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#pragma once
+
+#warning TODO: Verify/Set these numbers
+#define CPU_FREQ                600000000
+
+#define PERI1_FREQUENCY         150000000
+#define PERI2_FREQUENCY         150000000
+#define TIMER_MULT_APB1         2
+#define TIMER_MULT_APB2         2
+
+#define TELEMETRY_EXTI_PRIO             0 // required for soft serial
+
+/* Timers Allocation:
+ * TIM5 = Backlight
+ * TIM7 = 2 MHz counter
+ *
+ * TIM12 = Mixer scheduler
+ * TIM14 = 5 ms counter
+ */
+
+/* DMA Allocation:
+   DMA/Stream/Channel
+   1/7/0? LCD
+   1/0/0 ADC1
+   2/3/4 SDIO
+*/
+
+// Zorro Blue official hardware config
+
+// Keys
+
+#define KEYS_GPIO_REG_PAGEUP          GPIOD
+#define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_14 // PD.14
+#define KEYS_GPIO_REG_PAGEDN          GPIOH
+#define KEYS_GPIO_PIN_PAGEDN          LL_GPIO_PIN_6 // PH.06
+#define KEYS_GPIO_REG_EXIT            GPIOD
+#define KEYS_GPIO_PIN_EXIT            LL_GPIO_PIN_11 // PD.11
+#define KEYS_GPIO_REG_ENTER           GPIOB
+#define KEYS_GPIO_PIN_ENTER           LL_GPIO_PIN_2  // PB.02
+#define KEYS_GPIO_REG_SYS             GPIOD
+#define KEYS_GPIO_PIN_SYS             LL_GPIO_PIN_10  // PD.10
+#define KEYS_GPIO_REG_MDL             GPIOG
+#define KEYS_GPIO_PIN_MDL             LL_GPIO_PIN_1  // PG.01
+#define KEYS_GPIO_REG_TELE            GPIOG
+#define KEYS_GPIO_PIN_TELE            LL_GPIO_PIN_0  // PG.00
+
+// Rotary Encoder
+
+#define ROTARY_ENCODER_NAVIGATION
+#define ROTARY_ENCODER_GPIO              GPIOC
+#define ROTARY_ENCODER_GPIO_PIN_A        LL_GPIO_PIN_1 // PC.01
+#define ROTARY_ENCODER_GPIO_PIN_B        LL_GPIO_PIN_2 // PC.02
+#define ROTARY_ENCODER_POSITION()        (((ROTARY_ENCODER_GPIO->IDR >> 8) & 0x02) + ((ROTARY_ENCODER_GPIO->IDR >> 12) & 0x01))
+#define ROTARY_ENCODER_EXTI_LINE1        LL_EXTI_LINE_12
+#define ROTARY_ENCODER_EXTI_LINE2        LL_EXTI_LINE_9
+#define ROTARY_ENCODER_EXTI_PORT         LL_SYSCFG_EXTI_PORTC
+#define ROTARY_ENCODER_EXTI_SYS_LINE1    LL_SYSCFG_EXTI_LINE1
+#define ROTARY_ENCODER_EXTI_SYS_LINE2    LL_SYSCFG_EXTI_LINE2
+// ROTARY_ENCODER_EXTI_LINE1 IRQ
+#if !defined(USE_EXTI1_IRQ)
+  #define USE_EXTI1_IRQ
+  #define EXTI1_IRQ_Priority 5
+#endif
+#if !defined(USE_EXTI2_IRQ)
+  #define USE_EXTI2_IRQ
+  #define EXTI2_IRQ_Priority 5
+#endif
+#define ROTARY_ENCODER_INVERTED
+
+#define ROTARY_ENCODER_TIMER            TIM5
+#define ROTARY_ENCODER_TIMER_IRQn       TIM5_IRQn
+#define ROTARY_ENCODER_TIMER_IRQHandler TIM5_IRQHandler
+
+// Trims
+// #warning Disconnect all of these
+// #define TRIMS_GPIO_REG_LHL            GPIOH
+// #define TRIMS_GPIO_PIN_LHL            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_LHR            GPIOH
+// #define TRIMS_GPIO_PIN_LHR            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_LVD            GPIOH
+// #define TRIMS_GPIO_PIN_LVD            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_LVU            GPIOH
+// #define TRIMS_GPIO_PIN_LVU            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_RVD            GPIOH
+// #define TRIMS_GPIO_PIN_RVD            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_RHL            GPIOH
+// #define TRIMS_GPIO_PIN_RHL            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_RVU            GPIOH
+// #define TRIMS_GPIO_PIN_RVU            LL_GPIO_PIN_15 // PH.15
+// #define TRIMS_GPIO_REG_RHR            GPIOH
+// #define TRIMS_GPIO_PIN_RHR            LL_GPIO_PIN_15 // PH.15
+
+// Switches
+// #define STORAGE_SWITCH_A
+// #define HARDWARE_SWITCH_A
+// #define SWITCHES_GPIO_REG_A           GPIOG
+// #define SWITCHES_GPIO_PIN_A           LL_GPIO_PIN_2  // PG.02
+
+#define STORAGE_SWITCH_B
+#define HARDWARE_SWITCH_B
+#define SWITCHES_GPIO_REG_B_L         GPIOD
+#define SWITCHES_GPIO_PIN_B_L         LL_GPIO_PIN_12 // PD.12
+#define SWITCHES_GPIO_REG_B_H         GPIOD
+#define SWITCHES_GPIO_PIN_B_H         LL_GPIO_PIN_13  // PD.13
+
+#define STORAGE_SWITCH_C
+#define HARDWARE_SWITCH_C
+#define SWITCHES_GPIO_REG_C_L         GPIOH
+#define SWITCHES_GPIO_PIN_C_L         LL_GPIO_PIN_11  // PH.11
+#define SWITCHES_GPIO_REG_C_H         GPIOH
+#define SWITCHES_GPIO_PIN_C_H         LL_GPIO_PIN_12  // PH.12
+
+// #define STORAGE_SWITCH_D
+// #define HARDWARE_SWITCH_D
+// #define SWITCHES_GPIO_REG_D           GPIOG
+// #define SWITCHES_GPIO_PIN_D           LL_GPIO_PIN_3  // PG.3
+
+#define STORAGE_SWITCH_E
+#define HARDWARE_SWITCH_E
+#define SWITCHES_GPIO_REG_E           GPIOE
+#define SWITCHES_GPIO_PIN_E           LL_GPIO_PIN_12  // PE.12
+
+#define STORAGE_SWITCH_F
+#define HARDWARE_SWITCH_F
+#define SWITCHES_GPIO_REG_F           GPIOF
+#define SWITCHES_GPIO_PIN_F           LL_GPIO_PIN_10 // PF.10
+
+#warning consider changing sample time (seems low)
+#define ADC_SAMPTIME                  LL_ADC_SAMPLINGTIME_8CYCLES_5
+#define ADC_CHANNEL_RTC_BAT           LL_ADC_CHANNEL_VBAT
+
+#define ADC_MAIN                      ADC1
+#define ADC_DMA                       DMA1
+#define ADC_DMA_CHANNEL               LL_DMAMUX1_REQ_ADC1
+#define ADC_DMA_STREAM                LL_DMA_STREAM_0
+#define ADC_DMA_STREAM_IRQ            DMA1_Stream0_IRQn
+#define ADC_DMA_STREAM_IRQHandler     DMA1_Stream0_IRQHandler
+#define HARDWARE_POT1
+#define HARDWARE_POT2
+#define ADC_GPIO_PIN_STICK_RV         LL_GPIO_PIN_1  // PB.01
+#define ADC_GPIO_PIN_STICK_RH         LL_GPIO_PIN_12  // PF.12
+#define ADC_GPIO_PIN_STICK_LV         LL_GPIO_PIN_1  // PA.01
+#define ADC_GPIO_PIN_STICK_LH         LL_GPIO_PIN_0  // PC.00
+#define ADC_CHANNEL_STICK_RV          LL_ADC_CHANNEL_5  // ADC1_CH5
+#define ADC_CHANNEL_STICK_RH          LL_ADC_CHANNEL_6  // ADC1_CH6
+#define ADC_CHANNEL_STICK_LV          LL_ADC_CHANNEL_17  // ADC1_CH17
+#define ADC_CHANNEL_STICK_LH          LL_ADC_CHANNEL_10  // ADC1_CH10
+#define ADC_CHANNEL_POT1              LL_ADC_CHANNEL_9 // ADC1_CH9
+#define ADC_CHANNEL_POT2              LL_ADC_CHANNEL_16 // ADC1_CH16
+#define ADC_GPIO_PIN_POT1             LL_GPIO_PIN_0  // PB.00
+#define ADC_GPIO_PIN_POT2             LL_GPIO_PIN_0  // PA.00
+// !#define ADC_GPIO_PIN_BATT             LL_GPIO_PIN_0  // PC.00 // This pin is disconnected (hopefully that doesn't trigger anything)
+#define ADC_GPIOA_PINS                (ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_POT2)
+#define ADC_GPIOB_PINS                (ADC_GPIO_PIN_STICK_RV | ADC_GPIO_PIN_POT1)
+#define ADC_GPIOC_PINS                (ADC_GPIO_PIN_STICK_LH)
+#define ADC_GPIOF_PINS                (ADC_GPIO_PIN_STICK_RH)
+// !#define ADC_CHANNEL_BATT              LL_ADC_CHANNEL_10
+#define ADC_VREF_PREC2                330
+#warning verify adc direction
+#define ADC_DIRECTION {-1, 1, 1, -1, -1, 1, 1, 1}
+
+// PWR and LED driver
+
+// #warning unsure what these do, TODO: Remove these buttons completely
+// #define PWR_SWITCH_GPIO               GPIO_PIN(GPIOC, 10)  // PC.06
+// #define PWR_ON_GPIO                   GPIO_PIN(GPIOC, 11)  // PC.07
+
+#define USE_LEDS
+#ifdef USE_LEDS
+#warning remove these later
+#define STATUS_LEDS
+#define GPIO_LED_GPIO_ON              gpio_clear
+#define GPIO_LED_GPIO_OFF             gpio_set
+#define LED_GREEN_GPIO                GPIO_PIN(GPIOI, 5)  // PE.04
+#define LED_RED_GPIO                  GPIO_PIN(GPIOI, 6) // PE.03
+#define LED_BLUE_GPIO                 GPIO_PIN(GPIOI, 7)  // PA.05
+#endif // USE_LEDS
+
+// Internal Module
+#define INTMODULE_BOOTCMD_GPIO           GPIO_PIN(GPIOI, 6) // PI.06 (Disconnected)
+#define INTMODULE_PWR_GPIO               GPIO_PIN(GPIOI, 7) // PI.07 (Disconnected)
+#define INTMODULE_BOOTCMD_DEFAULT     0 // RESET
+#define INTMODULE_TX_GPIO                GPIO_PIN(GPIOC, 6) // PC.06
+#define INTMODULE_RX_GPIO                GPIO_PIN(GPIOC, 7) // PC.07
+#define INTMODULE_USART                  USART6
+#define INTMODULE_USART_IRQHandler       USART6_IRQHandler
+#define INTMODULE_USART_IRQn             USART6_IRQn
+// #define INTMODULE_DMA                    DMA2
+// #define INTMODULE_DMA_STREAM             LL_DMA_STREAM_7
+// #define INTMODULE_DMA_STREAM_IRQ         DMA2_Stream7_IRQn
+// #define INTMODULE_DMA_STREAM_IRQHandler  DMA2_Stream7_IRQHandler
+// #define INTMODULE_DMA_CHANNEL            LL_DMA_CHANNEL_4
+// #define INTMODULE_RX_DMA                 DMA2
+// #define INTMODULE_RX_DMA_STREAM          LL_DMA_STREAM_2
+// #define INTMODULE_RX_DMA_CHANNEL         LL_DMA_CHANNEL_4
+
+// Software IRQ (Prio 5 -> FreeRTOS compatible)
+//#define TELEMETRY_RX_FRAME_EXTI_LINE    LL_EXTI_LINE_4
+//#define USE_EXTI4_IRQ
+//#define EXTI4_IRQ_Priority 5
+
+// USB Charger
+#if defined(USB_CHARGER)
+  #error should be off
+  #define USB_CHARGER_GPIO              GPIO_PIN(GPIOB, 5)
+#endif
+
+#warning can probably increase this
+#define SPORT_MAX_BAUDRATE            400000
+
+// USB
+#define USB_GPIO_VBUS                   GPIO_PIN(GPIOA, 9)  // PA.09
+#define USB_GPIO_DM                     GPIO_PIN(GPIOA, 11) // PA.11
+#define USB_GPIO_DP                     GPIO_PIN(GPIOA, 12) // PA.12
+#define USB_GPIO_AF                     GPIO_AF10
+
+// BackLight
+#warning Backlight settings (check bus and frequency)
+#define BACKLIGHT_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
+#define BACKLIGHT_TIMER               TIM5
+#define BACKLIGHT_GPIO                GPIO_PIN(GPIOH, 10) // PH.10
+#define BACKLIGHT_GPIO_AF             GPIO_AF2 // TIM5 CH1
+#define BACKLIGHT_CCMR1               TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 // Channel1, PWM
+#define BACKLIGHT_CCER                TIM_CCER_CC1E
+#define BACKLIGHT_COUNTER_REGISTER    BACKLIGHT_TIMER->CCR1
+
+// LCD driver
+#define LCD_MOSI_GPIO                 GPIO_PIN(GPIOE, 6) // PE.06
+#define LCD_CLK_GPIO                  GPIO_PIN(GPIOE, 2) // PE.02
+#define LCD_A0_GPIO                   GPIO_PIN(GPIOE, 4) // PE.04
+#define LCD_NCS_GPIO                  GPIO_PIN(GPIOE, 3) // PE.03
+#define LCD_RST_GPIO                  GPIO_PIN(GPIOE, 5) // PE.05
+#define LCD_DMA                       DMA1
+#define LCD_DMA_Stream                DMA1_Stream7
+#define LCD_DMA_Stream_Num            LL_DMA_STREAM_7
+#define LCD_DMA_Stream_IRQn           DMA1_Stream7_IRQn
+#define LCD_DMA_Stream_IRQHandler     DMA1_Stream7_IRQHandler
+#define LCD_DMA_FLAGS                 (DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 | DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7)
+#define LCD_DMA_FLAG_INT              DMA_HIFCR_CTCIF7
+#define LCD_SPI                       SPI4
+#define LCD_GPIO_AF                   GPIO_AF5 // For SPI4
+#define LCD_VERTICAL_INVERT
+#define LCD_SPI_PRESCALER             0x20000000
+
+
+// TODO: M0207 has a SPI EEPROM
+// I2C Bus 1: EEPROM and CAT5137 digital pot for volume control
+// #define I2C_B1                          I2C1
+// #define I2C_B1_GPIO_AF                  LL_GPIO_AF_4
+
+// #warning remove eeprom
+// #define I2C_B1_SCL_GPIO               GPIO_PIN(GPIOB, 8)  // PB.08
+// #define I2C_B1_SDA_GPIO               GPIO_PIN(GPIOB, 9)  // PB.09
+
+// EEPROM
+// #warning remove eeprom
+// #define EEPROM_WP_GPIO                GPIOD
+// #define EEPROM_WP_GPIO_PIN            LL_GPIO_PIN_10  // PD.10
+
+// #define I2C_B1_CLK_RATE                 400000
+
+
+// FC2 internal hardware
+
+//SD - SDIO
+// #define SD_SDIO_DMA                     DMA2
+// #define SD_SDIO_DMA_STREAM              DMA2_Stream3
+// #define SD_SDIO_DMA_CHANNEL             LL_DMA_CHANNEL_4
+// #define SD_SDIO_DMA_IRQn                DMA2_Stream3_IRQn
+// #define SD_SDIO_DMA_IRQHANDLER          DMA2_Stream3_IRQHandler
+// #define SD_SDIO_DMAMUX                  DMAMUX1_Channel2
+// #define SD_SDIO_CLK_DIV(fq)             ((48000000 / (fq)) - 2)
+// #define SD_SDIO_INIT_CLK_DIV            SD_SDIO_CLK_DIV(400000)
+// #define SD_SDIO_TRANSFER_CLK_DIV        SD_SDIO_CLK_DIV(24000000)
+#define STORAGE_USE_SDIO
+#define SD_SDIO_TRANSFER_CLK_DIV        SDMMC_NSPEED_CLK_DIV
+
+// Define the pins just to be sure
+#define SD_SDIO_PIN_D0 GPIO_PIN(GPIOC, 8) // PC.08
+#define SD_SDIO_AF_D0 GPIO_AF12
+#define SD_SDIO_PIN_D1 GPIO_PIN(GPIOC, 9) // PC.09
+#define SD_SDIO_AF_D1 GPIO_AF12
+#define SD_SDIO_PIN_D2 GPIO_PIN(GPIOC, 10) // PC.10
+#define SD_SDIO_AF_D2 GPIO_AF12
+#define SD_SDIO_PIN_D3 GPIO_PIN(GPIOC, 11) // PC.11
+#define SD_SDIO_AF_D3 GPIO_AF12
+#define SD_SDIO_PIN_CMD GPIO_PIN(GPIOD, 2) // PD.02
+#define SD_SDIO_AF_CMD GPIO_AF12
+#define SD_SDIO_PIN_CLK GPIO_PIN(GPIOC, 12) // PC.12
+#define SD_SDIO_AF_CLK GPIO_AF12
+// Use SDMMC1
+#define SD_SDIO SDMMC1
+
+// Power monitoring
+
+
+#define VOXLPM_INA231_ADDR_VBATT		0x44 << 1
+#define VOXLPM_INA231_ADDR_P5_12VDC		0x45 << 1
+
+/* INA231 Registers addresses */
+#define INA231_REG_CONFIG			0x00
+#define INA231_REG_SHUNTVOLTAGE			0x01
+#define INA231_REG_BUSVOLTAGE			0x02
+#define INA231_REG_POWER			0x03
+#define INA231_REG_CURRENT			0x04
+#define INA231_REG_CALIBRATION			0x05
+#define INA231_REG_MASKENABLE			0x06
+#define INA231_REG_ALERTLIMIT			0x07
+
+/* [0:2] Mode - Shunt and bus, 111, continuous (INA231A default) */
+#define INA231_CONFIG_MODE			(0x07 << 0)
+/* [5:3] Shunt Voltage Conversion Time, 100, 1.1ms (INA231A default) */
+#define INA231_CONFIG_SHUNT_CT			(0x04 << 3)
+/* [8:6] Shunt Voltage Conversion Time, 100, 1.1ms (INA231A default) */
+#define INA231_CONFIG_BUS_CT			(0x04 << 6)
+/* [11:9] Averaging Mode, 010, 16 */
+#define INA231_CONFIG_AVG			(0x02 << 9)
+/* [1] Reset bit */
+#define INA231_RST_BIT				(0x01 << 15)
+/* Configuration register settings */
+#define INA231_CONFIG				(INA231_CONFIG_MODE+INA231_CONFIG_SHUNT_CT+INA231_CONFIG_BUS_CT+INA231_CONFIG_AVG)
+
+#define INA231_CONST				0.00512f  /* is an internal fixed value used to ensure scaling is maintained properly  */
+#define INA231_VBUSSCALE			0.00125f  /* LSB of bus voltage is 1.25 mV  */
+#define INA231_VSHUNTSCALE			0.0000025f /* LSB of shunt voltage is 2.5 uV  */
+
+/* From SCH-M00041 REVB */
+#define VOXLPM_INA231_VBAT_SHUNT		0.0005f   /* VBAT shunt is 500 micro-ohm */
+#define VOXLPM_INA231_VREG_SHUNT		0.005f    /* VREG output shunt is 5 milli-ohm */
+#define VOXLPM_INA231_VBAT_MAX_AMPS		90.0f     /* 90.0 Amps max through VBAT sense resistor */
+#define VOXLPM_INA231_VREG_MAX_AMPS		6.0f      /* 6.0 Amps max through VREG sense resistor */
+
+/* ina231.pdf section 8.5 */
+#define VOXLPM_INA231_VBAT_I_LSB		(VOXLPM_INA231_VBAT_MAX_AMPS/32768.0f)
+#define VOXLPM_INA231_VREG_I_LSB		(VOXLPM_INA231_VREG_MAX_AMPS/32768.0f)
+
+#define POWER_I2C I2C1 // Comment this out to disable I2C
+#define POWER_I2C_PIN_SDA GPIO_PIN(GPIOB, 9) // PB.09
+#define POWER_I2C_SDA_AF GPIO_AF4
+#define POWER_I2C_PIN_SCL GPIO_PIN(GPIOB, 8) // PB.08
+#define POWER_I2C_SCL_AF GPIO_AF4
+#define POWER_I2C_TIMING_REGISTER 0x20707DBDU // 100KHz clock
+#define POWER_I2C_SLAVE_ADDRESS VOXLPM_INA231_ADDR_VBATT // or 0x45
+
+
+// Audio
+// #warning Disable audio and haptics
+// #define HAPTIC_GPIO                   GPIO_PIN(GPIOC, 12) // PC.12
+
+// To avoid change in modelsize, todo: remove me
+#define STORAGE_BLUETOOTH
+
+// Millisecond timer
+#define MS_TIMER                        TIM14
+#define MS_TIMER_IRQn                   TIM8_TRG_COM_TIM14_IRQn
+#define MS_TIMER_IRQHandler             TIM8_TRG_COM_TIM14_IRQHandler
+
+// Mixer scheduler timer
+#warning check bus / freq
+#define MIXER_SCHEDULER_TIMER                TIM12
+#define MIXER_SCHEDULER_TIMER_FREQ           (PERI1_FREQUENCY * TIMER_MULT_APB1)
+#define MIXER_SCHEDULER_TIMER_IRQn           TIM8_BRK_TIM12_IRQn
+#define MIXER_SCHEDULER_TIMER_IRQHandler     TIM8_BRK_TIM12_IRQHandler
