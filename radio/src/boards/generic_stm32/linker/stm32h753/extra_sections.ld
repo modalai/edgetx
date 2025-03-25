@@ -39,20 +39,4 @@ _stext_iram = LOADADDR(.iram);
   _e_dram = .;
 } > RAM_D2
 
-.sdram (NOLOAD) :
-{
-  . = ALIGN(4);
-  *(.sdram)
-  *(.sdram*)
-  *(.sdram_rodata)
-  *(.sdram_rodata*)
-
-  . = ALIGN(4);
-  _esdram = .;
-
-  /* Reserve heap space in RAM */
-  . = . + MIN_HEAP_SIZE;
-  . = ALIGN(4);
-} > SDRAM
-
-PROVIDE(_heap_start = _esdram);
+PROVIDE(_heap_start = _e_dram);
