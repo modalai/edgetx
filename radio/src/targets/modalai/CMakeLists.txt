@@ -178,9 +178,9 @@ set(GUI_SRC ${GUI_SRC}
 
 # There has to be a better way...
 # In C23 there is now support for #embed...
-#set(FIRMWARE_SRC
-#  ${FIRMWARE_SRC}
-#  targets/common/arm/loadboot.cpp
-#  )
+set(FIRMWARE_SRC
+  ${FIRMWARE_SRC}
+  targets/common/arm/loadboot.cpp
+)
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})
