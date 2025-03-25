@@ -36,6 +36,8 @@
  #else
   #include "yaml_datastructs_x10.cpp"
  #endif
+#elif defined(PCBM207)
+ #include "yaml_datastructs_128x64.cpp"
 #elif defined(PCBPL18)
  #if defined(RADIO_NB4P)
   #include "yaml_datastructs_nb4p.cpp"

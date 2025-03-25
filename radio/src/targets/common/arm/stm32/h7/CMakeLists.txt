@@ -133,6 +133,10 @@ elseif(CPU_TYPE_FULL STREQUAL STM32H7S7xx)
   set(CMSIS_SRC ${CMSIS_SRC}
     boards/generic_stm32/startup/startup_stm32h7s7xx.s
   )
+elseif(CPU_TYPE_FULL STREQUAL STM32H753II)
+  set(CMSIS_SRC ${CMSIS_SRC}
+  boards/generic_stm32/startup/startup_stm32h753xx.s
+  )
 else()
   message("### ERROR ####: ${CPU_TYPE_FULL}")
 endif()
