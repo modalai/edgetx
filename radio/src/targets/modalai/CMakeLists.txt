@@ -8,7 +8,7 @@ option(AUTOUPDATE "Auto update internal chips from SD" OFF)
 option(BIND_KEY "Enable bind button" OFF)
 option(BLUETOOTH "FrSky BT module support" OFF)
 
-set(USE_RTC_CLOCK NO)
+set(USE_RTC_CLOCK YES)
 set(HARDWARE_EXTERNAL_MODULE YES)
 set(TARGET_DIR modalai)
 
