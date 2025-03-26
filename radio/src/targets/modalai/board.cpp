@@ -170,9 +170,9 @@ void boardInit()
 #endif
 
 #if defined(PWR_BUTTON_PRESS) // TODO: re-enable
-  // if (WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
-    // pwrOn();
-  // }
+  if (WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
+    pwrOn();
+  }
 #endif
 
 #if defined(USB_CHARGER)
@@ -180,7 +180,6 @@ void boardInit()
 #endif
 
 #if defined(RTCLOCK)
-  #error RTC
   rtcInit(); // RTC must be initialized before rambackupRestore() is called
 #endif
 

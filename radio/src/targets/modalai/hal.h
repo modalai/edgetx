@@ -21,11 +21,10 @@
 
 #pragma once
 
-#warning TODO: Verify/Set these numbers
-#define CPU_FREQ                600000000
+#define CPU_FREQ                400000000
 
-#define PERI1_FREQUENCY         150000000
-#define PERI2_FREQUENCY         150000000
+#define PERI1_FREQUENCY         100000000
+#define PERI2_FREQUENCY         100000000
 #define TIMER_MULT_APB1         2
 #define TIMER_MULT_APB2         2
 
@@ -50,10 +49,10 @@
 
 // Keys
 
-#define KEYS_GPIO_REG_PAGEUP          GPIOD
-#define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_14 // PD.14
-#define KEYS_GPIO_REG_PAGEDN          GPIOH
-#define KEYS_GPIO_PIN_PAGEDN          LL_GPIO_PIN_6 // PH.06
+#define KEYS_GPIO_REG_PAGEUP          GPIOH
+#define KEYS_GPIO_PIN_PAGEUP          LL_GPIO_PIN_6 // PH.06
+#define KEYS_GPIO_REG_PAGEDN          GPIOD
+#define KEYS_GPIO_PIN_PAGEDN          LL_GPIO_PIN_14 // PD.14
 #define KEYS_GPIO_REG_EXIT            GPIOD
 #define KEYS_GPIO_PIN_EXIT            LL_GPIO_PIN_11 // PD.11
 #define KEYS_GPIO_REG_ENTER           GPIOB
@@ -71,7 +70,7 @@
 #define ROTARY_ENCODER_GPIO              GPIOC
 #define ROTARY_ENCODER_GPIO_PIN_A        LL_GPIO_PIN_1 // PC.01
 #define ROTARY_ENCODER_GPIO_PIN_B        LL_GPIO_PIN_2 // PC.02
-#define ROTARY_ENCODER_POSITION()        (((ROTARY_ENCODER_GPIO->IDR >> 8) & 0x02) + ((ROTARY_ENCODER_GPIO->IDR >> 12) & 0x01))
+#define ROTARY_ENCODER_POSITION()        (((ROTARY_ENCODER_GPIO->IDR >> 1) & 0x02) + ((ROTARY_ENCODER_GPIO->IDR >> 1) & 0x01))
 #define ROTARY_ENCODER_EXTI_LINE1        LL_EXTI_LINE_12
 #define ROTARY_ENCODER_EXTI_LINE2        LL_EXTI_LINE_9
 #define ROTARY_ENCODER_EXTI_PORT         LL_SYSCFG_EXTI_PORTC
@@ -149,6 +148,7 @@
 #warning consider changing sample time (seems low)
 #define ADC_SAMPTIME                  LL_ADC_SAMPLINGTIME_8CYCLES_5
 #define ADC_CHANNEL_RTC_BAT           LL_ADC_CHANNEL_VBAT
+#define ADC_VREF_PREC2                330
 
 #define ADC_MAIN                      ADC1
 #define ADC_DMA                       DMA1
@@ -176,7 +176,6 @@
 #define ADC_GPIOC_PINS                (ADC_GPIO_PIN_STICK_LH)
 #define ADC_GPIOF_PINS                (ADC_GPIO_PIN_STICK_RH)
 // !#define ADC_CHANNEL_BATT              LL_ADC_CHANNEL_10
-#define ADC_VREF_PREC2                330
 #warning verify adc direction
 #define ADC_DIRECTION {-1, 1, 1, -1, -1, 1, 1, 1}
 
