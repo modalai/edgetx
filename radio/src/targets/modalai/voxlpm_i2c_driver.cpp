@@ -11,6 +11,7 @@
 #include "boards/generic_stm32/analog_inputs.h"
 #include "boards/generic_stm32/rgb_leds.h"
 
+// TODO: Make this more portable using the edgetx stm32_i2c libs
 
 #if defined(POWER_I2C)
 
@@ -151,7 +152,7 @@ void voxl_pm_init()
     gpio_init_af(POWER_I2C_PIN_SCL, POWER_I2C_SCL_AF, GPIO_PIN_SPEED_HIGH);
 
     // RCC->APB1LENR |= 0x800000; // Turn on I2C3 Peripheral Clock
-    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C3);
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
 
     POWER_I2C->TIMINGR = POWER_I2C_TIMING_REGISTER; // Set timing values
     // POWER_I2C->CR1 |= I2C_CR1_ANFOFF; // Turn off analog filter
