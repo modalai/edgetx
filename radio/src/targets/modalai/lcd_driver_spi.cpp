@@ -31,50 +31,44 @@
  #include "hal/abnormal_reboot.h"
  #include "timers_driver.h"
  
- #if !defined(BOOT)
-   #include "edgetx.h"
- #endif
+#if !defined(BOOT)
+ #include "edgetx.h"
+#endif
  
- #if defined(OLED_SCREEN)
-   #define LCD_CONTRAST_OFFSET            0
- #elif defined(RADIO_FAMILY_JUMPER_T12) || defined(MANUFACTURER_RADIOMASTER) || defined(RADIO_COMMANDO8) || defined(RADIO_TPRO) || defined(RADIO_T12MAX) || defined(RADIO_V12) || defined(RADIO_V14)
-   #define LCD_CONTRAST_OFFSET            -10
- #else
-   #define LCD_CONTRAST_OFFSET            160
- #endif
- #define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
- #define WAIT_FOR_DMA_END()             do { } while (lcd_busy)
+#define LCD_CONTRAST_OFFSET            -10
+#define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
+#define WAIT_FOR_DMA_END()             do { } while (lcd_busy)
+
+#define LCD_NCS_HIGH()  gpio_set(LCD_NCS_GPIO)
+#define LCD_NCS_LOW()   gpio_clear(LCD_NCS_GPIO)
+
+#define LCD_A0_HIGH()   gpio_set(LCD_A0_GPIO)
+#define LCD_A0_LOW()    gpio_clear(LCD_A0_GPIO)
+
+#define LCD_RST_HIGH()  gpio_set(LCD_RST_GPIO)
+#define LCD_RST_LOW()   gpio_clear(LCD_RST_GPIO)
+
+bool lcdInitFinished = false;
+void lcdInitFinish();
  
- #define LCD_NCS_HIGH()  gpio_set(LCD_NCS_GPIO)
- #define LCD_NCS_LOW()   gpio_clear(LCD_NCS_GPIO)
- 
- #define LCD_A0_HIGH()   gpio_set(LCD_A0_GPIO)
- #define LCD_A0_LOW()    gpio_clear(LCD_A0_GPIO)
- 
- #define LCD_RST_HIGH()  gpio_set(LCD_RST_GPIO)
- #define LCD_RST_LOW()   gpio_clear(LCD_RST_GPIO)
- 
- bool lcdInitFinished = false;
- void lcdInitFinish();
- 
- void lcdWriteCommand(uint8_t byte)
- {
-   LCD_A0_LOW();
-   LCD_NCS_LOW();
-   while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
-     // Wait
-   }
-   //(void)LCD_SPI->RXDR; // Clear receive
-   *((volatile uint8_t *)&LCD_SPI->TXDR) = byte; // Must limit to 8-bit bus transaction
-   LCD_SPI->CR1 |= SPI_CR1_CSTART;
-   while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
-     // Wait
-   }
-   LCD_NCS_HIGH();
- }
+void lcdWriteCommand(uint8_t byte)
+{
+  LCD_A0_LOW();
+  LCD_NCS_LOW();
+  while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
+   // Wait
+  }
+  //(void)LCD_SPI->RXDR; // Clear receive
+  *((volatile uint8_t *)&LCD_SPI->TXDR) = byte; // Must limit to 8-bit bus transaction
+  LCD_SPI->CR1 |= SPI_CR1_CSTART;
+  while ((LCD_SPI->SR & SPI_SR_TXC) == 0) {
+   // Wait
+  }
+  LCD_NCS_HIGH();
+}
    
- void lcdHardwareInit()
- {
+void lcdHardwareInit()
+{
   stm32_spi_enable_clock(LCD_SPI);
   gpio_init_af(LCD_MOSI_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_VERY_HIGH);
   gpio_init_af(LCD_CLK_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_VERY_HIGH);
@@ -101,17 +95,17 @@
   LCD_DMA_Stream->CR =  DMA_SxCR_PL_0 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;
   LCD_DMA_Stream->PAR = (uint32_t)&LCD_SPI->TXDR;
   LL_DMA_SetPeriphRequest(LCD_DMA, LCD_DMA_Stream_Num, LL_DMAMUX1_REQ_SPI4_TX);
- #if LCD_W == 128
+#if LCD_W == 128
   LCD_DMA_Stream->NDTR = LCD_W;
- #else
+#else
   LCD_DMA_Stream->M0AR = (uint32_t)displayBuf;
   LCD_DMA_Stream->NDTR = LCD_W*LCD_H/8*4;
- #endif
+#endif
   LCD_DMA_Stream->FCR = DMA_SxFCR_DMDIS | DMA_SxFCR_FTH_0;
 
   NVIC_SetPriority(LCD_DMA_Stream_IRQn, 7);
   NVIC_EnableIRQ(LCD_DMA_Stream_IRQn);
- }
+}
  
  void lcdStart()
  {

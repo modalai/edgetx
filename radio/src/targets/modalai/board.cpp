@@ -80,31 +80,8 @@ void boardInit()
 
   // SCB_EnableDCache();
 
-  RCC->D3CFGR = (0x5 << 4);
-  RCC->APB4ENR |= RCC_APB4ENR_SPI6EN;
-
-  // Setup pll1
-  RCC->PLL1DIVR |= (0xA0000U & RCC_PLL1DIVR_Q1_Msk); // Set prescaler to 6 (~21 MHz after scaling)
-  RCC->CR |= RCC_CR_PLL1ON;
-  while (RCC->CR & RCC_CR_PLL1ON == 0) { }
-
-  // Setup pll2
-  RCC->PLLCKSELR &= ~(0x10000 & RCC_PLLCKSELR_DIVM2);
-  RCC->PLLCKSELR |= (0x10000 & RCC_PLLCKSELR_DIVM2);
-  // DIVN2 = 200
-  // DIVP2 = 8
-  RCC->PLL2DIVR |= ((0x1000 & RCC_PLL2DIVR_P2) | (0xC8 & RCC_PLL2DIVR_N2));
-  RCC->CR |= RCC_CR_PLL2ON;
-  while (RCC->CR & RCC_CR_PLL2ON == 0) { }
-
-  // Select UART clock source as HSI:
-  RCC->D2CCIP2R &= ~(0x18);
-  RCC->D2CCIP2R |= 0x18;
-
 #if defined(POWER_I2C)
-
   voxl_pm_init();
-
 #endif
 
 
@@ -155,7 +132,7 @@ void boardInit()
   lcdInit(); // delaysInit() must be called before
 
   timersInit();
-  // usbInit();
+  usbInit();
 
 #if defined(DEBUG) && defined(AUX_SERIAL)
   serialSetMode(SP_AUX1, UART_MODE_DEBUG);                // indicate AUX1 is used
