@@ -31,11 +31,12 @@
 #define TELEMETRY_EXTI_PRIO             0 // required for soft serial
 
 /* Timers Allocation:
+ * TIM7 = Rotary Encoder
+ *
  * TIM5 = Backlight
- * TIM7 = 2 MHz counter
  *
  * TIM12 = Mixer scheduler
- * TIM14 = 5 ms counter
+ * TIM14 = 5 ms counter (unused)
  */
 
 /* DMA Allocation:
@@ -71,8 +72,8 @@
 #define ROTARY_ENCODER_GPIO_PIN_A        LL_GPIO_PIN_1 // PC.01
 #define ROTARY_ENCODER_GPIO_PIN_B        LL_GPIO_PIN_2 // PC.02
 #define ROTARY_ENCODER_POSITION()        (((ROTARY_ENCODER_GPIO->IDR >> 1) & 0x02) + ((ROTARY_ENCODER_GPIO->IDR >> 1) & 0x01))
-#define ROTARY_ENCODER_EXTI_LINE1        LL_EXTI_LINE_12
-#define ROTARY_ENCODER_EXTI_LINE2        LL_EXTI_LINE_9
+#define ROTARY_ENCODER_EXTI_LINE1        LL_EXTI_LINE_1
+#define ROTARY_ENCODER_EXTI_LINE2        LL_EXTI_LINE_2
 #define ROTARY_ENCODER_EXTI_PORT         LL_SYSCFG_EXTI_PORTC
 #define ROTARY_ENCODER_EXTI_SYS_LINE1    LL_SYSCFG_EXTI_LINE1
 #define ROTARY_ENCODER_EXTI_SYS_LINE2    LL_SYSCFG_EXTI_LINE2
@@ -87,34 +88,12 @@
 #endif
 #define ROTARY_ENCODER_INVERTED
 
-#define ROTARY_ENCODER_TIMER            TIM5
-#define ROTARY_ENCODER_TIMER_IRQn       TIM5_IRQn
-#define ROTARY_ENCODER_TIMER_IRQHandler TIM5_IRQHandler
+#define ROTARY_ENCODER_TIMER            TIM7
+#define ROTARY_ENCODER_TIMER_IRQn       TIM7_IRQn
+#define ROTARY_ENCODER_TIMER_IRQHandler TIM7_IRQHandler
 
-// Trims
-// #warning Disconnect all of these
-// #define TRIMS_GPIO_REG_LHL            GPIOH
-// #define TRIMS_GPIO_PIN_LHL            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_LHR            GPIOH
-// #define TRIMS_GPIO_PIN_LHR            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_LVD            GPIOH
-// #define TRIMS_GPIO_PIN_LVD            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_LVU            GPIOH
-// #define TRIMS_GPIO_PIN_LVU            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_RVD            GPIOH
-// #define TRIMS_GPIO_PIN_RVD            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_RHL            GPIOH
-// #define TRIMS_GPIO_PIN_RHL            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_RVU            GPIOH
-// #define TRIMS_GPIO_PIN_RVU            LL_GPIO_PIN_15 // PH.15
-// #define TRIMS_GPIO_REG_RHR            GPIOH
-// #define TRIMS_GPIO_PIN_RHR            LL_GPIO_PIN_15 // PH.15
 
 // Switches
-// #define STORAGE_SWITCH_A
-// #define HARDWARE_SWITCH_A
-// #define SWITCHES_GPIO_REG_A           GPIOG
-// #define SWITCHES_GPIO_PIN_A           LL_GPIO_PIN_2  // PG.02
 
 #define STORAGE_SWITCH_B
 #define HARDWARE_SWITCH_B
@@ -130,11 +109,6 @@
 #define SWITCHES_GPIO_REG_C_H         GPIOH
 #define SWITCHES_GPIO_PIN_C_H         LL_GPIO_PIN_12  // PH.12
 
-// #define STORAGE_SWITCH_D
-// #define HARDWARE_SWITCH_D
-// #define SWITCHES_GPIO_REG_D           GPIOG
-// #define SWITCHES_GPIO_PIN_D           LL_GPIO_PIN_3  // PG.3
-
 #define STORAGE_SWITCH_E
 #define HARDWARE_SWITCH_E
 #define SWITCHES_GPIO_REG_E           GPIOE
@@ -145,7 +119,8 @@
 #define SWITCHES_GPIO_REG_F           GPIOF
 #define SWITCHES_GPIO_PIN_F           LL_GPIO_PIN_10 // PF.10
 
-#warning consider changing sample time (seems low)
+// Sticks and pots
+
 #define ADC_SAMPTIME                  LL_ADC_SAMPLINGTIME_8CYCLES_5
 #define ADC_CHANNEL_RTC_BAT           LL_ADC_CHANNEL_VBAT
 #define ADC_VREF_PREC2                330
@@ -176,7 +151,6 @@
 #define ADC_GPIOC_PINS                (ADC_GPIO_PIN_STICK_LH)
 #define ADC_GPIOF_PINS                (ADC_GPIO_PIN_STICK_RH)
 // !#define ADC_CHANNEL_BATT              LL_ADC_CHANNEL_10
-#warning verify adc direction
 #define ADC_DIRECTION {-1, 1, 1, -1, -1, 1, 1, 1}
 
 // PWR and LED driver
@@ -187,7 +161,6 @@
 
 #define USE_LEDS
 #ifdef USE_LEDS
-#warning remove these later
 #define STATUS_LEDS
 #define GPIO_LED_GPIO_ON              gpio_clear
 #define GPIO_LED_GPIO_OFF             gpio_set
@@ -197,14 +170,14 @@
 #endif // USE_LEDS
 
 // Internal Module
-#define INTMODULE_BOOTCMD_GPIO           GPIO_PIN(GPIOI, 6) // PI.06 (Disconnected)
-#define INTMODULE_PWR_GPIO               GPIO_PIN(GPIOI, 7) // PI.07 (Disconnected)
+#define INTMODULE_BOOTCMD_GPIO           GPIO_PIN(GPIOE, 13) // PE.13 (Disconnected)
+#define INTMODULE_PWR_GPIO               GPIO_PIN(GPIOG, 8) // PG.08 (Disconnected)
 #define INTMODULE_BOOTCMD_DEFAULT     0 // RESET
-#define INTMODULE_TX_GPIO                GPIO_PIN(GPIOC, 6) // PC.06
-#define INTMODULE_RX_GPIO                GPIO_PIN(GPIOC, 7) // PC.07
-#define INTMODULE_USART                  USART6
-#define INTMODULE_USART_IRQHandler       USART6_IRQHandler
-#define INTMODULE_USART_IRQn             USART6_IRQn
+#define INTMODULE_TX_GPIO                GPIO_PIN(GPIOB, 13) // PB.13
+#define INTMODULE_RX_GPIO                GPIO_PIN(GPIOB, 12) // PB.12
+#define INTMODULE_USART                  UART5
+#define INTMODULE_USART_IRQHandler       UART5_IRQHandler
+#define INTMODULE_USART_IRQn             UART5_IRQn
 // #define INTMODULE_DMA                    DMA2
 // #define INTMODULE_DMA_STREAM             LL_DMA_STREAM_7
 // #define INTMODULE_DMA_STREAM_IRQ         DMA2_Stream7_IRQn
@@ -225,7 +198,7 @@
   #define USB_CHARGER_GPIO              GPIO_PIN(GPIOB, 5)
 #endif
 
-#warning can probably increase this
+// TODO: increase
 #define SPORT_MAX_BAUDRATE            400000
 
 // USB
@@ -235,7 +208,6 @@
 #define USB_GPIO_AF                     GPIO_AF10
 
 // BackLight
-#warning Backlight settings (check bus and frequency)
 #define BACKLIGHT_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
 #define BACKLIGHT_TIMER               TIM5
 #define BACKLIGHT_GPIO                GPIO_PIN(GPIOH, 10) // PH.10
@@ -354,7 +326,7 @@
 #define VOXLPM_INA231_VBAT_I_LSB		(VOXLPM_INA231_VBAT_MAX_AMPS/32768.0f)
 #define VOXLPM_INA231_VREG_I_LSB		(VOXLPM_INA231_VREG_MAX_AMPS/32768.0f)
 
-// #define POWER_I2C I2C1 // Comment this out to disable I2C
+#define POWER_I2C I2C1 // Comment this out to disable I2C
 #define POWER_I2C_PIN_SDA GPIO_PIN(GPIOB, 9) // PB.09
 #define POWER_I2C_SDA_AF GPIO_AF4
 #define POWER_I2C_PIN_SCL GPIO_PIN(GPIOB, 8) // PB.08
@@ -376,7 +348,6 @@
 #define MS_TIMER_IRQHandler             TIM8_TRG_COM_TIM14_IRQHandler
 
 // Mixer scheduler timer
-#warning check bus / freq
 #define MIXER_SCHEDULER_TIMER                TIM12
 #define MIXER_SCHEDULER_TIMER_FREQ           (PERI1_FREQUENCY * TIMER_MULT_APB1)
 #define MIXER_SCHEDULER_TIMER_IRQn           TIM8_BRK_TIM12_IRQn

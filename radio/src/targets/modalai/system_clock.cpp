@@ -19,6 +19,7 @@
  * GNU General Public License for more details.
  */
 
+#include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_rcc.h"
 #include "stm32h7xx_hal_pwr.h"
 #include "stm32h7xx_hal_pwr_ex.h"
@@ -54,7 +55,6 @@ extern "C" BOOTSTRAP
 void SystemClock_Config()
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Supply configuration update enable
   */
@@ -87,55 +87,46 @@ void SystemClock_Config()
     while(1) {};
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+  /* Set Sys & AHB & APB1 & APB2 & APB4  prescaler */
+  LL_RCC_SetSysPrescaler(LL_RCC_SYSCLK_DIV_1);
+  LL_RCC_SetAHBPrescaler(LL_RCC_AHB_DIV_2);
+  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
+  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_2);
+  LL_RCC_SetAPB3Prescaler(LL_RCC_APB3_DIV_2);
+  LL_RCC_SetAPB4Prescaler(LL_RCC_APB4_DIV_2);
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    while(1) {};
+  /* Set PLL1 as System Clock Source */
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1);
+  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1) {
   }
 
-  /** Enables the Clock Security System
-  */
-  HAL_RCC_EnableCSS();
-
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
-  PeriphClkInitStruct.PLL2.PLL2M = 4;
-  PeriphClkInitStruct.PLL2.PLL2N = 128;
-  PeriphClkInitStruct.PLL2.PLL2P = 2;
-  PeriphClkInitStruct.PLL2.PLL2Q = 32;
-  PeriphClkInitStruct.PLL2.PLL2R = 20;
-  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
-  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
-  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-  PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PLL2;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    while(1) {};
+  /* PLL2 configuration and activation */
+  LL_RCC_PLL2R_Enable();
+  LL_RCC_PLL2Q_Enable();
+  LL_RCC_PLL2FRACN_Disable();
+  LL_RCC_PLL2_SetVCOInputRange(LL_RCC_PLLINPUTRANGE_4_8);
+  LL_RCC_PLL2_SetVCOOutputRange(LL_RCC_PLLVCORANGE_WIDE);
+  LL_RCC_PLL2_SetM(4);
+  LL_RCC_PLL2_SetN(128);
+  LL_RCC_PLL2_SetP(2);
+  LL_RCC_PLL2_SetQ(8);
+  LL_RCC_PLL2_SetR(20);
+  LL_RCC_PLL2_Enable();
+  while (LL_RCC_PLL2_IsReady() != 1) {
   }
 
-//  PeriphClkInitStruct.PLL3.PLL3M = 4;
-//  PeriphClkInitStruct.PLL3.PLL3N = 128;
-//  PeriphClkInitStruct.PLL3.PLL3P = 2;
-//  PeriphClkInitStruct.PLL3.PLL3Q = 8;
-//  PeriphClkInitStruct.PLL3.PLL3R = 20;
-//  PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_2;
-//  PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
-//  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-//  {
-//    while(1) {};
-//  }
+  LL_RCC_PLL3R_Enable();
+  LL_RCC_PLL3FRACN_Disable();
+  LL_RCC_PLL3_SetVCOInputRange(LL_RCC_PLLINPUTRANGE_4_8);
+  LL_RCC_PLL3_SetVCOOutputRange(LL_RCC_PLLVCORANGE_WIDE);
+  LL_RCC_PLL3_SetM(4);
+  LL_RCC_PLL3_SetN(128);
+  LL_RCC_PLL3_SetP(2);
+  LL_RCC_PLL3_SetQ(8);
+  LL_RCC_PLL3_SetR(20);
+  LL_RCC_PLL3_Enable();
+  while (LL_RCC_PLL3_IsReady() != 1) {
+  }
 
   /** Enables the Clock Security System
   */
@@ -149,10 +140,17 @@ void SystemClock_Config()
   while (LL_RCC_PLL3_IsReady() != 1) {
   }
 
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     while(1) {};
   }
+
+  //  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+
+  // Only required if using Async ADC clock ???
+  LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_CLKP);
+  LL_RCC_SetSPIClockSource(LL_RCC_SPI45_CLKSOURCE_PCLK2);
 }

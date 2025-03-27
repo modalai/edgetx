@@ -20,13 +20,7 @@ void Reset_Handler()
     "ldr sp, =_estack \n"
   );
 
-#if defined(BOOT)
-  asm inline (
-    "bl SystemClock_Config \n"
-    "bl CPU_CACHE_Enable \n"
-  );
-#endif
-
+  // TODO: Clock config should be first so this will go faster
   // Copy code into normal RAM
   asm inline (
     "ldr r0, =_stext    \n"
@@ -35,12 +29,12 @@ void Reset_Handler()
     "bl naked_copy      \n"
   );
 
-#if defined(BOOT)
+// #if defined(BOOT)
   asm inline (
     "bl SystemInit \n"
     "bl MPU_Init \n"
   );
-#endif
+// #endif
 
   // Copy / setup ISR vector
   asm inline (
@@ -50,6 +44,14 @@ void Reset_Handler()
     "bl naked_copy      \n"
     "bl set_vtor        \n"
   );
+
+#warning Clock/Cache config should stay in the bootloader only
+// #if defined(BOOT)
+  asm inline (
+    "bl SystemClock_Config \n"
+    "bl CPU_CACHE_Enable \n"
+  );
+// #endif
 
   // Copy code into fast RAM
   asm inline (
