@@ -495,7 +495,7 @@ void FMC_IRQHandler(void){asm("BKPT");}
 // void TIM5_IRQHandler(void){asm("BKPT");}
 void SPI3_IRQHandler(void){asm("BKPT");}
 //void UART5_IRQHandler(void){asm("BKPT");}
-void TIM7_IRQHandler(void){asm("BKPT");}
+//void TIM7_IRQHandler(void){asm("BKPT");}
 //void DMA2_Stream0_IRQHandler(void){asm("BKPT");}
 void DMA2_Stream2_IRQHandler(void){asm("BKPT");}
 void DMA2_Stream3_IRQHandler(void){asm("BKPT");}
