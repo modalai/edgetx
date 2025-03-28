@@ -67,6 +67,24 @@ extern "C" void initialise_monitor_handles();
   #include "voxlpm_i2c_driver.h"
 #endif
 
+bool boardBLStartCondition()
+{
+//  gpio_init(BL_KEY, GPIO_IN, 0);
+//  return gpio_read(BL_KEY);
+	return false;
+}
+
+void boardBLPreJump()
+{
+}
+
+void boardBLInit()
+{
+	// TODO: register SD card or internal flash for DFU
+    // It may be prefered to only update via SD card firmware files
+	// usbRegisterDFUMedia((void*)extflash_dfu_media);
+}
+
 
 void boardInit()
 {
@@ -172,6 +190,8 @@ void boardInit()
 
 void boardOff()
 {
+  // Since we have no software off switch, we should never reach this point
+
 #if defined(STATUS_LEDS) && !defined(BOOT)
   ledOff();
 #endif
