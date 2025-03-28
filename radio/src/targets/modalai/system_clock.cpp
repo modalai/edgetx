@@ -140,13 +140,10 @@ void SystemClock_Config()
   while (LL_RCC_PLL3_IsReady() != 1) {
   }
 
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
-  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    while(1) {};
+  LL_RCC_HSI48_Enable();
+  while (LL_RCC_HSI48_IsReady() != 1) {
   }
+  LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_HSI48);
 
   //  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
 
