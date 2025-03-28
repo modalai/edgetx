@@ -121,7 +121,7 @@ extern "C" void OTG_FS_IRQHandler()
 }
 #endif
 
-void usbInit()
+void    usbInit()
 {
 #if defined(STM32H7)
   HAL_PWREx_EnableUSBVoltageDetector();
