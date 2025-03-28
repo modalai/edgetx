@@ -45,7 +45,7 @@
 /* USER CODE END PV */
 
 PCD_HandleTypeDef hpcd_USB_OTG;
-void Error_Handler(void){}
+void Error_Handler(void) { }
 
 /* External functions --------------------------------------------------------*/
 
