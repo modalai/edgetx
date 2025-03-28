@@ -23,3 +23,5 @@ output/
 .devcontainer/devcontainer-lock.json
 .bin
 .elf
+**.bin
+**.elf
