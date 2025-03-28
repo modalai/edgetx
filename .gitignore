@@ -21,3 +21,5 @@ CMakeUserPresets.json
 output/
 *.dmg
 .devcontainer/devcontainer-lock.json
+.bin
+.elf
