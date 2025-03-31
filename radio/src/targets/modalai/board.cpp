@@ -22,6 +22,8 @@
 #include "stm32_hal_ll.h"
 #include "stm32_gpio.h"
 #include "stm32_ws2812.h"
+#include "bootloader/boot.h"
+#include "stm32_gpio.h"
 
 #include "hal/switch_driver.h"
 #include "hal/module_port.h"
@@ -57,8 +59,6 @@
 
 HardwareOptions hardwareOptions;
 
-#if !defined(BOOT)
-
 #if defined(SEMIHOSTING)
 extern "C" void initialise_monitor_handles();
 #endif
@@ -67,11 +67,13 @@ extern "C" void initialise_monitor_handles();
   #include "voxlpm_i2c_driver.h"
 #endif
 
+// SYS key (D.10)
+#define BL_KEY GPIO_PIN(GPIOD, 10)
+
 bool boardBLStartCondition()
 {
-//  gpio_init(BL_KEY, GPIO_IN, 0);
-//  return gpio_read(BL_KEY);
-	return false;
+    gpio_init(BL_KEY, GPIO_IN_PU, GPIO_PIN_SPEED_LOW);
+    return !gpio_read(BL_KEY);
 }
 
 void boardBLPreJump()
@@ -114,7 +116,7 @@ void boardInit()
      // Charging can make a buzzing noise
      gpio_init(AUDIO_MUTE_GPIO, GPIO_OUT, GPIO_PIN_SPEED_LOW);
      gpio_set(AUDIO_MUTE_GPIO);
- #endif
+#endif
     while (usbPlugged()) {
       delay_ms(1000);
     }
@@ -186,7 +188,6 @@ void boardInit()
   lcdSetContrast(true);
 #endif
 }
-#endif
 
 void boardOff()
 {
