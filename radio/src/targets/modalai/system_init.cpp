@@ -45,7 +45,6 @@ void Reset_Handler()
     "bl set_vtor        \n"
   );
 
-#warning Clock/Cache config should stay in the bootloader only
 // #if defined(BOOT)
   asm inline (
     "bl SystemClock_Config \n"
