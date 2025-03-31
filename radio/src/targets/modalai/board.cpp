@@ -82,9 +82,9 @@ void boardBLPreJump()
 
 void boardBLInit()
 {
-	// TODO: register SD card or internal flash for DFU
+    // TODO: register SD card or internal flash for DFU
     // It may be prefered to only update via SD card firmware files
-	// usbRegisterDFUMedia((void*)extflash_dfu_media);
+    // usbRegisterDFUMedia((void*)extflash_dfu_media);
 }
 
 
