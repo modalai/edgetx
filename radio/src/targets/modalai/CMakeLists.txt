@@ -111,9 +111,10 @@ endif()
 # Bootloader board library
 add_library(board_bl OBJECT EXCLUDE_FROM_ALL
   ${BOARD_COMMON_SRC}
+  ${TARGET_SRC_DIR}/system_clock.cpp
   ${TARGET_SRC_DIR}/bootloader/boot_menu.cpp
 )
-# add_dependencies(board_bl ${BITMAPS_TARGET})
+add_dependencies(board_bl ${BITMAPS_TARGET})
 set(BOOTLOADER_SRC ${BOOTLOADER_SRC} $<TARGET_OBJECTS:board_bl>)
 
 # Firmware board library
