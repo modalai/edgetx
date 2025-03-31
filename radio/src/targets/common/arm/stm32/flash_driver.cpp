@@ -249,6 +249,8 @@ uint32_t isFirmwareStart(const uint8_t * buffer)
   if ((block[0] & 0xFFFF0000) != 0x20020000) {
     return 0;
   }
+// The following is board specific code! (so is the above line but our layout conforms with that)
+#ifndef PCBMODALAI
   // First ISR pointer in FLASH
   if ((block[1] & 0xF0000000) != 0x90000000) {
     return 0;
@@ -257,6 +259,7 @@ uint32_t isFirmwareStart(const uint8_t * buffer)
   if ((block[2] & 0xF0000000) != 0xC0000000) {
     return 0;
   }
+#endif
 #else
   // Stack pointer in RAM
   if ((block[0] & 0xFFFC0000) != 0x20000000) {

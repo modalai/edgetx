@@ -173,11 +173,17 @@
 #define INTMODULE_BOOTCMD_GPIO           GPIO_PIN(GPIOE, 13) // PE.13 (Disconnected)
 #define INTMODULE_PWR_GPIO               GPIO_PIN(GPIOG, 8) // PG.08 (Disconnected)
 #define INTMODULE_BOOTCMD_DEFAULT     0 // RESET
-#define INTMODULE_TX_GPIO                GPIO_PIN(GPIOB, 13) // PB.13
-#define INTMODULE_RX_GPIO                GPIO_PIN(GPIOB, 12) // PB.12
-#define INTMODULE_USART                  UART5
-#define INTMODULE_USART_IRQHandler       UART5_IRQHandler
-#define INTMODULE_USART_IRQn             UART5_IRQn
+// Alternate pin assignment depending on the side of M0207 we use
+//#define INTMODULE_TX_GPIO                GPIO_PIN(GPIOB, 13) // PB.13
+//#define INTMODULE_RX_GPIO                GPIO_PIN(GPIOB, 12) // PB.12
+//#define INTMODULE_USART                  UART5
+//#define INTMODULE_USART_IRQHandler       UART5_IRQHandler
+//#define INTMODULE_USART_IRQn             UART5_IRQn
+#define INTMODULE_TX_GPIO                GPIO_PIN(GPIOE, 1) // PE.01
+#define INTMODULE_RX_GPIO                GPIO_PIN(GPIOE, 0) // PE.00
+#define INTMODULE_USART                  UART8
+#define INTMODULE_USART_IRQHandler       UART8_IRQHandler
+#define INTMODULE_USART_IRQn             UART8_IRQn
 // #define INTMODULE_DMA                    DMA2
 // #define INTMODULE_DMA_STREAM             LL_DMA_STREAM_7
 // #define INTMODULE_DMA_STREAM_IRQ         DMA2_Stream7_IRQn
