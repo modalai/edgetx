@@ -133,23 +133,23 @@
 #define ADC_DMA_STREAM_IRQHandler     DMA1_Stream0_IRQHandler
 #define HARDWARE_POT1
 #define HARDWARE_POT2
-#define ADC_GPIO_PIN_STICK_RV         LL_GPIO_PIN_1  // PB.01
-#define ADC_GPIO_PIN_STICK_RH         LL_GPIO_PIN_12  // PF.12
-#define ADC_GPIO_PIN_STICK_LV         LL_GPIO_PIN_1  // PA.01
-#define ADC_GPIO_PIN_STICK_LH         LL_GPIO_PIN_0  // PC.00
-#define ADC_CHANNEL_STICK_RV          LL_ADC_CHANNEL_5  // ADC1_CH5
-#define ADC_CHANNEL_STICK_RH          LL_ADC_CHANNEL_6  // ADC1_CH6
-#define ADC_CHANNEL_STICK_LV          LL_ADC_CHANNEL_17  // ADC1_CH17
-#define ADC_CHANNEL_STICK_LH          LL_ADC_CHANNEL_10  // ADC1_CH10
+#define ADC_GPIO_PIN_STICK_LV         LL_GPIO_PIN_1  // PB.01
+#define ADC_GPIO_PIN_STICK_LH         LL_GPIO_PIN_12  // PF.12
+#define ADC_GPIO_PIN_STICK_RV         LL_GPIO_PIN_1  // PA.01
+#define ADC_GPIO_PIN_STICK_RH         LL_GPIO_PIN_0  // PC.00
+#define ADC_CHANNEL_STICK_LV          LL_ADC_CHANNEL_5  // ADC1_CH5
+#define ADC_CHANNEL_STICK_LH          LL_ADC_CHANNEL_6  // ADC1_CH6
+#define ADC_CHANNEL_STICK_RV          LL_ADC_CHANNEL_17  // ADC1_CH17
+#define ADC_CHANNEL_STICK_RH          LL_ADC_CHANNEL_10  // ADC1_CH10
 #define ADC_CHANNEL_POT1              LL_ADC_CHANNEL_9 // ADC1_CH9
 #define ADC_CHANNEL_POT2              LL_ADC_CHANNEL_16 // ADC1_CH16
 #define ADC_GPIO_PIN_POT1             LL_GPIO_PIN_0  // PB.00
 #define ADC_GPIO_PIN_POT2             LL_GPIO_PIN_0  // PA.00
 // !#define ADC_GPIO_PIN_BATT             LL_GPIO_PIN_0  // PC.00 // This pin is disconnected (hopefully that doesn't trigger anything)
-#define ADC_GPIOA_PINS                (ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_POT2)
-#define ADC_GPIOB_PINS                (ADC_GPIO_PIN_STICK_RV | ADC_GPIO_PIN_POT1)
-#define ADC_GPIOC_PINS                (ADC_GPIO_PIN_STICK_LH)
-#define ADC_GPIOF_PINS                (ADC_GPIO_PIN_STICK_RH)
+#define ADC_GPIOA_PINS                (ADC_GPIO_PIN_STICK_RV | ADC_GPIO_PIN_POT2)
+#define ADC_GPIOB_PINS                (ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_POT1)
+#define ADC_GPIOC_PINS                (ADC_GPIO_PIN_STICK_RH)
+#define ADC_GPIOF_PINS                (ADC_GPIO_PIN_STICK_LH)
 // !#define ADC_CHANNEL_BATT              LL_ADC_CHANNEL_10
 #define ADC_DIRECTION {-1, 1, 1, -1, -1, 1, 1, 1}
 
@@ -186,6 +186,8 @@
 // #define INTMODULE_RX_DMA                 DMA2
 // #define INTMODULE_RX_DMA_STREAM          LL_DMA_STREAM_2
 // #define INTMODULE_RX_DMA_CHANNEL         LL_DMA_CHANNEL_4
+
+// TODO: Add extmodule when pins are decided on
 
 // Software IRQ (Prio 5 -> FreeRTOS compatible)
 //#define TELEMETRY_RX_FRAME_EXTI_LINE    LL_EXTI_LINE_4
