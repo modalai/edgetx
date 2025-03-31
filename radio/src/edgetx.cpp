@@ -385,6 +385,10 @@ void generalDefault()
   setDefaultOwnerId();
 #endif
 
+#if defined(MANUFACTURER_MODALAI)
+  g_eeGeneral.disableRtcWarning = 1;
+#endif
+
 #if defined(RADIOMASTER_RTF_RELEASE)
   // Those settings are for headless radio
   g_eeGeneral.USBMode = USB_JOYSTICK_MODE;
