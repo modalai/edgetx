@@ -68,7 +68,7 @@ extern "C" void initialise_monitor_handles();
 #endif
 
 // SYS key (D.10)
-#define BL_KEY GPIO_PIN(GPIOD, 10)
+#define BL_KEY GPIO_PIN(GPIOF, 9)
 
 bool boardBLStartCondition()
 {
