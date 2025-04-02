@@ -93,8 +93,8 @@ extern HardwareOptions hardwareOptions;
 // #define BATTERY_WARN                  65 // 6.5V
 // #define BATTERY_MIN                   60 // 6.0V
 // #define BATTERY_MAX                   80 // 8.0V
-#define BATTERY_WARN                  0 // 6.5V
-#define BATTERY_MIN                   0 // 6.0V
+#define BATTERY_WARN                  65 // 6.5V
+#define BATTERY_MIN                   60 // 6.0V
 #define BATTERY_MAX                   80 // 8.0V
 
 #define BATT_SCALE                    123
