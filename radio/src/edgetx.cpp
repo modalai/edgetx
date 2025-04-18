@@ -1605,6 +1605,8 @@ void edgeTxInit()
 #endif
 #endif
 
+  mixerTaskInit();
+
 #if defined(GUI)
     if (calibration_needed) {
       cancelSplash();
