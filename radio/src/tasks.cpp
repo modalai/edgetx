@@ -56,7 +56,6 @@ TASK_FUNCTION(menusTask)
 
   edgeTxInit();
 
-  mixerTaskInit();
 
 #if defined(PWR_BUTTON_PRESS)
   while (true) {
