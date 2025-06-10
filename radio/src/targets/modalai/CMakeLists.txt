@@ -48,7 +48,7 @@ if(PCB STREQUAL M207)
     # set(USB_CHARGER YES)
     add_definitions(-DRADIO_MODAL)
     # set(PXX2 ON)
-    # set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
+    set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
     #if (NOT BLUETOOTH)
     #  set(AUX_SERIAL ON)
     #endif()
@@ -65,9 +65,9 @@ else()
 endif()
 
 
-#if(ENABLE_SERIAL_PASSTHROUGH)
-#  set(CLI ON "Enable CLI")
-#endif()
+if(ENABLE_SERIAL_PASSTHROUGH)
+ set(CLI ON "Enable CLI")
+endif()
 
 if(INTERNAL_MODULE_SERIAL)
 
