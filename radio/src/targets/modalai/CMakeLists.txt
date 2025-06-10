@@ -184,5 +184,11 @@ set(FIRMWARE_SRC
   ${FIRMWARE_SRC}
   targets/common/arm/loadboot.cpp
 )
+if(BOOTLOADER)
+  set(FIRMWARE_SRC
+    ${FIRMWARE_SRC}
+    targets/common/arm/loadboot.cpp
+  )
+endif()
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})
