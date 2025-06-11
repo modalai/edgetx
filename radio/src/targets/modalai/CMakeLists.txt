@@ -8,7 +8,8 @@ option(AUTOUPDATE "Auto update internal chips from SD" OFF)
 option(BIND_KEY "Enable bind button" OFF)
 option(BLUETOOTH "FrSky BT module support" OFF)
 
-set(USE_RTC_CLOCK YES)
+set(USE_RTC_CLOCK NO)
+set(RTC_BACKUP_RAM NO)
 set(HARDWARE_EXTERNAL_MODULE YES)
 set(TARGET_DIR modalai)
 
@@ -48,7 +49,7 @@ if(PCB STREQUAL M207)
     # set(USB_CHARGER YES)
     add_definitions(-DRADIO_MODAL)
     # set(PXX2 ON)
-    # set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
+    set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
     #if (NOT BLUETOOTH)
     #  set(AUX_SERIAL ON)
     #endif()
@@ -65,9 +66,9 @@ else()
 endif()
 
 
-#if(ENABLE_SERIAL_PASSTHROUGH)
-#  set(CLI ON "Enable CLI")
-#endif()
+if(ENABLE_SERIAL_PASSTHROUGH)
+ set(CLI ON "Enable CLI")
+endif()
 
 if(INTERNAL_MODULE_SERIAL)
 
@@ -183,5 +184,11 @@ set(FIRMWARE_SRC
   ${FIRMWARE_SRC}
   targets/common/arm/loadboot.cpp
 )
+if(BOOTLOADER)
+  set(FIRMWARE_SRC
+    ${FIRMWARE_SRC}
+    targets/common/arm/loadboot.cpp
+  )
+endif()
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})
