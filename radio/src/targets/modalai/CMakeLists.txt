@@ -1,5 +1,5 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
-option(PXX1 "PXX1 protocol support" ON)
+option(PXX1 "PXX1 protocol support" OFF)
 option(PXX2 "PXX2 protocol support" OFF)
 option(AFHDS3 "AFHDS3 TX Module" OFF)
 option(GHOST "Ghost TX Module" ON)
@@ -10,7 +10,6 @@ option(BLUETOOTH "FrSky BT module support" OFF)
 
 set(USE_RTC_CLOCK NO)
 set(RTC_BACKUP_RAM NO)
-set(HARDWARE_EXTERNAL_MODULE YES)
 set(TARGET_DIR modalai)
 
 set(HSE_VALUE 16000000)
@@ -46,13 +45,14 @@ if(PCB STREQUAL M207)
     set(FLAVOUR modal_zorro)
     set(CPU_TYPE_FULL STM32H753II)
     set(ROTARY_ENCODER YES)
-    # set(USB_CHARGER YES)
-    add_definitions(-DRADIO_MODAL)
-    # set(PXX2 ON)
-    set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
+    set(USB_CHARGER NO)
+    set(IMU NO)
+    set(BLUETOOTH NO)
     #if (NOT BLUETOOTH)
     #  set(AUX_SERIAL ON)
     #endif()
+    add_definitions(-DRADIO_MODAL)
+    set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
   endif()
 endif()
 
@@ -184,11 +184,5 @@ set(FIRMWARE_SRC
   ${FIRMWARE_SRC}
   targets/common/arm/loadboot.cpp
 )
-if(BOOTLOADER)
-  set(FIRMWARE_SRC
-    ${FIRMWARE_SRC}
-    targets/common/arm/loadboot.cpp
-  )
-endif()
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})
