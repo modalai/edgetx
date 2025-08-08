@@ -36,7 +36,7 @@ void rotaryEncoderInit();
 void rotaryEncoderCheck();
 #endif
 
-#define FLASHSIZE                       0x80000  // 512k
+#define FLASHSIZE                       0x200000
 #define FLASH_PAGESIZE                  256
 #define BOOTLOADER_SIZE                 0x10000
 #define FIRMWARE_ADDRESS                0x08000000
