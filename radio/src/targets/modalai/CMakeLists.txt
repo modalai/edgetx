@@ -83,8 +83,6 @@ set(TARGET_SRC_DIR targets/${TARGET_DIR})
 
 set(BOARD_COMMON_SRC
   ${TARGET_SRC_DIR}/board.cpp
-  ${TARGET_SRC_DIR}/system_init.cpp
-  ${TARGET_SRC_DIR}/system_clock.cpp
   ${TARGET_SRC_DIR}/led_driver.cpp
   ${TARGET_SRC_DIR}/backlight_driver.cpp
   ${TARGET_SRC_DIR}/${LCD_DRIVER}
@@ -112,8 +110,8 @@ endif()
 # Bootloader board library
 add_library(board_bl OBJECT EXCLUDE_FROM_ALL
   ${BOARD_COMMON_SRC}
-  ${TARGET_SRC_DIR}/system_clock.cpp
-  ${TARGET_SRC_DIR}/bootloader/boot_menu.cpp
+  ${TARGET_SRC_DIR}/system_clock.c
+  ${RADIO_SRC_DIR}/gui/common/stdlcd/boot_menu.cpp
 )
 add_dependencies(board_bl ${BITMAPS_TARGET})
 set(BOOTLOADER_SRC ${BOOTLOADER_SRC} $<TARGET_OBJECTS:board_bl>)
@@ -176,13 +174,6 @@ set(GUI_SRC ${GUI_SRC}
   view_telemetry.cpp
   view_about.cpp
   bmp.cpp
-)
-
-# There has to be a better way...
-# In C23 there is now support for #embed...
-set(FIRMWARE_SRC
-  ${FIRMWARE_SRC}
-  targets/common/arm/loadboot.cpp
 )
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})

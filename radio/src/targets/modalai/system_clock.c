@@ -51,8 +51,7 @@
   * @param  None
   * @retval None
   */
-extern "C" BOOTSTRAP
-void SystemClock_Config()
+BOOTSTRAP void SystemClock_Config()
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
