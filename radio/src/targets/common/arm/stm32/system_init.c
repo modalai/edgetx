@@ -31,7 +31,7 @@
 #endif
 
 #if (defined (USE_CACHE) && defined (__MPU_PRESENT) && (__MPU_PRESENT == 1U))
-  #define REQUIRE_MPU_CONFIG
+#define REQUIRE_MPU_CONFIG
 #endif
 
 #if defined(ITCM_BASE) /* H7RS */ || defined(D1_ITCMRAM_BASE) /* H7 */
