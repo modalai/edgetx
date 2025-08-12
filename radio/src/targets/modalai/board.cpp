@@ -87,6 +87,10 @@ void boardBLInit()
     // usbRegisterDFUMedia((void*)extflash_dfu_media);
 }
 
+void boardBLEarlyInit()
+{
+}
+
 
 void boardInit()
 {
@@ -239,3 +243,8 @@ void boardOff()
 
   // this function must not return!
 }
+
+#if !defined(BOOT)
+void per5ms() {}
+#endif
+
