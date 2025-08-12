@@ -3,7 +3,7 @@ name: Run tests and package firmware
 on:
   push:
     branches:
-      - '2.11'
+      - 'main'
     tags:
       - v*
     paths:
@@ -56,7 +56,7 @@ jobs:
           - nb4p
           - st16
     container:
-      image: ghcr.io/edgetx/edgetx-dev:2.11
+      image: ghcr.io/edgetx/edgetx-dev:latest
       volumes:
         - ${{ github.workspace }}:/src
     steps:
@@ -103,7 +103,7 @@ jobs:
           - nb4p
           - st16
     container:
-      image: ghcr.io/edgetx/edgetx-dev:2.11
+      image: ghcr.io/edgetx/edgetx-dev:latest
       volumes:
         - ${{ github.workspace }}:/src
     steps:

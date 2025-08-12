@@ -7304,42 +7304,42 @@ Sloupce pro nadmořskou výšku &quot;GAlt&quot; a pro rychlost &quot;GSpd&quot;
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="851"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Tabbed Windows</source>
         <translation>Okna se záložkami</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="851"/>
+        <location filename="../mainwindow.cpp" line="852"/>
         <source>Use tabs to arrange open windows.</source>
         <translation>Pomocí záložek můžete uspořádat otevřená okna.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="853"/>
         <source>Tile Windows</source>
         <translation>Dlaždice</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="852"/>
+        <location filename="../mainwindow.cpp" line="853"/>
         <source>Arrange open windows across all the available space.</source>
         <translation>Uspořádá otevřená okna napříč celým volným prostorem.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="853"/>
+        <location filename="../mainwindow.cpp" line="854"/>
         <source>Cascade Windows</source>
         <translation>Kaskádová okna</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="853"/>
+        <location filename="../mainwindow.cpp" line="854"/>
         <source>Arrange all open windows in a stack.</source>
         <translation>Uspořádá všechna otevřená okna do kaskády.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="854"/>
+        <location filename="../mainwindow.cpp" line="855"/>
         <source>Close All Windows</source>
         <translation>Zavřít všechna okna</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="854"/>
+        <location filename="../mainwindow.cpp" line="855"/>
         <source>Closes all open files (prompts to save if necessary.</source>
         <translation>Zavře všechny otevřené soubory (v případě potřeby vás požádá o uložení).</translation>
     </message>
