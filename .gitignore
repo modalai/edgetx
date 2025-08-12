@@ -16,3 +16,7 @@ compile_commands.json
 /ys_Doc
 /.idea
 /.vs
+.bin
+.elf
+**.bin
+**.elf
