@@ -28,7 +28,6 @@
 #include "debug.h"
 
 #include "timers_driver.h"
-#include "fw_desc.h"
 
 #if defined(DEBUG_SEGGER_RTT)
   #include "thirdparty/Segger/SEGGER/SEGGER_RTT.h"
@@ -56,14 +55,8 @@ typedef void (*fctptr_t)(void);
 static __attribute__((noreturn)) void jumpTo(uint32_t addr)
 {
   __disable_irq();
-#if defined(STM32H7)
-  firmware_description_t *fw_desc = (firmware_description_t*)APP_START_ADDRESS;
-  fctptr_t reset_handler = (fctptr_t) fw_desc->reset_handler;
-  __set_MSP((uint32_t) fw_desc->stack_address);
-#else
   __set_MSP(*(uint32_t*)addr);
   fctptr_t reset_handler = (fctptr_t)*(uint32_t*)(addr + 4);
-#endif
   reset_handler();
   while(1){}    
 }
