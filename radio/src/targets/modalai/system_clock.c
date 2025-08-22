@@ -19,13 +19,10 @@
  * GNU General Public License for more details.
  */
 
-#include "stm32h7xx_hal.h"
-#include "stm32h7xx_hal_rcc.h"
-#include "stm32h7xx_hal_pwr.h"
-#include "stm32h7xx_hal_pwr_ex.h"
-#include "stm32h7xx_hal_flash_ex.h"
-#include "stm32h7xx_ll_system.h"
+#include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_rcc.h"
+#include "stm32h7xx_ll_system.h"
+#include "stm32h7xx_ll_bus.h"
 
 #define BOOTSTRAP __attribute__((section(".bootstrap")))
 
@@ -51,39 +48,37 @@
   * @param  None
   * @retval None
   */
-BOOTSTRAP void SystemClock_Config()
+BOOTSTRAP void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  /* Power Configuration */
+  LL_PWR_ConfigSupply(LL_PWR_LDO_SUPPLY);
+  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+  while (LL_PWR_IsActiveFlag_VOS() == 0) {
+  }
 
-  /** Supply configuration update enable
-  */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+  /* Enable HSE oscillator */
+  LL_RCC_HSE_Enable();
+  while (LL_RCC_HSE_IsReady() != 1) {
+  }
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /* Set FLASH latency */
+  LL_FLASH_SetLatency(LL_FLASH_LATENCY_5);
 
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
-
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 2;
-  RCC_OscInitStruct.PLL.PLLN = 100;
-  RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
-  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    while(1) {};
+  /* Main PLL configuration and activation */
+  LL_RCC_PLL_SetSource(LL_RCC_PLLSOURCE_HSE);
+  LL_RCC_PLL1P_Enable();
+  LL_RCC_PLL1Q_Enable();
+  LL_RCC_PLL1R_Enable();
+  LL_RCC_PLL1FRACN_Disable();
+  LL_RCC_PLL1_SetVCOInputRange(LL_RCC_PLLINPUTRANGE_8_16);
+  LL_RCC_PLL1_SetVCOOutputRange(LL_RCC_PLLVCORANGE_WIDE);
+  LL_RCC_PLL1_SetM(2);
+  LL_RCC_PLL1_SetN(100);
+  LL_RCC_PLL1_SetP(2);
+  LL_RCC_PLL1_SetQ(4);
+  LL_RCC_PLL1_SetR(2);
+  LL_RCC_PLL1_Enable();
+  while (LL_RCC_PLL1_IsReady() != 1) {
   }
 
   /* Set Sys & AHB & APB1 & APB2 & APB4  prescaler */
@@ -114,6 +109,7 @@ BOOTSTRAP void SystemClock_Config()
   while (LL_RCC_PLL2_IsReady() != 1) {
   }
 
+  /* PLL3 configuration and activation */
   LL_RCC_PLL3R_Enable();
   LL_RCC_PLL3FRACN_Disable();
   LL_RCC_PLL3_SetVCOInputRange(LL_RCC_PLLINPUTRANGE_4_8);
@@ -127,26 +123,11 @@ BOOTSTRAP void SystemClock_Config()
   while (LL_RCC_PLL3_IsReady() != 1) {
   }
 
-  /** Enables the Clock Security System
-  */
-  HAL_RCC_EnableCSS();
-
-  LL_RCC_PLL2_Enable();
-  while (LL_RCC_PLL2_IsReady() != 1) {
-  }
-
-  LL_RCC_PLL3_Enable();
-  while (LL_RCC_PLL3_IsReady() != 1) {
-  }
-
+  /* USB/ADC/SPI clock sources */
   LL_RCC_HSI48_Enable();
   while (LL_RCC_HSI48_IsReady() != 1) {
   }
   LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_HSI48);
-
-  //  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
-
-  // Only required if using Async ADC clock ???
   LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_CLKP);
   LL_RCC_SetSPIClockSource(LL_RCC_SPI45_CLKSOURCE_PCLK2);
 }
