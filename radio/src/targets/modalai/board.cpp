@@ -94,20 +94,19 @@ void boardBLEarlyInit()
 
 void boardInit()
 {
+
+__enable_irq();
+
 #if defined(SEMIHOSTING)
   initialise_monitor_handles();
 #elif defined(DEBUG_SEGGER_RTT)
   // SEGGER_RTT_Init();
   // SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);
 #endif
-  LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SYSCFG);
-
-  // SCB_EnableDCache();
 
 #if defined(POWER_I2C)
   voxl_pm_init();
 #endif
-
 
 #if defined(USB_CHARGE_LED) && !defined(DEBUG)
   usbInit();
@@ -148,7 +147,6 @@ void boardInit()
 #endif
 
   delaysInit();
-  __enable_irq();
 
   if (!adcInit(&_adc_driver))
     TRACE("adcInit failed");
