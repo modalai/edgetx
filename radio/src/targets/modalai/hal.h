@@ -166,8 +166,10 @@
 // PWR and LED driver
 
 // #warning unsure what these do, TODO: Remove these buttons completely
-#define PWR_SWITCH_GPIO               GPIO_PIN(GPIOA, 5)  // PC.06
-#define PWR_ON_GPIO                   GPIO_PIN(GPIOA, 6)  // PC.07
+// don't define PWR_SWITCH_GPIO to not check on boot
+// #define PWR_SWITCH_GPIO               GPIO_PIN(GPIOA, 5)  // PA.06
+// don't need to set PWR_ON_GPIO since there's no hardware latch connected like on most button controllers
+// #define PWR_ON_GPIO                   GPIO_PIN(GPIOA, 6)  // PA.07
 
 #define USE_LEDS
 #ifdef USE_LEDS
