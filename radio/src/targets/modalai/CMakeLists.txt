@@ -22,7 +22,7 @@ add_definitions(-DMANUFACTURER_MODALAI)
 add_definitions(-DTHREADSAFE_MALLOC)
 
 if(PCB STREQUAL M207)
-  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   #set(HAPTIC YES)
   set(GUI_DIR 128x64)
   set(SDCARD YES)
