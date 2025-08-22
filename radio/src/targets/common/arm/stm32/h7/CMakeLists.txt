@@ -1,6 +1,6 @@
 set(CPU_FAMILY STM32)
 set(MCU cortex-m7)
-set(FPU_FLAGS "-mfpu=fpv4-sp-d16 -mfloat-abi=hard")
+set(FPU_FLAGS "-mfloat-abi=hard -mfpu=fpv4-sp-d16")
 
 # CMSIS library
 set(CMSIS_DIR ${THIRDPARTY_DIR}/CMSIS)
