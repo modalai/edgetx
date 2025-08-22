@@ -201,8 +201,8 @@ BOOTSTRAP void CPU_CACHE_Enable()
 
 #if defined(BOOT) && defined(REQUIRE_MPU_CONFIG)
 // Linker script symbols
-#ifndef RADIO_MODAL // no extram on modalAI h7
 extern uint32_t _dram_addr;
+#ifndef RADIO_MODAL // no extram on modalAI h7
 extern uint32_t EXTRAM_START;
 extern uint32_t EXTRAM_SIZE;
 extern uint32_t NORFLASH_START;
@@ -268,7 +268,10 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+#endif // RADIO_MODAL
 
+// todo does disabling cache on dedicated DMA buffers help resolve firmware flashing issue?
+  
   /* Region 4: dedicated DMA buffers (cache disabled) */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER4;
@@ -282,8 +285,6 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  #endif
-
 
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
