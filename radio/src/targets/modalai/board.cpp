@@ -184,8 +184,6 @@ __enable_irq();
 
   backlightInit();
 
-  gpio_set(GPIO_PIN(GPIOH, 2));
-
 #if defined(GUI)
   lcdSetContrast(true);
 #endif
