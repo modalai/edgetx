@@ -25,8 +25,8 @@ MEMORY
 }
 
 REGION_ALIAS("REGION_TEXT_STORAGE", FLASH);
-REGION_ALIAS("REGION_TEXT",         FLASH);
+REGION_ALIAS("REGION_TEXT",         ITCMRAM); /* Todo: setting this to ITCMRAM this should fix bootloader instruction cache?*/
 REGION_ALIAS("REGION_ISR_VECT",     DTCMRAM);
 REGION_ALIAS("REGION_DATA",         DTCMRAM);
 REGION_ALIAS("REGION_BSS",          RAM_D1);
-REGION_ALIAS("REGION_RAM",          RAM_D1);
+REGION_ALIAS("REGION_RAM",          RAM_D1); /* used for DMA, capable regions: D1,D2*/
