@@ -38,7 +38,7 @@ void rotaryEncoderCheck();
 
 #define FLASHSIZE                       0x200000
 #define FLASH_PAGESIZE                  256
-#define BOOTLOADER_SIZE                 0x10000
+#define BOOTLOADER_SIZE                 0x20000
 #define FIRMWARE_ADDRESS                0x08000000
 #define FIRMWARE_LEN(fsize)             (fsize - BOOTLOADER_SIZE)
 #define FIRMWARE_MAX_LEN                (FLASHSIZE - BOOTLOADER_SIZE)
