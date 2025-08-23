@@ -5,7 +5,7 @@ HEAP_ADDRESS = ORIGIN(RAM_D2) + LENGTH(RAM_D2) - 16;
 STACK_ADDRESS = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);    /* end of RAM */
 
 /* Maximum bootloader code size */
-BOOTLOADER_SIZE = 0x10000;
+BOOTLOADER_SIZE = 0x20000; /* Align to 128KB sector boundary on STM32H753 */
 
 /* Required amount of stack for interrupt stack (Main stack) */
 MAIN_STACK_SIZE = 8192;
