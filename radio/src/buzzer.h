@@ -104,6 +104,8 @@ inline void beep(uint8_t) { }
   #define AUDIO_TRIM_END(f)
   #define AUDIO_PLAY(p)
   #define IS_AUDIO_BUSY() false
+  #define AUDIO_KEY_PRESS()
+  #define AUDIO_KEY_ERROR()
 #endif /* BUZZER */
 
   #define AUDIO_RESET()

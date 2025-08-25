@@ -61,6 +61,8 @@ static void menusTask()
 
   edgeTxInit();
 
+  //WDG_RESET needed because MODAL_ZORRO watchdog triggers before mixer resets it
+  WDG_RESET();
   mixerTaskInit();
 
 #if defined(PWR_BUTTON_PRESS)
