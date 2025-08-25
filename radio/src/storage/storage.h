@@ -23,7 +23,7 @@
 
 #include "edgetx_types.h"
 
-#if defined(SIMU)
+#if defined(SIMU) || defined(PCBMODALAI)
   #define WRITE_DELAY_10MS 100
 #elif defined(RTC_BACKUP_RAM)
   #define WRITE_DELAY_10MS 1500 /* 15s */
