@@ -268,11 +268,9 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-#endif // RADIO_MODAL
-
-// todo does disabling cache on dedicated DMA buffers help resolve firmware flashing issue?
   
   /* Region 4: dedicated DMA buffers (cache disabled) */
+  // RADIO_MODAL, breaks advanced usb_joystick with unaligned memcpy functions
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER4;
   MPU_InitStruct.BaseAddress = (uint32_t)&_dram_addr;
@@ -285,7 +283,8 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
+  #endif // RADIO_MODAL
+  
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
   /* Enable bus fault exception */
