@@ -132,6 +132,10 @@ elseif(CPU_TYPE_FULL STREQUAL STM32H7S7xx OR CPU_TYPE_FULL STREQUAL STM32H7R7xx)
   set(CMSIS_SRC ${CMSIS_SRC}
     targets/common/arm/stm32/h7/vectors_stm32h7s7xx.c
   )
+elseif(CPU_TYPE_FULL STREQUAL STM32H753II)
+  set(CMSIS_SRC ${CMSIS_SRC}
+  targets/common/arm/stm32/h7/vectors_stm32h753xx.c
+  )
 else()
   message(FATAL_ERROR "### ERROR ####: ${CPU_TYPE_FULL}")
 endif()

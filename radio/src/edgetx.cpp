@@ -143,7 +143,7 @@ void checkValidMCU(void)
   #define TARGET_IDCODE   0x419
 #elif defined(STM32F413xx)
   #define TARGET_IDCODE   0x463
-#elif defined(STM32H750xx) || defined(STM32H747xx)
+#elif defined(STM32H750xx) || defined(STM32H747xx) || defined(STM32H753xx)
   #define TARGET_IDCODE   0x450
 #elif defined(STM32H7RS)
   #define TARGET_IDCODE   0x485
@@ -384,6 +384,10 @@ void generalDefault()
 
 #if defined(PXX2)
   setDefaultOwnerId();
+#endif
+
+#if defined(MANUFACTURER_MODALAI)
+  g_eeGeneral.disableRtcWarning = 1;
 #endif
 
 #if defined(RADIOMASTER_RTF_RELEASE)
@@ -1551,6 +1555,7 @@ void edgeTxInit()
     evalFSok = true;
 #endif
 #endif
+
 
 #if defined(GUI)
     if (calibration_needed) {

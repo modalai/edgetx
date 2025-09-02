@@ -202,10 +202,12 @@ BOOTSTRAP void CPU_CACHE_Enable()
 #if defined(BOOT) && defined(REQUIRE_MPU_CONFIG)
 // Linker script symbols
 extern uint32_t _dram_addr;
+#ifndef RADIO_MODAL // no extram on modalAI h7
 extern uint32_t EXTRAM_START;
 extern uint32_t EXTRAM_SIZE;
 extern uint32_t NORFLASH_START;
 extern uint32_t NORFLASH_SIZE;
+#endif
 
 __STATIC_FORCEINLINE uint32_t mpu_region_size(uint32_t size)
 {
@@ -238,7 +240,7 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
+#ifndef RADIO_MODAL // no extram on modalAI h7
   /* Region 2: QSPI memory range, bank1 */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER2;
@@ -266,8 +268,9 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
+  
   /* Region 4: dedicated DMA buffers (cache disabled) */
+  // RADIO_MODAL, breaks advanced usb_joystick with unaligned memcpy functions
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER4;
   MPU_InitStruct.BaseAddress = (uint32_t)&_dram_addr;
@@ -280,8 +283,8 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-
+  #endif // RADIO_MODAL
+  
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
   /* Enable bus fault exception */
