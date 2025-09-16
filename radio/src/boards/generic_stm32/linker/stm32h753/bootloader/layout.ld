@@ -1,5 +1,5 @@
 /* Highest heap address */
-HEAP_ADDRESS = ORIGIN(RAM_D2) + LENGTH(RAM_D2) - 16;
+HEAP_ADDRESS = ORIGIN(RAM_D3) + LENGTH(RAM_D3) - 16;
 
 /* Highest address of the user mode stack */
 STACK_ADDRESS = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM) - 16;    /* end of RAM */
@@ -29,4 +29,4 @@ REGION_ALIAS("REGION_TEXT",         ITCMRAM); /* Todo: setting this to ITCMRAM t
 REGION_ALIAS("REGION_ISR_VECT",     DTCMRAM);
 REGION_ALIAS("REGION_DATA",         DTCMRAM);
 REGION_ALIAS("REGION_BSS",          RAM_D1);
-REGION_ALIAS("REGION_RAM",          RAM_D1); /* used for DMA, capable regions: D1,D2*/
+REGION_ALIAS("REGION_RAM",          RAM_D1);

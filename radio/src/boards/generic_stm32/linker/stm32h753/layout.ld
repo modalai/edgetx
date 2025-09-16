@@ -1,5 +1,5 @@
 /* Highest heap address */
-HEAP_ADDRESS = ORIGIN(RAM_D2) + LENGTH(RAM_D2) - 16;
+HEAP_ADDRESS = ORIGIN(RAM_D3) + LENGTH(RAM_D3) - 16;
 
 /* Highest address of the user mode stack */
 STACK_ADDRESS = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);    /* end of RAM */
@@ -11,7 +11,7 @@ BOOTLOADER_SIZE = 0x20000; /* Align to 128KB sector boundary on STM32H753 */
 MAIN_STACK_SIZE = 8192;
 
 /* Generate a link error if heap and stack don't fit into RAM */
-MIN_HEAP_SIZE = 128K;      /* required amount of heap  */
+MIN_HEAP_SIZE = 0;      /* required amount of heap  */
 
 /* Specify the memory areas */
 MEMORY
@@ -30,4 +30,4 @@ REGION_ALIAS("REGION_TEXT",         RAM_D1);
 REGION_ALIAS("REGION_ISR_VECT",     DTCMRAM);
 REGION_ALIAS("REGION_DATA",         DTCMRAM);
 REGION_ALIAS("REGION_BSS",          RAM_D1);
-REGION_ALIAS("REGION_RAM",          RAM_D1); /* used for DMA, capable regions: D1,D2*/
+REGION_ALIAS("REGION_RAM",          RAM_D1);

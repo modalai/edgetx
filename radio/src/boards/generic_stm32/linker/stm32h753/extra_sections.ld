@@ -48,4 +48,4 @@ _stext_iram = LOADADDR(.iram);
 
 _dram_addr = ADDR(.dram);
 
-PROVIDE(_heap_start = _e_dram);
+PROVIDE(_heap_start = ORIGIN(RAM_D3));
