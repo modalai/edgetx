@@ -269,12 +269,14 @@ void MPU_Config()
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   
+  #endif // RADIO_MODAL
+
   /* Region 4: dedicated DMA buffers (cache disabled) */
   // RADIO_MODAL, breaks advanced usb_joystick with unaligned memcpy functions
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER4;
   MPU_InitStruct.BaseAddress = (uint32_t)&_dram_addr;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_64KB; // FIXME
+  MPU_InitStruct.Size = MPU_REGION_SIZE_512KB; // FIXME
   MPU_InitStruct.SubRegionDisable = 0x0;
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
   MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
@@ -283,7 +285,6 @@ void MPU_Config()
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  #endif // RADIO_MODAL
   
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
