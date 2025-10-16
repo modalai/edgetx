@@ -1389,7 +1389,11 @@ void edgeTxInit()
   ViewMain::instance();
 #elif defined(GUI)
   // TODO add a function for this (duplicated)
+#if defined(PCBMODALAI) && defined(DEFAULT_VIEW_TELEMETRY)
+  menuHandlers[0] = menuViewTelemetry;
+#else
   menuHandlers[0] = menuMainView;
+#endif
   menuHandlers[1] = menuModelSelect;
 #endif
 
