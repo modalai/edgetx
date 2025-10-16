@@ -21,6 +21,9 @@ add_definitions(-DMANUFACTURER_MODALAI)
 # Make malloc() thread-safe
 add_definitions(-DTHREADSAFE_MALLOC)
 
+# Default to telemetry view on boot
+add_definitions(-DDEFAULT_VIEW_TELEMETRY)
+
 if(PCB STREQUAL M207)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   #set(HAPTIC YES)
