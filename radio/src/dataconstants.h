@@ -159,6 +159,12 @@ enum MainViews {
   VIEW_SWITCHES,
   VIEW_COUNT
 };
+#elif defined(PCBMODALAI)
+enum MainViews {
+  VIEW_INPUTS,
+  VIEW_CHAN_MONITOR,
+  VIEW_COUNT
+};
 #else
 enum MainViews {
   VIEW_OUTPUTS_VALUES,

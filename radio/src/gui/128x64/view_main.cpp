@@ -456,6 +456,7 @@ void menuMainView(event_t event)
       menuChannelsViewCommon(event);
       break;
 
+    #ifndef PCBMODALAI
     case VIEW_OUTPUTS_VALUES:
     case VIEW_OUTPUTS_BARS:
       // scroll bar
@@ -510,8 +511,12 @@ void menuMainView(event_t event)
     case VIEW_TIMER2:
       drawTimerWithMode(87, 5 * FH, 1, RIGHT | DBLSIZE);
       break;
+    #endif
 
     case VIEW_INPUTS:
+      #ifdef PCBMODALAI
+      view = VIEW_INPUTS; // hide logical switches
+      #endif
       if (view == VIEW_INPUTS) {
         // Sticks + Pots
         doMainScreenGraphics();
