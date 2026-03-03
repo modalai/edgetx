@@ -89,7 +89,9 @@ void bootloaderDrawScreen(BootloaderState st, int opt, const char *str)
     lcdInvertLine(7);
   }
   else if (st == ST_USB) {
-    lcdDrawCenteredText(4 * FH, TR_BL_USB_CONNECTED);
+    lcdDrawCenteredText(3 * FH, TR_BL_USB_CONNECTED);
+    lcdDrawCenteredText(5 * FH, BL_EXIT_KEY " to flash menu");
+    lcdDrawCenteredText(6 * FH, "Long " BL_EXIT_KEY " to exit");
   }
   else if (st == ST_DIR_CHECK) {
     if (opt == FR_NO_PATH) {
