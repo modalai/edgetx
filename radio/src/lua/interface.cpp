@@ -1340,6 +1340,8 @@ void luaInitMainState()
   if (mainState != nullptr) return;
 
 #if defined(USE_CUSTOM_ALLOCATOR)
+  extern void lua_bin_alloc_init();
+  lua_bin_alloc_init();
   mainState = lua_newstate(custom_l_alloc, nullptr);   //we use our own allocator!
 #elif defined(LUA_ALLOCATOR_TRACER)
   memclear(&lsScriptsTrace, sizeof(lsScriptsTrace));

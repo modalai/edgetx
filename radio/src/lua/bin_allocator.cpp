@@ -94,6 +94,12 @@ class BinAllocator
 #if defined(SIMU)
   typedef BinAllocator<40,300> BinAllocator_slots1;
   typedef BinAllocator<80,100> BinAllocator_slots2;
+#elif defined(STM32H7)
+  // slots1+slots2 in BSS (RAM_D1, 512K); slots3 in .dram (RAM_D2, 288K)
+  typedef BinAllocator<28,300>   BinAllocator_slots1;   //   8,400 bytes in RAM_D1
+  typedef BinAllocator<256,60>   BinAllocator_slots2;   //  15,360 bytes in RAM_D1
+  typedef BinAllocator<1024,100> BinAllocator_slots3;   // 102,400 bytes in RAM_D2
+  #define HAS_SLOTS3
 #else
   typedef BinAllocator<28,200> BinAllocator_slots1;
   typedef BinAllocator<92,50> BinAllocator_slots2;
@@ -101,6 +107,9 @@ class BinAllocator
 
 BinAllocator_slots1 slots1;
 BinAllocator_slots2 slots2;
+#if defined(HAS_SLOTS3)
+BinAllocator_slots3 slots3 __attribute__((section(".dram"), aligned(4)));
+#endif
 
 #if defined(DEBUG)
 int SimulateMallocFailure = 0;    //set this to simulate allocation failure
@@ -112,7 +121,11 @@ int missedFree = 0;
 
 int custom_avail()
 {
-  return slots1.avail() + slots2.avail();
+  return slots1.avail() + slots2.avail()
+#if defined(HAS_SLOTS3)
+    + slots3.avail()
+#endif
+    ;
 }
 
 static bool bin_free(void * ptr)
@@ -120,6 +133,9 @@ static bool bin_free(void * ptr)
   // return TRUE if ours
   bool res = slots1.free(ptr);
   if (!res) res = slots2.free(ptr);
+#if defined(HAS_SLOTS3)
+  if (!res) res = slots3.free(ptr);
+#endif
 #if defined(DEBUG)
   if (res) totalFreed += 1;
   else missedFree += 1;
@@ -131,6 +147,9 @@ static void * bin_malloc(size_t size) {
   // try to allocate from our space
   void* res = slots1.malloc(size);
   if (!res) res = slots2.malloc(size);
+#if defined(HAS_SLOTS3)
+  if (!res) res = slots3.malloc(size);
+#endif
 #if defined(DEBUG)
   if (res) totalAllocated += 1;
   else missedAlloc += 1;
@@ -145,7 +164,11 @@ static void * bin_realloc(void * ptr, size_t size)
     return bin_malloc(size);
   }
   else {
-    if (! (slots1.is_member(ptr) || slots2.is_member(ptr)) ) {
+    if (! (slots1.is_member(ptr) || slots2.is_member(ptr)
+#if defined(HAS_SLOTS3)
+         || slots3.is_member(ptr)
+#endif
+         ) ) {
       // not our data, leave it to libc realloc
       return nullptr;
     }
@@ -161,6 +184,11 @@ static void * bin_realloc(void * ptr, size_t size)
       // TRACE("OUR realloc %p[%lu] fits in slot2", ptr, size);
       return ptr;
     }
+#if defined(HAS_SLOTS3)
+    if ( slots3.can_fit(ptr, size) ) {
+      return ptr;
+    }
+#endif
 
     // we need a bigger slot
     void * res = bin_malloc(size);
@@ -174,10 +202,24 @@ static void * bin_realloc(void * ptr, size_t size)
       }
     }
     // copy data
-    memcpy(res, ptr, slots1.size(ptr) + slots2.size(ptr));
+    memcpy(res, ptr, slots1.size(ptr) + slots2.size(ptr)
+#if defined(HAS_SLOTS3)
+           + slots3.size(ptr)
+#endif
+           );
     bin_free(ptr);
     return res;
   }
+}
+
+void lua_bin_alloc_init()
+{
+#if defined(HAS_SLOTS3)
+  // .dram section is NOLOAD (not zero-initialized) and C++ constructors may not
+  // run for objects placed there via __attribute__((section)). Use placement new
+  // to explicitly construct slots3 before first Lua allocation.
+  new(&slots3) BinAllocator_slots3();
+#endif
 }
 
 void *custom_l_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
@@ -223,7 +265,13 @@ void *custom_l_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
   }
 
 #if defined(DEBUG)
-  TRACE("bin_l_alloc(%p,%p,%lu,%lu) - S1F %d, S2F %d, TA %d, TF %d, MA %d, MF %d",ud,ptr,osize,nsize,slots1.freeSlots(),slots2.freeSlots(),totalAllocated,totalFreed,missedAlloc,missedFree);
+  TRACE("bin_l_alloc(%p,%p,%lu,%lu) - S1F %d, S2F %d, S3F %d, TA %d, TF %d, MA %d, MF %d",ud,ptr,osize,nsize,slots1.freeSlots(),slots2.freeSlots(),
+#if defined(HAS_SLOTS3)
+        slots3.freeSlots(),
+#else
+        -1,
+#endif
+        totalAllocated,totalFreed,missedAlloc,missedFree);
 #endif
 
   return res;
