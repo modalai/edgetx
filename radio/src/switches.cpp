@@ -771,7 +771,14 @@ void evalLogicalSwitches(bool isCurrentFlightmode)
       }
     }
     context.state = result;
-    if ((g_model.logicalSw[idx].func == LS_FUNC_STICKY) && (g_model.logicalSw[idx].lsState != result)) {
+    // Without RTC backup RAM the saved sticky state is only read back at model
+    // load when lsPersist is set, so skip the model file write for
+    // non-persistent sticky switches
+    if ((g_model.logicalSw[idx].func == LS_FUNC_STICKY) &&
+#if !defined(RTC_BACKUP_RAM)
+        g_model.logicalSw[idx].lsPersist &&
+#endif
+        (g_model.logicalSw[idx].lsState != result)) {
       g_model.logicalSw[idx].lsState = result;
       storageDirty(EE_MODEL);
     }
