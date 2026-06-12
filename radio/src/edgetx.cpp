@@ -1493,6 +1493,28 @@ void edgeTxInit()
   storageReadAll();
 #endif
 
+#if defined(PCBMODALAI) && defined(GUI) && !defined(COLORLCD)
+  // Apply "Boot menu" setting now that radio settings are loaded
+  switch (g_eeGeneral.bootMenu) {
+    case BOOT_MENU_MAIN:
+      menuHandlers[0] = menuMainView;
+      break;
+    case BOOT_MENU_HUB:
+      // Fallback view if the hub script is missing or exits
+      menuHandlers[0] = menuMainView;
+#if defined(LUA)
+      if (isFileAvailable(SCRIPTS_TOOLS_PATH "/Joystick.lua")) {
+        f_chdir(SCRIPTS_TOOLS_PATH);
+        luaExec(SCRIPTS_TOOLS_PATH "/Joystick.lua");
+      }
+#endif
+      break;
+    default:  // BOOT_MENU_TELEMETRY
+      menuHandlers[0] = menuViewTelemetry;
+      break;
+  }
+#endif
+
   initSerialPorts();
 
 #if defined(AUDIO)
