@@ -53,6 +53,12 @@
 #define CASE_KEY_LOCK(x)
 #endif
 
+#if defined(PCBMODALAI)
+#define CASE_BOOT_MENU(x) x,
+#else
+#define CASE_BOOT_MENU(x)
+#endif
+
 #if defined(RTCLOCK)
   #define CASE_RTCLOCK(x) x,
 #else

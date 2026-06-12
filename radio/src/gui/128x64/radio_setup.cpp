@@ -86,6 +86,7 @@ enum {
   CASE_KEY_LOCK(ITEM_RADIO_SETUP_KEY_LOCK)
   ITEM_RADIO_ONE_LOG_PER_DAY,
   CASE_SPLASH_PARAM(ITEM_RADIO_SETUP_DISABLE_SPLASH)
+  CASE_BOOT_MENU(ITEM_RADIO_SETUP_BOOT_MENU)
   CASE_PWR_BUTTON_PRESS(ITEM_RADIO_SETUP_PWR_ON_SPEED)
   CASE_PWR_BUTTON_PRESS(ITEM_RADIO_SETUP_PWR_OFF_SPEED)
   CASE_PWR_BUTTON_PRESS(ITEM_RADIO_SETUP_PWR_AUTO_OFF)
@@ -222,6 +223,7 @@ void menuRadioSetup(event_t event)
     CASE_KEY_LOCK(0)
     0,
     CASE_SPLASH_PARAM(0)
+    CASE_BOOT_MENU(0)
     CASE_PWR_BUTTON_PRESS(0)
     CASE_PWR_BUTTON_PRESS(0)
     CASE_PWR_BUTTON_PRESS(0)
@@ -623,6 +625,12 @@ void menuRadioSetup(event_t event)
         if (attr) g_eeGeneral.splashMode = -checkIncDecGen(event, -g_eeGeneral.splashMode, -3, 4);
         break;
       }
+
+#if defined(PCBMODALAI)
+      case ITEM_RADIO_SETUP_BOOT_MENU:
+        g_eeGeneral.bootMenu = editChoice(LCD_W-2, y, STR_BOOT_MENU, STR_VBOOTMENU, g_eeGeneral.bootMenu, BOOT_MENU_TELEMETRY, BOOT_MENU_MAX, attr|RIGHT, event);
+        break;
+#endif
 
 #if defined(PWR_BUTTON_PRESS)
       case ITEM_RADIO_SETUP_PWR_ON_SPEED:

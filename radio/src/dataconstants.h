@@ -687,6 +687,14 @@ enum UartSampleModes {
 };
 #endif
 
+enum BootMenuModes {
+  BOOT_MENU_TELEMETRY = 0,
+  BOOT_MENU_MAIN,
+  BOOT_MENU_HUB,
+
+  BOOT_MENU_MAX SKIP = BOOT_MENU_HUB
+};
+
 // PXX2 constants
 #define PXX2_LEN_REGISTRATION_ID            8
 #define PXX2_LEN_RX_NAME                    8
