@@ -17,3 +17,7 @@ compile_commands.json
 /.idea
 /.vs
 CMakeUserPresets.json
+.bin
+.elf
+**.bin
+**.elf

@@ -364,7 +364,21 @@ const char * readModelYaml(const char * filename, uint8_t * buffer, uint32_t siz
       md->rfAlarms.critical = 42;
     }
 
-    return readYamlFile(path, YamlTreeWalker::get_parser_calls(), &tree, NULL);
+    const char* error = readYamlFile(path, YamlTreeWalker::get_parser_calls(), &tree, NULL);
+    if (error != NULL) {
+        // A power loss in writeModelYaml() between unlink and rename leaves
+        // only the fully written temp file: move it into place and retry
+        char tmp_path[sizeof(path) + 5];
+        strcpy(tmp_path, path);
+        strcat(tmp_path, ".tmp");
+
+        FILINFO fno;
+        if (f_stat(path, &fno) != FR_OK && f_stat(tmp_path, &fno) == FR_OK &&
+            f_rename(tmp_path, path) == FR_OK) {
+            error = readYamlFile(path, YamlTreeWalker::get_parser_calls(), &tree, NULL);
+        }
+    }
+    return error;
 }
 
 static const char _wrongExtentionError[] = "wrong file extension";
@@ -384,7 +398,25 @@ const char * writeModelYaml(const char* filename)
     TRACE("YAML model writer");
     char path[256];
     getModelPath(path, filename);
-    return writeFileYaml(path, get_modeldata_nodes(), (uint8_t*)&g_model,0 );
+
+    // Write to a temp file and rename it over the model file, so that a
+    // power loss during the write cannot truncate the existing model
+    char tmp_path[sizeof(path) + 5];
+    strcpy(tmp_path, path);
+    strcat(tmp_path, ".tmp");
+
+    const char *p = writeFileYaml(tmp_path, get_modeldata_nodes(), (uint8_t*)&g_model, 0);
+    if (p != NULL) {
+        return p;
+    }
+
+    f_unlink(path);
+
+    FRESULT result = f_rename(tmp_path, path);
+    if (result != FR_OK)
+        return SDCARD_ERROR(result);
+
+    return nullptr;
 }
 
 #if !defined(STORAGE_MODELSLIST)

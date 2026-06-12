@@ -159,6 +159,12 @@ enum MainViews {
   VIEW_SWITCHES,
   VIEW_COUNT
 };
+#elif defined(PCBMODALAI)
+enum MainViews {
+  VIEW_INPUTS,
+  VIEW_CHAN_MONITOR,
+  VIEW_COUNT
+};
 #else
 enum MainViews {
   VIEW_OUTPUTS_VALUES,
@@ -665,6 +671,14 @@ enum UartSampleModes {
   UART_SAMPLE_MODE_ONEBIT,
 
   UART_SAMPLE_MODE_MAX SKIP = UART_SAMPLE_MODE_ONEBIT
+};
+
+enum BootMenuModes {
+  BOOT_MENU_TELEMETRY = 0,
+  BOOT_MENU_MAIN,
+  BOOT_MENU_HUB,
+
+  BOOT_MENU_MAX SKIP = BOOT_MENU_HUB
 };
 
 // PXX2 constants

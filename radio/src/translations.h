@@ -140,6 +140,7 @@ extern const char* const STR_VDISPLAYTRIMS[];
 extern const char* const STR_TIMER_DIR[];
 
 extern const char* const STR_VBLMODE[];
+extern const char* const STR_VBOOTMENU[];
 extern const char* const STR_VCURVETYPE[];
 extern const char* const STR_VCURVEFUNC[];
 extern const char* const STR_VMLTPX[];
@@ -624,6 +625,7 @@ extern const char STR_MENU_POWER_METER[];
 extern const char STR_SENSOR[];
 extern const char STR_COUNTRY_CODE[];
 extern const char STR_USBMODE[];
+extern const char STR_BOOT_MENU[];
 extern const char STR_JACK_MODE[];
 extern const char STR_DISABLE_INTERNAL[];
 extern const char STR_BATT_CALIB[];

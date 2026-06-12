@@ -473,7 +473,7 @@ void perMain()
 
   checkSpeakerVolume();
 
-  if (!usbPlugged() || (getSelectedUsbMode() == USB_UNSELECTED_MODE)) {
+  if (!usbPlugged() || (getSelectedUsbMode() != USB_MASS_STORAGE_MODE)) {
     checkStorageUpdate();
     initLoggingTimer();  // initialize software timer for logging
   }

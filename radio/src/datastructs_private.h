@@ -1115,7 +1115,8 @@ PACK(struct RadioData {
   NOBACKUP(uint8_t spare:6 SKIP);
 #elif LCD_W == 128
   uint8_t invertLCD:1;          // Invert B&W LCD display
-  NOBACKUP(uint8_t spare:3 SKIP);
+  uint8_t bootMenu:2 ENUM(BootMenuModes);
+  NOBACKUP(uint8_t spare:1 SKIP);
 #else
   NOBACKUP(uint8_t spare:4 SKIP);
 #endif

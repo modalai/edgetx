@@ -143,7 +143,7 @@ void checkValidMCU(void)
   #define TARGET_IDCODE   0x419
 #elif defined(STM32F413xx)
   #define TARGET_IDCODE   0x463
-#elif defined(STM32H750xx) || defined(STM32H747xx)
+#elif defined(STM32H750xx) || defined(STM32H747xx) || defined(STM32H753xx)
   #define TARGET_IDCODE   0x450
 #elif defined(STM32H7RS)
   #define TARGET_IDCODE   0x485
@@ -384,6 +384,10 @@ void generalDefault()
 
 #if defined(PXX2)
   setDefaultOwnerId();
+#endif
+
+#if defined(MANUFACTURER_MODALAI)
+  g_eeGeneral.disableRtcWarning = 1;
 #endif
 
 #if defined(RADIOMASTER_RTF_RELEASE)
@@ -1385,7 +1389,11 @@ void edgeTxInit()
   ViewMain::instance();
 #elif defined(GUI)
   // TODO add a function for this (duplicated)
+#if defined(PCBMODALAI) && defined(DEFAULT_VIEW_TELEMETRY)
+  menuHandlers[0] = menuViewTelemetry;
+#else
   menuHandlers[0] = menuMainView;
+#endif
   menuHandlers[1] = menuModelSelect;
 #endif
 
@@ -1485,6 +1493,28 @@ void edgeTxInit()
   storageReadAll();
 #endif
 
+#if defined(PCBMODALAI) && defined(GUI) && !defined(COLORLCD)
+  // Apply "Boot menu" setting now that radio settings are loaded
+  switch (g_eeGeneral.bootMenu) {
+    case BOOT_MENU_MAIN:
+      menuHandlers[0] = menuMainView;
+      break;
+    case BOOT_MENU_HUB:
+      // Fallback view if the hub script is missing or exits
+      menuHandlers[0] = menuMainView;
+#if defined(LUA)
+      if (isFileAvailable(SCRIPTS_TOOLS_PATH "/Joystick.lua")) {
+        f_chdir(SCRIPTS_TOOLS_PATH);
+        luaExec(SCRIPTS_TOOLS_PATH "/Joystick.lua");
+      }
+#endif
+      break;
+    default:  // BOOT_MENU_TELEMETRY
+      menuHandlers[0] = menuViewTelemetry;
+      break;
+  }
+#endif
+
   initSerialPorts();
 
 #if defined(AUDIO)
@@ -1551,6 +1581,7 @@ void edgeTxInit()
     evalFSok = true;
 #endif
 #endif
+
 
 #if defined(GUI)
     if (calibration_needed) {

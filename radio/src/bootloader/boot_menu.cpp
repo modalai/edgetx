@@ -94,7 +94,9 @@ void bootloaderMenu()
   uint8_t index = 0;
   FRESULT fr;
   uint32_t nameCount = 0;
-  
+  bool usbAutoEnabled = true;
+  bool usbPrevPlugged = false;
+
   sdInit();
 
   uint32_t next_frame = time_get_ms();
@@ -104,9 +106,16 @@ void bootloaderMenu()
     if (time_get_ms() - next_frame >= FRAME_INTERVAL_MS) {
       next_frame += FRAME_INTERVAL_MS;
 
-      if (state != ST_USB && state != ST_FLASHING
+      // If USB was just physically unplugged, re-enable auto-mode for next plug-in
+      bool usbNowPlugged = usbPlugged();
+      if (usbPrevPlugged && !usbNowPlugged) {
+        usbAutoEnabled = true;
+      }
+      usbPrevPlugged = usbNowPlugged;
+
+      if (usbAutoEnabled && state != ST_USB && state != ST_FLASHING
           && state != ST_FLASH_DONE && state != ST_RADIO_MENU) {
-        if (usbPlugged()) {
+        if (usbNowPlugged) {
           state = ST_USB;
 #if !defined(SIMU)
           usbStart();
@@ -114,19 +123,28 @@ void bootloaderMenu()
         }
       }
 
+      lcdRefreshWait();
+      event_t event = getEvent();
+
       if (state == ST_USB) {
-        if (usbPlugged() == 0) {
+        if (usbPlugged() == 0 || event == EVT_KEY_BREAK(KEY_EXIT)) {
           vpos = 0;
 #if !defined(SIMU)
           usbStop();
 #endif
           state = ST_START;
+          if (event == EVT_KEY_BREAK(KEY_EXIT)) {
+            usbAutoEnabled = false;  // prevent auto re-entry while USB still connected
+          }
+        } else if (event == EVT_KEY_LONG(KEY_EXIT)) {
+          // Long EXIT press: stop USB storage and reboot to firmware
+#if !defined(SIMU)
+          usbStop();
+#endif
+          state = ST_REBOOT;
         }
         bootloaderDrawScreen(state, 0);
       }
-
-      lcdRefreshWait();
-      event_t event = getEvent();
 
       if (state == ST_START) {
 
