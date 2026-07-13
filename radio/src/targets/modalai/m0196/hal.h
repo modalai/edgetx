@@ -77,7 +77,7 @@
 #define USB_GPIO_DP GPIO_PIN(GPIOA, 12)
 #define USB_GPIO_AF GPIO_AF10
 
-// LCD electrical pins are recorded now; the physical panel driver is deferred.
+// Powertip PE12864WRF-055-H-Q (ST7567), connected in 4-line serial mode.
 #define LCD_MOSI_GPIO GPIO_PIN(GPIOE, 6)
 #define LCD_CLK_GPIO GPIO_PIN(GPIOE, 2)
 #define LCD_A0_GPIO GPIO_PIN(GPIOE, 4)
@@ -85,6 +85,35 @@
 #define LCD_RST_GPIO GPIO_PIN(GPIOE, 5)
 #define LCD_SPI SPI4
 #define LCD_GPIO_AF GPIO_AF5
+#define LCD_SPI_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV8
+#define LCD_SPI_FREQUENCY (SPI45_KERNEL_FREQUENCY / 8)
+
+// Native 6-o'clock orientation is the bring-up default. These are deliberately
+// simple constants so the physical mounting can be corrected without touching
+// the controller driver.
+#define LCD_SEG_DIRECTION_COMMAND 0xA0
+#define LCD_COM_DIRECTION_COMMAND 0xC8
+#define LCD_COLUMN_OFFSET 0
+
+// M0196 DMAMUX1 allocation:
+//   DMA1 stream 0: ADC1 (active)
+//   DMA1 stream 1: SPI2 RX / future IMU (reserved)
+//   DMA1 stream 2: SPI2 TX / future IMU (reserved)
+//   DMA1 streams 3-6: free
+//   DMA1 stream 7: SPI4 TX / LCD (active)
+// DMA2 remains free for future serial or I2C users. BDMA channels 0 and 1 are
+// reserved for future SPI6 RX and TX respectively. SDMMC uses its internal DMA.
+#define LCD_DMA DMA1
+#define LCD_DMA_Stream DMA1_Stream7
+#define LCD_DMA_Stream_Num LL_DMA_STREAM_7
+#define LCD_DMA_Stream_IRQn DMA1_Stream7_IRQn
+#define LCD_DMA_Stream_IRQHandler DMA1_Stream7_IRQHandler
+#define LCD_DMA_FLAGS                                                        \
+  (DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 |                \
+   DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7)
+#define LCD_DMA_STATUS_COMPLETE DMA_HISR_TCIF7
+#define LCD_DMA_STATUS_ERRORS                                              \
+  (DMA_HISR_TEIF7 | DMA_HISR_DMEIF7 | DMA_HISR_FEIF7)
 
 // Backlight: TIM8 channel 3 on PI7.
 #define BACKLIGHT_TIMER_FREQ (PERI2_FREQUENCY * TIMER_MULT_APB2)
