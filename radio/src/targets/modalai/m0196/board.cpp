@@ -93,8 +93,8 @@ void boardInit()
     TRACE("HELM: adcInit failed");
   }
 
-  lcdInit();
   timersInit();
+  lcdInit();
   usbInit();
 
 #if defined(RTCLOCK)

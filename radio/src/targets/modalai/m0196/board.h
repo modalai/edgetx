@@ -114,7 +114,7 @@ void ledBlue();
 #define LCD_W 128
 #define LCD_H 64
 #define LCD_DEPTH 1
-#define IS_LCD_RESET_NEEDED() false
+#define IS_LCD_RESET_NEEDED() true
 #define LCD_CONTRAST_MIN 10
 #define LCD_CONTRAST_MAX 30
 #define LCD_CONTRAST_DEFAULT 20
@@ -122,14 +122,16 @@ void ledBlue();
 void lcdInit();
 void lcdInitFinish();
 void lcdOff();
-void lcdRefresh(bool wait = true);
+void lcdRefresh(bool wait = false);
+void lcdRefreshWait();
 void lcdSetRefVolt(unsigned char val);
 void lcdSetInvert(bool invert);
+uint32_t lcdGetRefreshCount();
+uint32_t lcdGetDmaErrorCount();
 #ifdef __cplusplus
 void lcdSetContrast(bool useDefault = false);
 #endif
 void lcdFlushed();
-#define lcdRefreshWait()
 
 #if defined(CROSSFIRE)
 #define TELEMETRY_FIFO_SIZE 128
@@ -140,4 +142,3 @@ void lcdFlushed();
 
 #define NUM_TRIMS 4
 #define NUM_TRIMS_KEYS (NUM_TRIMS * 2)
-
