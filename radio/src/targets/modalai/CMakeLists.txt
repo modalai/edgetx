@@ -85,6 +85,7 @@ elseif(PCB STREQUAL M196)
   set(USB_CHARGER NO)
   set(IMU NO)
   set(BLUETOOTH NO)
+  set(HAPTIC YES)
   set(STATUS_LEDS YES)
   add_definitions(
     -DPCBM196
@@ -144,6 +145,10 @@ set(BOARD_COMMON_SRC
   targets/common/arm/stm32/rtc_driver.cpp
   targets/common/arm/stm32/watchdog_driver.cpp
 )
+
+if(HAPTIC)
+  list(APPEND BOARD_COMMON_SRC ${TARGET_SRC_DIR}/haptic_driver.cpp)
+endif()
 
 if(PCB STREQUAL M207)
   list(APPEND BOARD_COMMON_SRC ${TARGET_SRC_DIR}/voxlpm_i2c_driver.cpp)
