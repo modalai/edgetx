@@ -1,4 +1,4 @@
-#pragma once
+#pragma once  // M0207 power monitor
 
 #include <stdint.h>
 #include "hal.h"

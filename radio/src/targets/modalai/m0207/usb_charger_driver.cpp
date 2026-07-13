@@ -19,5 +19,18 @@
  * GNU General Public License for more details.
  */
 
-void SystemClock_Config();
+#include "hal/gpio.h"
+#include "stm32_gpio.h"
 
+#include "board.h"  // M0207 charger hardware
+#include "hal/usb_driver.h"
+
+void usbChargerInit()
+{
+  gpio_init(USB_CHARGER_GPIO, GPIO_IN_PU, GPIO_PIN_SPEED_LOW);
+}
+
+bool usbChargerLed()
+{
+  return (!gpio_read(USB_CHARGER_GPIO) && usbPlugged());
+}

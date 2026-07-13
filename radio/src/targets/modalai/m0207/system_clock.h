@@ -19,18 +19,6 @@
  * GNU General Public License for more details.
  */
 
-#include "hal/gpio.h"
-#include "stm32_gpio.h"
+#pragma once
 
-#include "board.h"
-#include "hal/usb_driver.h"
-
-void usbChargerInit()
-{
-  gpio_init(USB_CHARGER_GPIO, GPIO_IN_PU, GPIO_PIN_SPEED_LOW);
-}
-
-bool usbChargerLed()
-{
-  return (!gpio_read(USB_CHARGER_GPIO) && usbPlugged());
-}
+void SystemClock_Config();

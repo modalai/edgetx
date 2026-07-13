@@ -24,7 +24,7 @@
  #include "stm32_spi.h"
  #include "stm32_dma.h"
  
- #include "board.h"
+#include "board.h"  // M0207 display contract
  #include "debug.h"
  #include "lcd.h"
  

@@ -34,6 +34,9 @@ if(DEBUG_SEGGER_RTT)
   set(BOOTLOADER_SRC ${BOOTLOADER_SRC}
     ${RADIO_SRC_DIR}/thirdparty/Segger/SEGGER/SEGGER_RTT.c
   )
+  if(HELM_DIAGNOSTICS AND NOT ENABLE_BOOTLOADER_DEBUG)
+    set(BOOTLOADER_SRC ${BOOTLOADER_SRC} ${RADIO_SRC_DIR}/serial.cpp)
+  endif()
 endif()
 
 # TODO: this shouldn't be needed at all

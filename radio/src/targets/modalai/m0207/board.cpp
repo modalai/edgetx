@@ -67,7 +67,7 @@ extern "C" void initialise_monitor_handles();
   #include "voxlpm_i2c_driver.h"
 #endif
 
-// SYS key (B.02)
+// M0207 SYS key (B.02)
 #define BL_KEY GPIO_PIN(GPIOB, 2)
 
 bool boardBLStartCondition()
@@ -243,4 +243,3 @@ void boardOff()
 #if !defined(BOOT)
 void per5ms() {}
 #endif
-

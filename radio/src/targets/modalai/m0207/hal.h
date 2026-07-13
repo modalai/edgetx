@@ -46,7 +46,7 @@
    2/3/4 SDIO
 */
 
-// Zorro Blue official hardware config
+// M0207 / Zorro Blue hardware config
 
 // Keys
 

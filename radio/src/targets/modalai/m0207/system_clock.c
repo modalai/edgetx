@@ -29,7 +29,7 @@
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow :
-  *            System Clock source            = PLL1 (HSE BYPASS)
+  *            System Clock source            = PLL1 (16 MHz HSE)
   *            SYSCLK(Hz)                     = 400000000 (CPU Clock)
   *            HCLK(Hz)                       = 200000000 (Cortex-M4 CPU, Bus matrix Clocks)
   *            AHB Prescaler                  = 2
