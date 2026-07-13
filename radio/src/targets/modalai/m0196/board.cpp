@@ -110,6 +110,10 @@ void boardInit()
 
   backlightInit();
 
+#if defined(HAPTIC)
+  hapticInit();
+#endif
+
 #if defined(GUI)
   lcdSetContrast(true);
 #endif
@@ -123,6 +127,9 @@ void boardOff()
 {
   ledOff();
   BACKLIGHT_DISABLE();
+#if defined(HAPTIC)
+  hapticOff();
+#endif
   lcdOff();
 
   // Power latch polarity is intentionally unverified. Never drive PI6 here.
@@ -137,6 +144,11 @@ void boardOff()
 #if !defined(BOOT)
 void per5ms()
 {
+#if defined(HAPTIC)
+  DEBUG_TIMER_START(debugTimerHaptic);
+  HAPTIC_HEARTBEAT();
+  DEBUG_TIMER_STOP(debugTimerHaptic);
+#endif
 #if defined(HELM_DIAGNOSTICS)
   helmDiagnosticsPer5ms();
 #endif

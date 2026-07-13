@@ -43,6 +43,7 @@
 #define ADC_GPIO_PIN_STICK_RH LL_GPIO_PIN_5
 #define ADC_CHANNEL_STICK_RH LL_ADC_CHANNEL_19
 
+#ifdef SUPPORT_JOYSTICK
 #define HARDWARE_POT1
 #define ADC_GPIO_PIN_POT1 LL_GPIO_PIN_0
 #define ADC_CHANNEL_POT1 LL_ADC_CHANNEL_16
@@ -60,6 +61,14 @@
 #define ADC_GPIOB_PINS (ADC_GPIO_PIN_POT3 | ADC_GPIO_PIN_POT4)
 #define ADC_GPIOC_PINS (ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_STICK_RV)
 #define ADC_DIRECTION {1, 1, 1, 1, 1, 1, 1, 1}
+
+#else
+
+#define ADC_GPIOA_PINS (ADC_GPIO_PIN_STICK_RH)
+#define ADC_GPIOC_PINS (ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_STICK_RV)
+#define ADC_DIRECTION {1, 1, 1, 1}
+
+#endif
 
 // Internal CRSF module: UART4 on PH13/PH14. Module power remains unmanaged
 // until HELM_INTERNAL_MODULE_POWER_UNVERIFIED is replaced by verified macros.
@@ -124,6 +133,22 @@
 #define BACKLIGHT_CCER TIM_CCER_CC3E
 #define BACKLIGHT_BDTR TIM_BDTR_MOE
 #define BACKLIGHT_COUNTER_REGISTER BACKLIGHT_TIMER->CCR3
+
+// Haptics: TIM4 channels 1-4 on PD12-PD15. EdgeTX exposes one haptic
+// strength, which is mirrored to all four motor drivers.
+#define HAPTIC_PWM
+#define HAPTIC_CUSTOM_PER5MS
+#define HAPTIC_TIMER TIM4
+#define HAPTIC_TIMER_FREQ (PERI1_FREQUENCY * TIMER_MULT_APB1)
+#define HAPTIC_GPIO_AF GPIO_AF2
+#define HAPTIC_CCMR1                                                       \
+  (TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC2M_1 |              \
+   TIM_CCMR1_OC2M_2)
+#define HAPTIC_CCMR2                                                       \
+  (TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC4M_1 |              \
+   TIM_CCMR2_OC4M_2)
+#define HAPTIC_CCER                                                        \
+  (TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E)
 
 // RGB status LED: TIM5 channels 1-3 on PH10-PH12.
 #define STATUS_LEDS

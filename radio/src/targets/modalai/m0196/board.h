@@ -78,6 +78,12 @@ uint8_t isBacklightEnabled();
 #define BACKLIGHT_FORCED_ON 101
 #define BACKLIGHT_ENABLE() backlightEnable(currentBacklightBright)
 
+#if defined(HAPTIC)
+void hapticInit();
+void hapticOff();
+void hapticOn(uint32_t pwmPercent);
+#endif
+
 #if defined(__cplusplus) && !defined(SIMU)
 }
 #endif
