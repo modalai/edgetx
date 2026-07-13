@@ -22,7 +22,7 @@
 #include "hal/gpio.h"
 #include "stm32_gpio.h"
 
-#include "board.h"
+#include "board.h"  // M0207 status LEDs
 
 #if defined(FUNCTION_SWITCHES)
 static const uint32_t fsLeds[] = {FSLED_GPIO_PIN_1, FSLED_GPIO_PIN_2,

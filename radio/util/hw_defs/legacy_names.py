@@ -489,7 +489,7 @@ LEGACY_NAMES = [
             "x7", "x7access",
             "xlite", "xlites",
             "zorro",
-            "modal_zorro"
+            "modal_zorro", "helm_basic"
         },
         "inputs": {
             "LH": {
@@ -525,6 +525,20 @@ LEGACY_NAMES = [
                 "label": "S2",
                 "short_label": "2",
                 "description": "Potentiometer 2"
+            },
+            "P3": {
+                "yaml": "POT3",
+                "lua": "s3",
+                "label": "S3",
+                "short_label": "3",
+                "description": "Potentiometer 3"
+            },
+            "P4": {
+                "yaml": "POT4",
+                "lua": "s4",
+                "label": "S4",
+                "short_label": "4",
+                "description": "Potentiometer 4"
             }
         }
     },

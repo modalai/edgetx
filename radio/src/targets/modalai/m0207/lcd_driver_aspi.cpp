@@ -22,7 +22,7 @@
 #include "hal/gpio.h"
 #include "stm32_gpio.h"
 
-#include "board.h"
+#include "board.h"  // M0207 display contract
 #include "lcd.h"
 
 #include "hal/abnormal_reboot.h"

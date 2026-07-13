@@ -88,7 +88,11 @@ function(AddHardwareDefTarget output)
 
   AddCompilerFlags(HW_DEF_ARGS)
 
-  set(HW_DEF_SRC ${RADIO_DIRECTORY}/src/targets/${TARGET_DIR}/hal.h)
+  if(TARGET_HAL_FILE)
+    set(HW_DEF_SRC ${RADIO_DIRECTORY}/src/${TARGET_HAL_FILE})
+  else()
+    set(HW_DEF_SRC ${RADIO_DIRECTORY}/src/targets/${TARGET_DIR}/hal.h)
+  endif()
 
   separate_arguments(flags UNIX_COMMAND ${CMAKE_CXX_FLAGS})
   foreach(flag ${flags})

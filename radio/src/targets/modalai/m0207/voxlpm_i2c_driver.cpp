@@ -1,6 +1,6 @@
 #pragma once
 
-#include "voxlpm_i2c_driver.h"
+#include "voxlpm_i2c_driver.h"  // M0207 power monitor
 
 #include "stm32_hal_ll.h"
 #include "stm32_gpio.h"

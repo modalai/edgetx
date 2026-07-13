@@ -25,4 +25,8 @@
   #define USB_NAME                     "ModalAI Zorro Blue"
   #define USB_MANUFACTURER             'M', 'o', 'd', 'a', 'l', 'A', 'I', ' '  /* 8 bytes */
   #define USB_PRODUCT                  'B', 'l', 'u', 'e', ' ', 'Z', ' ', ' '  /* 8 Bytes */
+#elif defined(RADIO_HELM)
+  #define USB_NAME                     "ModalAI Helm"
+  #define USB_MANUFACTURER             'M', 'o', 'd', 'a', 'l', 'A', 'I', ' '  /* 8 bytes */
+  #define USB_PRODUCT                  'H', 'e', 'l', 'm', ' ', ' ', ' ', ' '  /* 8 Bytes */
 #endif

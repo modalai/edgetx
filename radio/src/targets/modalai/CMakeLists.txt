@@ -7,6 +7,7 @@ option(INTERNAL_MODULE_PPM "Support for PPM internal module" OFF)
 option(AUTOUPDATE "Auto update internal chips from SD" OFF)
 option(BIND_KEY "Enable bind button" OFF)
 option(BLUETOOTH "FrSky BT module support" OFF)
+option(HELM_DIAGNOSTICS "Enable M0196 bring-up diagnostics over SEGGER RTT" OFF)
 
 set(USE_RTC_CLOCK NO)
 set(RTC_BACKUP_RAM NO)
@@ -25,6 +26,7 @@ add_definitions(-DTHREADSAFE_MALLOC)
 add_definitions(-DDEFAULT_VIEW_TELEMETRY)
 
 if(PCB STREQUAL M207)
+  set(MODAL_BOARD m0207)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   #set(HAPTIC YES)
   set(GUI_DIR 128x64)
@@ -57,6 +59,50 @@ if(PCB STREQUAL M207)
     add_definitions(-DRADIO_MODAL)
     set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
   endif()
+elseif(PCB STREQUAL M196)
+  if(NOT PCBREV STREQUAL HELM_BASIC)
+    message(FATAL_ERROR "Unsupported M196 revision '${PCBREV}'")
+  endif()
+
+  set(MODAL_BOARD m0196)
+  set(USE_RTC_CLOCK YES)
+  set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  set(GUI_DIR 128x64)
+  set(SDCARD YES)
+  set(STORAGE_MODELSLIST NO)
+  set(BITMAPS_DIR 128x64)
+  set(BITMAPS_TARGET 9x_bitmaps)
+  set(FONTS_TARGET 9x_fonts_1bit)
+  set(LCD_DRIVER lcd_driver_stub.cpp)
+  set(HARDWARE_EXTERNAL_MODULE NO)
+  set(INTERNAL_MODULE_CRSF YES)
+  set(DEFAULT_INTERNAL_MODULE CROSSFIRE CACHE STRING "Default internal module")
+  set(INTERNAL_MODULE_SERIAL YES)
+  set(MODULE_SIZE_SML YES)
+  set(FLAVOUR helm_basic)
+  set(CPU_TYPE_FULL STM32H753II)
+  set(ROTARY_ENCODER NO)
+  set(USB_CHARGER NO)
+  set(IMU NO)
+  set(BLUETOOTH NO)
+  set(STATUS_LEDS YES)
+  add_definitions(
+    -DPCBM196
+    -DRADIO_HELM
+    -DHARDWARE_INTERNAL_MODULE
+    -DINTERNAL_MODULE_CRSF
+    -DSOFTWARE_VOLUME
+    -DPWR_BUTTON_${PWR_BUTTON}
+  )
+  set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
+
+  if(HELM_DIAGNOSTICS)
+    add_definitions(-DHELM_DIAGNOSTICS)
+    set(DEBUG RTT CACHE STRING "Debug transport" FORCE)
+    set(DEBUG_SEGGER_RTT ON CACHE BOOL "Enable SEGGER RTT" FORCE)
+  endif()
+else()
+  message(FATAL_ERROR "Unsupported ModalAI PCB '${PCB}'")
 endif()
 
 message("CPU_TYPE_FULL = ${CPU_TYPE_FULL}")
@@ -82,14 +128,15 @@ if(INTERNAL_MODULE_SERIAL)
 
   endif()
 
-set(TARGET_SRC_DIR targets/${TARGET_DIR})
+set(TARGET_SRC_DIR targets/${TARGET_DIR}/${MODAL_BOARD})
+set(TARGET_HAL_FILE ${TARGET_SRC_DIR}/hal.h)
+include_directories(${TARGET_SRC_DIR} targets/${TARGET_DIR})
 
 set(BOARD_COMMON_SRC
   ${TARGET_SRC_DIR}/board.cpp
   ${TARGET_SRC_DIR}/led_driver.cpp
-  ${TARGET_SRC_DIR}/backlight_driver.cpp
+  targets/${TARGET_DIR}/backlight_driver.cpp
   ${TARGET_SRC_DIR}/${LCD_DRIVER}
-  ${TARGET_SRC_DIR}/voxlpm_i2c_driver.cpp
   targets/common/arm/stm32/abnormal_reboot.cpp
   targets/common/arm/stm32/delays_driver.cpp
   targets/common/arm/stm32/flash_driver.cpp
@@ -97,6 +144,12 @@ set(BOARD_COMMON_SRC
   targets/common/arm/stm32/rtc_driver.cpp
   targets/common/arm/stm32/watchdog_driver.cpp
 )
+
+if(PCB STREQUAL M207)
+  list(APPEND BOARD_COMMON_SRC ${TARGET_SRC_DIR}/voxlpm_i2c_driver.cpp)
+elseif(PCB STREQUAL M196 AND HELM_DIAGNOSTICS)
+  list(APPEND BOARD_COMMON_SRC ${TARGET_SRC_DIR}/diagnostics.cpp)
+endif()
 
 if(ROTARY_ENCODER)
   list(APPEND BOARD_COMMON_SRC
@@ -131,10 +184,6 @@ add_library(board OBJECT EXCLUDE_FROM_ALL
   targets/common/arm/stm32/stm32_ws2812.cpp
 )
 set(FIRMWARE_SRC ${FIRMWARE_SRC} $<TARGET_OBJECTS:board>)
-
-if(STATUS_LEDS)
-  target_sources(board PRIVATE ${TARGET_SRC_DIR}/led_driver.cpp)
-endif()
 
 if(BIND_KEY)
   add_definitions(-DBIND_KEY)

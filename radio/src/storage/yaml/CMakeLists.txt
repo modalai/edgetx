@@ -68,7 +68,7 @@ elseif((PCB STREQUAL X9D) OR (PCB STREQUAL X9D+))
   else()
     set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_x9d.cpp)
   endif()
-elseif(PCB STREQUAL M207)
+elseif((PCB STREQUAL M207) OR (PCB STREQUAL M196))
   set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_128x64.cpp)
 else()
   message(FATAL_ERROR "PCB '${PCB}' is not supported by YAML storage")
@@ -105,4 +105,3 @@ set(SRC ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/yaml_inputs.inc)
 
 # helper target for testing purposes
 add_custom_target(yaml_inputs DEPENDS ${HW_DESC_JSON} yaml_inputs.inc)
-

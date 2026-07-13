@@ -223,8 +223,6 @@ void ledBlue();
 #define LCD_CONTRAST_MAX                30
 #define LCD_CONTRAST_DEFAULT          20
 
-#define IS_LCD_RESET_NEEDED()           true
-
 void lcdInit();
 void lcdInitFinish();
 void lcdOff();
@@ -262,4 +260,3 @@ void lcdFlushed();
 #define NUM_TRIMS                               4
 
 #define NUM_TRIMS_KEYS                          (NUM_TRIMS * 2)
-

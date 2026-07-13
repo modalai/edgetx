@@ -610,6 +610,19 @@ SWITCH_CONFIG = {
         "SF": {"default": "2POS",   "display": [1, 2]},
         "SH": {"default": "TOGGLE", "display": [1, 3]},
     },
+    "helm_basic": {
+        # Provisional bring-up ordering; final product mapping is PCBREV-owned.
+        "SA": {"default": "3POS", "display": [0, 0]},
+        "SB": {"default": "3POS", "display": [0, 1]},
+        "SC": {"default": "3POS", "display": [0, 2]},
+        "SD": {"default": "3POS", "display": [0, 3]},
+        "SE": {"default": "3POS", "display": [0, 4]},
+        "SF": {"default": "3POS", "display": [1, 0]},
+        "SG": {"default": "3POS", "display": [1, 1]},
+        "SH": {"default": "3POS", "display": [1, 2]},
+        "SI": {"default": "3POS", "display": [1, 3]},
+        "SJ": {"default": "3POS", "display": [1, 4]},
+    },
     "pocket": {
         # left side
         "SA": { "default": "2POS", "display": [ 0, 0 ] },

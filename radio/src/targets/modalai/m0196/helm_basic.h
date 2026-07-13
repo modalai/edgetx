@@ -1,0 +1,116 @@
+/*
+ * HELM_BASIC revision mapping.
+ *
+ * GPIO assignments and active levels intentionally live in this revision
+ * header so future M0196 revisions can replace them without changing drivers.
+ */
+
+#pragma once
+
+// Provisional bootloader key: Menu Input A, active low.
+#define HELM_BOOTLOADER_KEY_GPIO GPIO_PIN(GPIOE, 9)
+
+// Navigation hat and menu inputs.
+#define KEYS_GPIO_REG_UP GPIOG
+#define KEYS_GPIO_PIN_UP LL_GPIO_PIN_11
+#define KEYS_GPIO_REG_DOWN GPIOG
+#define KEYS_GPIO_PIN_DOWN LL_GPIO_PIN_10
+#define KEYS_GPIO_REG_LEFT GPIOD
+#define KEYS_GPIO_PIN_LEFT LL_GPIO_PIN_3
+#define KEYS_GPIO_REG_RIGHT GPIOD
+#define KEYS_GPIO_PIN_RIGHT LL_GPIO_PIN_4
+#define KEYS_GPIO_REG_ENTER GPIOG
+#define KEYS_GPIO_PIN_ENTER LL_GPIO_PIN_9
+#define KEYS_GPIO_REG_EXIT GPIOE
+#define KEYS_GPIO_PIN_EXIT LL_GPIO_PIN_9
+#define KEYS_GPIO_REG_PAGEUP GPIOE
+#define KEYS_GPIO_PIN_PAGEUP LL_GPIO_PIN_10
+#define KEYS_GPIO_REG_PAGEDN GPIOE
+#define KEYS_GPIO_PIN_PAGEDN LL_GPIO_PIN_11
+#define KEYS_GPIO_REG_SYS GPIOE
+#define KEYS_GPIO_PIN_SYS LL_GPIO_PIN_12
+#define KEYS_GPIO_REG_MDL GPIOE
+#define KEYS_GPIO_PIN_MDL LL_GPIO_PIN_14
+
+// Five left and five right three-position switches. This logical ordering is
+// provisional until the physical control layout is validated.
+#define STORAGE_SWITCH_A
+#define HARDWARE_SWITCH_A
+#define SWITCHES_GPIO_REG_A_L GPIOF
+#define SWITCHES_GPIO_PIN_A_L LL_GPIO_PIN_6
+#define SWITCHES_GPIO_REG_A_H GPIOF
+#define SWITCHES_GPIO_PIN_A_H LL_GPIO_PIN_10
+
+#define STORAGE_SWITCH_B
+#define HARDWARE_SWITCH_B
+#define SWITCHES_GPIO_REG_B_L GPIOF
+#define SWITCHES_GPIO_PIN_B_L LL_GPIO_PIN_2
+#define SWITCHES_GPIO_REG_B_H GPIOF
+#define SWITCHES_GPIO_PIN_B_H LL_GPIO_PIN_3
+
+#define STORAGE_SWITCH_C
+#define HARDWARE_SWITCH_C
+#define SWITCHES_GPIO_REG_C_L GPIOF
+#define SWITCHES_GPIO_PIN_C_L LL_GPIO_PIN_1
+#define SWITCHES_GPIO_REG_C_H GPIOF
+#define SWITCHES_GPIO_PIN_C_H LL_GPIO_PIN_4
+
+#define STORAGE_SWITCH_D
+#define HARDWARE_SWITCH_D
+#define SWITCHES_GPIO_REG_D_L GPIOH
+#define SWITCHES_GPIO_PIN_D_L LL_GPIO_PIN_5
+#define SWITCHES_GPIO_REG_D_H GPIOF
+#define SWITCHES_GPIO_PIN_D_H LL_GPIO_PIN_5
+
+#define STORAGE_SWITCH_E
+#define HARDWARE_SWITCH_E
+#define SWITCHES_GPIO_REG_E_L GPIOH
+#define SWITCHES_GPIO_PIN_E_L LL_GPIO_PIN_2
+#define SWITCHES_GPIO_REG_E_H GPIOH
+#define SWITCHES_GPIO_PIN_E_H LL_GPIO_PIN_3
+
+#define STORAGE_SWITCH_F
+#define HARDWARE_SWITCH_F
+#define SWITCHES_GPIO_REG_F_L GPIOA
+#define SWITCHES_GPIO_PIN_F_L LL_GPIO_PIN_2
+#define SWITCHES_GPIO_REG_F_H GPIOA
+#define SWITCHES_GPIO_PIN_F_H LL_GPIO_PIN_3
+
+#define STORAGE_SWITCH_G
+#define HARDWARE_SWITCH_G
+#define SWITCHES_GPIO_REG_G_L GPIOC
+#define SWITCHES_GPIO_PIN_G_L LL_GPIO_PIN_3
+#define SWITCHES_GPIO_REG_G_H GPIOA
+#define SWITCHES_GPIO_PIN_G_H LL_GPIO_PIN_4
+
+#define STORAGE_SWITCH_H
+#define HARDWARE_SWITCH_H
+#define SWITCHES_GPIO_REG_H_L GPIOB
+#define SWITCHES_GPIO_PIN_H_L LL_GPIO_PIN_2
+#define SWITCHES_GPIO_REG_H_H GPIOC
+#define SWITCHES_GPIO_PIN_H_H LL_GPIO_PIN_4
+
+#define STORAGE_SWITCH_I
+#define HARDWARE_SWITCH_I
+#define SWITCHES_GPIO_REG_I_L GPIOF
+#define SWITCHES_GPIO_PIN_I_L LL_GPIO_PIN_12
+#define SWITCHES_GPIO_REG_I_H GPIOF
+#define SWITCHES_GPIO_PIN_I_H LL_GPIO_PIN_15
+
+#define STORAGE_SWITCH_J
+#define HARDWARE_SWITCH_J
+#define SWITCHES_GPIO_REG_J_L GPIOF
+#define SWITCHES_GPIO_PIN_J_L LL_GPIO_PIN_11
+#define SWITCHES_GPIO_REG_J_H GPIOF
+#define SWITCHES_GPIO_PIN_J_H LL_GPIO_PIN_14
+
+// Power polarity is intentionally not defined until verified with hardware.
+// Drivers must leave both pins in their reset state while this marker exists.
+#define HELM_POWER_CONTROL_UNVERIFIED
+#define HELM_POWER_BUTTON_GPIO GPIO_PIN(GPIOI, 5)
+#define HELM_POWER_HOLD_GPIO GPIO_PIN(GPIOI, 6)
+
+// Internal ELRS power is held safely off until its polarity is verified.
+#define HELM_INTERNAL_MODULE_POWER_UNVERIFIED
+#define HELM_INTERNAL_MODULE_POWER_GPIO GPIO_PIN(GPIOG, 7)
+

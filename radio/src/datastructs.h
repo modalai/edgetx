@@ -61,7 +61,7 @@ static inline void check_struct()
   CHKSIZE(FrSkyLineData, 4);
   CHKTYPE(TelemetryScreenData, 24);
   CHKSIZE(ModelHeader, 12);
-#elif defined(PCBM207)
+#elif defined(PCBM207) || defined(PCBM196)
   CHKSIZE(LimitData, 11);
   CHKSIZE(TimerData, 12);
   CHKSIZE(FrSkyBarData, 6);
@@ -107,7 +107,7 @@ static inline void check_struct()
 
 #if defined(RADIO_TPRO) || defined(RADIO_TPROV2) || defined(RADIO_BUMBLEBEE)
   CHKSIZE(ModelData, 6355);
-#elif defined(RADIO_MODAL)
+#elif defined(RADIO_MODAL) || defined(RADIO_HELM)
   CHKSIZE(ModelData, 6329);
 #elif defined(RADIO_T14) || defined(RADIO_T12MAX)
   CHKSIZE(ModelData, 6329);
