@@ -27,6 +27,7 @@ add_definitions(-DDEFAULT_VIEW_TELEMETRY)
 
 if(PCB STREQUAL M207)
   set(MODAL_BOARD m0207)
+  set(FACTORY_RESET YES)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   #set(HAPTIC YES)
   set(GUI_DIR 128x64)
@@ -41,7 +42,7 @@ if(PCB STREQUAL M207)
   add_definitions(-DHARDWARE_INTERNAL_MODULE)
   add_definitions(-DINTERNAL_MODULE_CRSF)
   set(STATUS_LEDS YES)
-  add_definitions(-DPCBM207 -DSOFTWARE_VOLUME)
+  add_definitions(-DPCBM207 -DSOFTWARE_VOLUME -DFACTORY_RESET)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   if(PCBREV STREQUAL MODAL_ZORRO)
     set(DEFAULT_INTERNAL_MODULE CROSSFIRE CACHE STRING "Default internal module")
@@ -220,6 +221,32 @@ set(SRC ${SRC}
   io/frsky_firmware_update.cpp
   io/multi_firmware_update.cpp
 )
+
+if(FACTORY_RESET)
+  set(FACTORY_SD_DIR "${CMAKE_SOURCE_DIR}/resources/sd-card/${MODAL_BOARD}")
+  if(NOT EXISTS "${FACTORY_SD_DIR}")
+    message(FATAL_ERROR "Factory SD resources are missing: ${FACTORY_SD_DIR}")
+  endif()
+
+  file(GLOB_RECURSE FACTORY_SD_INPUTS CONFIGURE_DEPENDS
+    LIST_DIRECTORIES false "${FACTORY_SD_DIR}/*")
+  set(FACTORY_SD_IMAGE "${CMAKE_CURRENT_BINARY_DIR}/factory_sd_image.cpp")
+  add_custom_command(
+    OUTPUT "${FACTORY_SD_IMAGE}"
+    COMMAND ${PYTHON_EXECUTABLE}
+      "${RADIO_DIRECTORY}/util/pack_factory_sd.py"
+      --input "${FACTORY_SD_DIR}"
+      --output "${FACTORY_SD_IMAGE}"
+    DEPENDS
+      "${RADIO_DIRECTORY}/util/pack_factory_sd.py"
+      ${FACTORY_SD_INPUTS}
+    COMMENT "Packing ${MODAL_BOARD} factory SD image"
+    VERBATIM
+  )
+  set_source_files_properties("${FACTORY_SD_IMAGE}" PROPERTIES GENERATED TRUE)
+  list(APPEND SRC factory_reset.cpp "${FACTORY_SD_IMAGE}")
+  list(APPEND GUI_SRC radio_factory_reset.cpp)
+endif()
 
 set(GUI_SRC ${GUI_SRC}
   model_input_edit.cpp

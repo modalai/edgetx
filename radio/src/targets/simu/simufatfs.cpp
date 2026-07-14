@@ -348,6 +348,17 @@ FRESULT f_write(FIL* fil, const void* data, UINT size, UINT* written)
   return FR_OK;
 }
 
+FRESULT f_sync(FIL* fil)
+{
+  if (!fil || !fil->obj.fs) return FR_INVALID_OBJECT;
+
+  _simu_FIL* sf = reinterpret_cast<_simu_FIL*>(fil->obj.fs);
+  if (!sf->stream || !sf->stream->is_open()) return FR_INVALID_OBJECT;
+
+  sf->stream->flush();
+  return sf->stream->good() ? FR_OK : FR_DISK_ERR;
+}
+
 FRESULT f_lseek(FIL* fil, DWORD offset)
 {
   if (fil && fil->obj.fs) {
@@ -499,9 +510,35 @@ FRESULT f_readdir(DIR* rep, FILINFO* fil)
   }
 }
 
-FRESULT f_mkfs(const TCHAR* path, BYTE opt, DWORD au, void* work, UINT len)
+static FRESULT clearSimulatedVolume(const fs::path& root)
 {
+  if (root.empty()) return FR_INVALID_DRIVE;
+
+  std::error_code ec;
+  fs::create_directories(root, ec);
+  if (ec) return FR_DISK_ERR;
+
+  for (const auto& entry : fs::directory_iterator(root, ec)) {
+    if (ec) return FR_DISK_ERR;
+    fs::remove_all(entry.path(), ec);
+    if (ec) return FR_DISK_ERR;
+  }
+
   return FR_OK;
+}
+
+FRESULT f_mkfs(const TCHAR*, const MKFS_PARM*, void*, UINT)
+{
+  auto status = clearSimulatedVolume(simuSdDirectory);
+  if (status != FR_OK) return status;
+
+  if (!simuSettingsDirectory.empty() &&
+      simuSettingsDirectory != simuSdDirectory) {
+    status = clearSimulatedVolume(simuSettingsDirectory);
+  }
+
+  simuCurrentPath = fs::path{"/"};
+  return status;
 }
 
 FRESULT f_mkdir(const TCHAR* name)

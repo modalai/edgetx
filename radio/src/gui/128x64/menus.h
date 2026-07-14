@@ -76,6 +76,12 @@ void menuRadioTools(event_t event);
 void menuRadioSpectrumAnalyser(event_t event);
 void menuRadioPowerMeter(event_t event);
 void menuRadioCalibration(event_t event);
+#if defined(FACTORY_RESET)
+void menuFactoryReset(event_t event);
+void menuFactoryResetResume(event_t event);
+void menuFactoryInputTest(event_t event);
+void menuFactoryCalibration(event_t event);
+#endif
 void menuGhostModuleConfig(event_t event);
 
 extern bool radioGFEnabled();

@@ -259,6 +259,9 @@ enum MenuRadioVersionItems
 #if defined(PXX2) || defined(CROSSFIRE)
   ITEM_RADIO_MODULES_VERSION,
 #endif
+#if defined(FACTORY_RESET)
+  ITEM_RADIO_FACTORY_RESET,
+#endif
   ITEM_RADIO_VERSION_COUNT
 };
 
@@ -268,7 +271,11 @@ void menuRadioVersion(event_t event)
 
   coord_t y = MENU_HEADER_HEIGHT + 2;
   lcdDrawText(FW, y, vers_stamp, SMLSIZE);
+#if defined(FACTORY_RESET)
+  y += 4 * (FH - 1) + 2;
+#else
   y += 5 * (FH - 1) + 2;
+#endif
 
 #if defined(PCBTARANIS)
   lcdDrawText(INDENT_WIDTH, y, BUTTON(TR_FIRMWARE_OPTIONS), menuVerticalPosition == ITEM_RADIO_FIRMWARE_OPTIONS ? INVERS : 0);
@@ -285,6 +292,16 @@ void menuRadioVersion(event_t event)
   if (menuVerticalPosition == ITEM_RADIO_MODULES_VERSION && event == EVT_KEY_BREAK(KEY_ENTER)) {
     s_editMode = EDIT_SELECT_FIELD;
     pushMenu(menuRadioModulesVersion);
+  }
+#endif
+
+#if defined(FACTORY_RESET)
+  lcdDrawText(INDENT_WIDTH, y, BUTTON("Factory reset"),
+              menuVerticalPosition == ITEM_RADIO_FACTORY_RESET ? INVERS : 0);
+  if (menuVerticalPosition == ITEM_RADIO_FACTORY_RESET &&
+      event == EVT_KEY_BREAK(KEY_ENTER)) {
+    s_editMode = EDIT_SELECT_FIELD;
+    pushMenu(menuFactoryReset);
   }
 #endif
 }

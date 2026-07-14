@@ -48,4 +48,12 @@ _stext_iram = LOADADDR(.iram);
 
 _dram_addr = ADDR(.dram);
 
+/* Immutable factory SD image, accessed directly from internal flash. */
+.factory_sd (READONLY) :
+{
+  . = ALIGN(4);
+  KEEP(*(.factory_sd))
+  . = ALIGN(4);
+} > REGION_TEXT_STORAGE
+
 PROVIDE(_heap_start = ORIGIN(RAM_D3));

@@ -20,6 +20,9 @@
  */
 
 #include "edgetx.h"
+#if defined(FACTORY_RESET)
+  #include "factory_reset.h"
+#endif
 #include "edgetx_types.h"
 #include "timers.h"
 #include "switches.h"
@@ -1395,7 +1398,11 @@ void doMixerPeriodicUpdates()
     }
 #endif
 
+#if defined(FACTORY_RESET)
+    if (!factoryResetInputTestActive()) checkTrims();
+#else
     checkTrims();
+#endif
   }
 
   DEBUG_TIMER_STOP(debugTimerMixes10ms);
