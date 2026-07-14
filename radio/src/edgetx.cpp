@@ -41,6 +41,10 @@
 
 #include "timers_driver.h"
 
+#if defined(FACTORY_RESET)
+  #include "factory_reset.h"
+#endif
+
 #include "switches.h"
 #include "inactivity_timer.h"
 #include "input_mapping.h"
@@ -1597,9 +1601,16 @@ void edgeTxInit()
   if (!UNEXPECTED_SHUTDOWN()) {
 
     uint8_t calibration_needed = !(startOptions & OPENTX_START_NO_CALIBRATION) && (g_eeGeneral.chkSum != evalChkSum());
+#if defined(FACTORY_RESET)
+    auto factoryResetPending = factoryResetPendingState();
+#endif
 
 #if defined(GUI)
-    if (!calibration_needed && !(startOptions & OPENTX_START_NO_SPLASH)) {
+    if (!calibration_needed &&
+#if defined(FACTORY_RESET)
+        factoryResetPending == FactoryResetPendingState::None &&
+#endif
+        !(startOptions & OPENTX_START_NO_SPLASH)) {
       if (!g_eeGeneral.dontPlayHello) AUDIO_HELLO();
 
       waitSplash();
@@ -1633,6 +1644,17 @@ void edgeTxInit()
 
 
 #if defined(GUI)
+#if defined(FACTORY_RESET)
+    if (factoryResetPending == FactoryResetPendingState::Restoring) {
+      cancelSplash();
+      chainMenu(menuFactoryResetResume);
+    }
+    else if (factoryResetPending == FactoryResetPendingState::Test) {
+      cancelSplash();
+      chainMenu(menuFactoryInputTest);
+    }
+    else
+#endif
     if (calibration_needed) {
       cancelSplash();
 #if defined(COLORLCD)
