@@ -140,6 +140,9 @@ void menuRadioSpectrumAnalyser(event_t event);
 void menuRadioPowerMeter(event_t event);
 void menuRadioCalibration(event_t event);
 void menuGhostModuleConfig(event_t event);
+#if defined(PCBMODALAI)
+void menuRadioLcdTuning(event_t event);
+#endif
 
 void menuModelSelect(event_t event);
 void menuModelSetup(event_t event);

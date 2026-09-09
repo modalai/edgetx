@@ -219,9 +219,16 @@ void ledBlue();
 #define LCD_H                           64
 #define LCD_DEPTH                       1
 #define IS_LCD_RESET_NEEDED()           true
-#define LCD_CONTRAST_MIN                10
-#define LCD_CONTRAST_MAX                30
-#define LCD_CONTRAST_DEFAULT          20
+#if defined(LCD_IC_ST7567)
+  // ST7567 (PE12864WRF-055H22Q_005): 6-bit Vop range 0-63
+  #define LCD_CONTRAST_MIN              5
+  #define LCD_CONTRAST_MAX              50
+  #define LCD_CONTRAST_DEFAULT          20
+#else
+  #define LCD_CONTRAST_MIN              10
+  #define LCD_CONTRAST_MAX              30
+  #define LCD_CONTRAST_DEFAULT          20
+#endif
 
 #define IS_LCD_RESET_NEEDED()           true
 
@@ -240,6 +247,12 @@ void lcdSetRefVolt(unsigned char val);
 #if LCD_W == 128
 void lcdSetInvert(bool invert);
 #endif
+void lcdSetBias(uint8_t bias);
+void lcdSetResistorRatio(uint8_t ratio);
+void lcdSetBoosterRatio(uint8_t ratio);
+void lcdSetVop(uint8_t vop);
+void lcdSetSpiPrescaler(uint8_t mbr);
+void lcdSetGpioSpeed(uint8_t speed);
 #ifdef __cplusplus
 void lcdSetContrast(bool useDefault = false);
 #endif
