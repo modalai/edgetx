@@ -103,6 +103,9 @@ enum {
 #if defined(FUNCTION_SWITCHES)
   ITEM_RADIO_HARDWARE_DEBUG_FS,
 #endif
+#if defined(PCBMODALAI)
+  ITEM_RADIO_HARDWARE_LCD_TUNING,
+#endif
   ITEM_RADIO_HARDWARE_MAX
 };
 
@@ -365,6 +368,9 @@ static void _init_menu_tab_array(uint8_t* tab, size_t len)
 #if defined(FUNCTION_SWITCHES)
   tab[ITEM_RADIO_HARDWARE_DEBUG_FS] = 0;
 #endif
+#if defined(PCBMODALAI)
+  tab[ITEM_RADIO_HARDWARE_LCD_TUNING] = 0;
+#endif
 }
 
 void menuRadioHardware(event_t event)
@@ -623,6 +629,15 @@ void menuRadioHardware(event_t event)
         lcdDrawText(HW_SETTINGS_COLUMN2, y, STR_FS_BTN, attr);
         if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
             pushMenu(menuRadioDiagFS);
+        }
+        break;
+#endif
+
+#if defined(PCBMODALAI)
+      case ITEM_RADIO_HARDWARE_LCD_TUNING:
+        lcdDrawText(0, y, "LCD Tuning", attr);
+        if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
+          pushMenu(menuRadioLcdTuning);
         }
         break;
 #endif

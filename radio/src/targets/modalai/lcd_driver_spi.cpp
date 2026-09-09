@@ -35,7 +35,11 @@
  #include "edgetx.h"
 #endif
  
-#define LCD_CONTRAST_OFFSET            -10
+#if defined(LCD_IC_ST7567)
+  #define LCD_CONTRAST_OFFSET          0   // ST7567 Vop maps directly to contrast value
+#else
+  #define LCD_CONTRAST_OFFSET          -10
+#endif
 #define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
 #define WAIT_FOR_DMA_END()             do { } while (lcd_busy)
 
@@ -109,7 +113,19 @@ void lcdHardwareInit()
  
  void lcdStart()
  {
- #if defined(LCD_VERTICAL_INVERT)
+#if defined(LCD_IC_ST7567)
+  // ST7567 initialization for PE12864WRF-055H22Q_005
+  // Adjust 0xA0/0xA1 (SEG) and 0xC0/0xC8 (COM) for physical mounting orientation
+  lcdWriteCommand(0xE2); // Soft reset
+  lcdWriteCommand(0xA1); // SEG direction: mirrored (swap to 0xA0 if horizontally flipped)
+  lcdWriteCommand(0xC0); // COM direction: normal scan (swap to 0xC8 if vertically flipped)
+  lcdWriteCommand(0xA3); // Bias 1/7
+  lcdWriteCommand(0x25); // Internal resistor ratio = 5 (5.5x)
+  lcdWriteCommand(0x2F); // Booster + Regulator + Follower all on
+  lcdWriteCommand(0x81); // Set Vop (contrast)
+  lcdWriteCommand(0x14); // Vop = 20; tune further via LCD Tuning menu
+  lcdWriteCommand(0xA6); // Display normal (not inverted)
+#elif defined(LCD_VERTICAL_INVERT)
    // T12 and TX12 have the screen inverted.
    #if defined(RADIO_V12)
      lcdWriteCommand(0xe2); // (14) Soft reset
@@ -133,10 +149,10 @@ void lcdHardwareInit()
      lcdWriteCommand(0xc8); // Set com
      lcdWriteCommand(0xf8); // Set booster
      lcdWriteCommand(0x00); // 5x
-     lcdWriteCommand(0xa3); // Set bias=1/6
-     lcdWriteCommand(0x22); // Set internal rb/ra=5.0
+     lcdWriteCommand(0xa3); // Set bias=1/7
+     lcdWriteCommand(0x20); // Set internal rb/ra=3.0
      lcdWriteCommand(0x2f); // All built-in power circuits on
-     lcdWriteCommand(0x24); // Power control set
+     lcdWriteCommand(0x24); // Set internal rb/ra=5.0
      lcdWriteCommand(0x81); // Set contrast
      lcdWriteCommand(0x0A); // Set Vop
      lcdWriteCommand(0xa6); // Set display mode
@@ -202,7 +218,7 @@ void lcdHardwareInit()
  #else
      lcdWriteCommand(0x10); // Column addr 0
      lcdWriteCommand(0xB0 | y); // Page addr y
- #if !defined(LCD_VERTICAL_INVERT)
+ #if defined(LCD_IC_ST7567) || !defined(LCD_VERTICAL_INVERT)
      lcdWriteCommand(0x04);
  #endif
  #endif
@@ -370,4 +386,47 @@ void lcdHardwareInit()
     lcdWriteCommand(invert ? 0xA7 : 0xA6);
  }
  #endif
+
+void lcdSetBias(uint8_t bias)
+{
+  lcdWriteCommand(0xa2 | (bias & 0x01));
+}
+
+void lcdSetResistorRatio(uint8_t ratio)
+{
+  lcdWriteCommand(0x20 | (ratio & 0x07));
+}
+
+void lcdSetBoosterRatio(uint8_t ratio)
+{
+  lcdWriteCommand(0xf8);
+  lcdWriteCommand(ratio & 0x03);
+}
+
+void lcdSetVop(uint8_t vop)
+{
+  lcdWriteCommand(0x81);
+  lcdWriteCommand(vop & 0x3f);
+}
+
+void lcdSetSpiPrescaler(uint8_t mbr)
+{
+  LCD_SPI->CR1 &= ~SPI_CR1_SPE;
+  MODIFY_REG(LCD_SPI->CFG1, SPI_CFG1_MBR,
+             ((uint32_t)(mbr & 0x07)) << SPI_CFG1_MBR_Pos);
+  LCD_SPI->CR1 |= SPI_CR1_SPE;
+}
+
+void lcdSetGpioSpeed(uint8_t speed)
+{
+  gpio_t pins[] = { LCD_MOSI_GPIO, LCD_CLK_GPIO };
+  for (int i = 0; i < 2; i++) {
+    GPIO_TypeDef* port = gpio_get_port(pins[i]);
+    uint32_t pin_num = gpio_get_pin(pins[i]);
+    uint32_t tmp = port->OSPEEDR;
+    tmp &= ~(0x3u << (2 * pin_num));
+    tmp |= ((uint32_t)(speed & 0x3) << (2 * pin_num));
+    port->OSPEEDR = tmp;
+  }
+}
  

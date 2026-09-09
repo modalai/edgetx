@@ -56,6 +56,10 @@ if(PCB STREQUAL M207)
     #endif()
     add_definitions(-DRADIO_MODAL)
     set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
+    set(LCD_IC "ST7565" CACHE STRING "LCD controller IC (ST7565 or ST7567)")
+    if(LCD_IC STREQUAL ST7567)
+      add_definitions(-DLCD_IC_ST7567)
+    endif()
   endif()
 endif()
 
@@ -176,6 +180,7 @@ set(GUI_SRC ${GUI_SRC}
   view_channels.cpp
   view_telemetry.cpp
   view_about.cpp
+  view_lcd_tuning.cpp
   bmp.cpp
 )
 
