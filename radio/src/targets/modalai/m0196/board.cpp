@@ -15,6 +15,8 @@
 #include "hal/usb_driver.h"
 #include "rtc.h"
 #include "stm32_gpio.h"
+#include "stm32_gpio_driver.h"
+#include "stm32h7xx_ll_gpio.h"
 #include "system_clock.h"
 #include "timers_driver.h"
 
@@ -24,6 +26,40 @@
 
 #if defined(HELM_DIAGNOSTICS)
 #include "diagnostics.h"
+#endif
+
+#if defined(HELM_HAS_OB_POWER_MONITOR)
+  #include "voxlpm_i2c_driver.h"
+#endif
+#if defined(HELM_HAS_BATTERY_BOARD)
+  #warning "M0196 battery board is populated, but its driver is not implemented"
+#endif
+#if defined(HELM_HAS_I2C_GIMBALS)
+  #warning "M0196 I2C gimbals are selected, but their driver is not implemented"
+#endif
+#if defined(HELM_HAS_OB_EEPROM)
+  #warning "M0196 onboard EEPROM is populated, but its driver is not implemented"
+#endif
+#if defined(HELM_HAS_EXPANSION_PORT)
+  #warning "M0196 expansion port is populated, but its module driver is not implemented"
+#endif
+#if defined(HELM_HAS_INTERNAL_MODULE)
+  #warning "M0196 internal radio UART4 is active, but its auxiliary interfaces are not implemented"
+#endif
+#if defined(HELM_HAS_INTERNAL_FAN)
+  #warning "M0196 internal fan is populated, but its driver is not implemented"
+#endif
+#if defined(HELM_HAS_TRAINER_PORT)
+  #warning "M0196 trainer port is populated, but its driver is not implemented"
+#endif
+#if defined(HELM_HAS_INTERNAL_VRX)
+  #warning "M0196 internal VRX is populated, but its driver is not implemented"
+#endif
+#if defined(HELM_HAS_HALL_SENSOR)
+  #warning "M0196 Hall sensor is populated, but its I2C driver is not implemented"
+#endif
+#if defined(HELM_HAS_INTERNAL_IMU)
+  #warning "M0196 internal IMU is populated, but its driver is not implemented"
 #endif
 
 HardwareOptions hardwareOptions;
@@ -45,8 +81,17 @@ extern "C" void NMI_Handler()
 
 bool boardBLStartCondition()
 {
-  gpio_init(HELM_BOOTLOADER_KEY_GPIO, GPIO_IN_PU, GPIO_PIN_SPEED_LOW);
-  return !gpio_read(HELM_BOOTLOADER_KEY_GPIO);
+#if defined(HELM_BOOTLOADER_INPUT)
+  auto gpio = HELM_INPUT_GPIO(HELM_BOOTLOADER_INPUT);
+  auto pin = HELM_INPUT_PIN(HELM_BOOTLOADER_INPUT);
+
+  stm32_gpio_enable_clock(gpio);
+  LL_GPIO_SetPinMode(gpio, pin, LL_GPIO_MODE_INPUT);
+  LL_GPIO_SetPinPull(gpio, pin, LL_GPIO_PULL_UP);
+  return !LL_GPIO_IsInputPinSet(gpio, pin);
+#else
+  return false;
+#endif
 }
 
 void boardBLPreJump()
@@ -68,7 +113,11 @@ void boardBLInit()
 
 void boardBLEarlyInit()
 {
-  // Keep unverified power and RF control GPIOs in their reset state.
+#if defined(HELM_HAS_SOFT_POWER)
+  // Assert the latch before the operator releases the momentary button.
+  pwrOn();
+#endif
+
   if (abnormalRebootGetCmd() == HELM_REBOOT_CMD_HSE_FAILURE) {
     hseClockFailureRecovered = true;
     abnormalRebootResetCmd();
@@ -94,6 +143,9 @@ void boardInit()
   }
 
   timersInit();
+#if defined(HELM_HAS_OB_POWER_MONITOR)
+  voxl_pm_init();
+#endif
   lcdInit();
   usbInit();
 
@@ -132,7 +184,13 @@ void boardOff()
 #endif
   lcdOff();
 
-  // Power latch polarity is intentionally unverified. Never drive PI6 here.
+#if defined(HELM_HAS_SOFT_POWER)
+  while (pwrPressed()) {
+    WDG_RESET();
+  }
+  pwrOff();
+#endif
+
   SysTick->CTRL = 0;
   __disable_irq();
   while (1) {

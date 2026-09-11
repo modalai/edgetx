@@ -4,6 +4,8 @@
 
 #include "board.h"
 
+#if defined(HELM_HAS_RGB_LED)
+
 static void setRgb(uint8_t red, uint8_t green, uint8_t blue)
 {
   RGB_LED_TIMER->CCR1 = blue;
@@ -23,7 +25,7 @@ void ledInit()
   RGB_LED_TIMER->CCMR1 = TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 |
                          TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_2;
   RGB_LED_TIMER->CCMR2 = TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2;
-  RGB_LED_TIMER->CCER = TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E;
+  RGB_LED_TIMER->CCER = RGB_LED_CCER;
   setRgb(0, 0, 0);
   RGB_LED_TIMER->EGR = TIM_EGR_UG;
   RGB_LED_TIMER->CR1 = TIM_CR1_CEN;
@@ -48,3 +50,13 @@ void ledBlue()
 {
   setRgb(0, 0, 100);
 }
+
+#else
+
+void ledInit() {}
+void ledOff() {}
+void ledRed() {}
+void ledGreen() {}
+void ledBlue() {}
+
+#endif

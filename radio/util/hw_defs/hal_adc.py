@@ -205,6 +205,57 @@ class ADCInputParser:
         pin = None
         d = 1 # non-inverted
 
+        helm_def = f'HELM_ADC_{suffix}'
+        if helm_def in self.hw_defs:
+            legacy_defs = (
+                f'ADC_SPI_{suffix}',
+                f'ADC_GPIO_PIN_{suffix}',
+                f'ADC_CHANNEL_{suffix}',
+            )
+            if any(definition in self.hw_defs for definition in legacy_defs):
+                raise ValueError(
+                    f"ADC input {name} has both direct and Helm definitions"
+                )
+
+            source = str(self.hw_defs[helm_def])
+            prefix = f'HELM_INPUT_{source}'
+            required = [
+                f'{prefix}_GPIO',
+                f'{prefix}_PIN',
+                f'{prefix}_ADC',
+                f'{prefix}_CHANNEL',
+            ]
+            missing = [item for item in required if item not in self.hw_defs]
+            if missing:
+                raise ValueError(
+                    f"Unknown, disabled, or non-analog Helm input source '{source}'"
+                )
+
+            adc_periph = self.hw_defs[f'{prefix}_ADC']
+            adc_name = None
+            for adc in self.adcs:
+                if adc.adc == adc_periph:
+                    adc_name = adc.name
+                    break
+            if adc_name is None:
+                raise ValueError(
+                    f"Helm input source '{source}' uses an unconfigured ADC"
+                )
+
+            adc_input = ADCInput(
+                name,
+                input_type,
+                adc_name,
+                self.hw_defs[f'{prefix}_GPIO'],
+                self.hw_defs[f'{prefix}_PIN'],
+                self.hw_defs[f'{prefix}_CHANNEL'],
+            )
+            adc_input.inverted = (
+                f'{helm_def}_INVERTED' in self.hw_defs or
+                f'{prefix}_INVERTED' in self.hw_defs
+            )
+            return adc_input
+
         # search for SPI input first
         spi_def = f'ADC_SPI_{suffix}'
         if spi_def in self.hw_defs:
@@ -237,7 +288,10 @@ class ADCInputParser:
                 if 'PWM_STICKS' in self.hw_defs:
                     ch = self.hw_defs.get(f'STICK_PWM_CHANNEL_{adc_input.name}')
                     adc_input.pwm_channel = idx if ch is None else ch
-            if adc_input.type != 'VBAT' and adc_input.type != 'RTC_BAT':
+            if hasattr(adc_input, 'inverted'):
+                pass
+            elif (adc_input.type != 'VBAT' and
+                  adc_input.type != 'RTC_BAT'):
                 d = self.dirs[idx]
                 if d < 0:
                     adc_input.inverted = True

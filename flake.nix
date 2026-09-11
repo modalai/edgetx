@@ -26,6 +26,7 @@
             lz4
             pillow
             pyelftools
+            tkinter
           ]);
         in
         {
@@ -48,8 +49,11 @@
               echo "GNU Arm Embedded: $(arm-none-eabi-gcc --version | head -n 1)"
               echo "Configure MODAL_ZORRO from a build directory with:"
               echo "  cmake -DPCB=M207 -DPCBREV=MODAL_ZORRO -DDEFAULT_MODE=2 -DINTERNAL_MODULE_MULTI=NO -DMULTIMODULE=NO -DGHOST=NO -DDEBUG_SEGGER_RTT=n -DDEBUG=n -DCMAKE_BUILD_TYPE=RELEASE .."
-              echo "Configure HELM_BASIC from a build directory with:"
-              echo "  cmake -DPCB=M196 -DPCBREV=HELM_BASIC -DDEFAULT_MODE=2 -DINTERNAL_MODULE_MULTI=NO -DMULTIMODULE=NO -DGHOST=NO -DDEBUG_SEGGER_RTT=n -DDEBUG=n -DHELM_DIAGNOSTICS=OFF -DCMAKE_BUILD_TYPE=RELEASE .."
+              echo "Configure the HELM_BASIC release image from the repository root with:"
+              echo "  cmake -S . -B build-modal-helm -DPCB=M196 -DPCBREV=HELM_BASIC -DDEFAULT_MODE=2 -DINTERNAL_MODULE_MULTI=NO -DMULTIMODULE=NO -DGHOST=NO -DDEBUG_SEGGER_RTT=OFF -DDEBUG=OFF -DHELM_DIAGNOSTICS=OFF -DCMAKE_BUILD_TYPE=Release"
+              echo "Configure the HELM_BASIC RTT debug image from the repository root with:"
+              echo "  cmake -S . -B build-modal-helm-rtt -DPCB=M196 -DPCBREV=HELM_BASIC -DDEFAULT_MODE=2 -DINTERNAL_MODULE_MULTI=NO -DMULTIMODULE=NO -DGHOST=NO -DHELM_DIAGNOSTICS=ON -DDEBUG=RTT -DDEBUG_SEGGER_RTT=ON -DENABLE_BOOTLOADER_DEBUG=OFF -DDEBUG_SEGGER_SYSVIEW=OFF -DTEST_BUILD_WARNING=ON -DWATCHDOG=ON -DOPT=s -DCMAKE_BUILD_TYPE=Debug"
+              echo "See the M0196 port document for build and J-Link commands."
             '';
           };
         }

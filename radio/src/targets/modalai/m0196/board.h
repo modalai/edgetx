@@ -38,7 +38,8 @@ PACK(typedef struct {
 
 extern HardwareOptions hardwareOptions;
 
-// Power and RF power outputs remain no-ops until their polarity is verified.
+// The main internal radio supply is not switched. RADIO_VBUS_CTL controls only
+// the internal USB VBUS path.
 #define INTERNAL_MODULE_ON()
 #define INTERNAL_MODULE_OFF()
 #define EXTERNAL_MODULE_ON()
@@ -59,7 +60,9 @@ extern HardwareOptions hardwareOptions;
 extern "C" {
 #endif
 
+#if defined(HELM_HAS_SOFT_POWER)
 #define SOFT_PWR_CTRL
+#endif
 void pwrInit();
 uint32_t pwrCheck();
 void pwrOn();

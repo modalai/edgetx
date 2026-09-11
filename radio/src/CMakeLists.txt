@@ -319,7 +319,15 @@ if(DEBUG STREQUAL RTT_SYSVIEW)
 endif()
 
 if(DEBUG_SEGGER_RTT AND NOT NATIVE_BUILD)
-  add_definitions(-DDEBUG_SEGGER_RTT -DSEGGER_RTT_BUFFER_SECTION=".ram")
+  if(DEFINED SEGGER_RTT_SECTION)
+    add_definitions(
+      -DDEBUG_SEGGER_RTT
+      -DSEGGER_RTT_SECTION="${SEGGER_RTT_SECTION}"
+      -DSEGGER_RTT_BUFFER_SECTION="${SEGGER_RTT_SECTION}"
+    )
+  else()
+    add_definitions(-DDEBUG_SEGGER_RTT -DSEGGER_RTT_BUFFER_SECTION=".ram")
+  endif()
   include_directories(${THIRDPARTY_DIR}/Segger/Config)
   include_directories(${THIRDPARTY_DIR}/Segger/Sample)
   include_directories(${THIRDPARTY_DIR}/Segger/SEGGER)

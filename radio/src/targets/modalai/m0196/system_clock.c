@@ -9,6 +9,7 @@
 
 #define BOOTSTRAP __attribute__((section(".bootstrap")))
 #define HSE_STARTUP_TIMEOUT 8000000U
+#define HSE_IS_READY() (READ_BIT(RCC->CR, RCC_CR_HSERDY) == RCC_CR_HSERDY)
 
 extern uint32_t _reboot_cmd;
 
@@ -21,14 +22,14 @@ BOOTSTRAP void SystemClock_Config(void)
 
   LL_RCC_HSE_Enable();
   uint32_t timeout = HSE_STARTUP_TIMEOUT;
-  while (LL_RCC_HSE_IsReady() != 1 && --timeout != 0) {
+  while (!HSE_IS_READY() && --timeout != 0) {
   }
 
-  if (LL_RCC_HSE_IsReady() != 1) {
+  if (!HSE_IS_READY()) {
     // Do not run EdgeTX with its 400 MHz timing constants while still on HSI.
     // Retain the reason across reset and wait for the oscillator to recover.
     _reboot_cmd = HELM_REBOOT_CMD_HSE_FAILURE;
-    while (LL_RCC_HSE_IsReady() != 1) {
+    while (!HSE_IS_READY()) {
     }
     NVIC_SystemReset();
   }

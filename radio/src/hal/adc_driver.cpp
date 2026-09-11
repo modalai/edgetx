@@ -32,7 +32,7 @@ const etx_hal_adc_inputs_t* _hal_adc_inputs = nullptr;
 
 static uint16_t adcValues[MAX_ANALOG_INPUTS] __DMA_NO_CACHE;
 
-#if defined(RADIO_MODAL)
+#if defined(RADIO_MODAL) || defined(RADIO_HELM)
 #include "voxlpm_i2c_driver.h"
 #elif defined(CSD203_SENSOR)
   extern uint16_t getCSD203BatteryVoltage(void);
@@ -307,7 +307,7 @@ tmr10ms_t jitterResetTime = 0;
 
 uint16_t getBatteryVoltage()
 {
-#if defined(RADIO_MODAL)
+#if defined(RADIO_MODAL) || defined(RADIO_HELM)
 #if defined(POWER_I2C)
   return voxl_pm_get_voltage();
 #else

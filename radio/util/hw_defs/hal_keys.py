@@ -105,6 +105,13 @@ KEY_LABELS = [
         }
     },
     {
+        "targets": {"modal_zorro"},
+        "keys": {
+            "PAGEUP": { "label": "PAGE UP" },
+            "PAGEDN": { "label": "PAGE DOWN" }
+        }
+    },
+    {
         "targets": {"t8"},
         "keys": {
             "EXIT": { "label": "RTN" },
@@ -154,6 +161,20 @@ class Trim:
             self.dec = dec
             self.inc = inc
             self.active_low = True
+
+
+def get_helm_input(hw_defs, source):
+    source = str(source)
+    gpio_def = f'HELM_INPUT_{source}_GPIO'
+    pin_def = f'HELM_INPUT_{source}_PIN'
+
+    if gpio_def not in hw_defs or pin_def not in hw_defs:
+        raise ValueError(f"Unknown or disabled Helm input source '{source}'")
+
+    key = Key(hw_defs[gpio_def], hw_defs[pin_def])
+    if f'HELM_INPUT_{source}_ACTIVE_HIGH' in hw_defs:
+        key.active_low = False
+    return key
 
 def get_trim_switch(hw_defs, tag):
 
@@ -210,7 +231,21 @@ def parse_keys(target, hw_defs):
         gpio = f'KEYS_GPIO_REG_{name}'
         pin  = f'KEYS_GPIO_PIN_{name}'
 
-        if (gpio in hw_defs) and (pin in hw_defs):
+        helm_input = f'HELM_KEY_{name}'
+        direct_input = (gpio in hw_defs) or (pin in hw_defs)
+
+        if direct_input and helm_input in hw_defs:
+            raise ValueError(f"Key {name} has both direct and Helm input definitions")
+
+        if helm_input in hw_defs:
+            key = get_helm_input(hw_defs, hw_defs[helm_input])
+            key.key = k['key']
+            key.name = name
+            label = key_label(target, name)
+            key.label = label if label else k['label']
+            keys.append(key)
+
+        elif (gpio in hw_defs) and (pin in hw_defs):
             key = Key(hw_defs[gpio], hw_defs[pin])
             key.key = k['key']
             key.name = name
