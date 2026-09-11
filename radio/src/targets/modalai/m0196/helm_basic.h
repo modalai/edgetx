@@ -1,121 +1,75 @@
 /*
- * HELM_BASIC revision mapping.
+ * HELM_BASIC population and input map.
  *
- * GPIO assignments and active levels intentionally live in this revision
- * header so future M0196 revisions can replace them without changing drivers.
+ * Keep this file as a flat list of revision-specific definitions. The common
+ * M0196 HAL derives bus availability and EdgeTX hardware definitions from it.
  */
 
 #pragma once
 
-// Provisional bootloader key: Menu Input A, active low.
-#define HELM_BOOTLOADER_KEY_GPIO GPIO_PIN(GPIOE, 9)
+#define HELM_HAS_SOFT_POWER
+#define HELM_HAS_RGB_LED
+#define HELM_HAS_OB_EEPROM
+#define HELM_HAS_ANALOG_GIMBALS
 
-// Navigation hat and menu inputs.
-#define KEYS_GPIO_REG_UP GPIOG
-#define KEYS_GPIO_PIN_UP LL_GPIO_PIN_11
-#define KEYS_GPIO_REG_DOWN GPIOG
-#define KEYS_GPIO_PIN_DOWN LL_GPIO_PIN_10
-#define KEYS_GPIO_REG_LEFT GPIOD
-#define KEYS_GPIO_PIN_LEFT LL_GPIO_PIN_3
-#define KEYS_GPIO_REG_RIGHT GPIOD
-#define KEYS_GPIO_PIN_RIGHT LL_GPIO_PIN_4
-#define KEYS_GPIO_REG_ENTER GPIOG
-#define KEYS_GPIO_PIN_ENTER LL_GPIO_PIN_9
-#define KEYS_GPIO_REG_EXIT GPIOE
-#define KEYS_GPIO_PIN_EXIT LL_GPIO_PIN_9
-#define KEYS_GPIO_REG_PAGEUP GPIOE
-#define KEYS_GPIO_PIN_PAGEUP LL_GPIO_PIN_10
-#define KEYS_GPIO_REG_PAGEDN GPIOE
-#define KEYS_GPIO_PIN_PAGEDN LL_GPIO_PIN_11
-#define KEYS_GPIO_REG_SYS GPIOE
-#define KEYS_GPIO_PIN_SYS LL_GPIO_PIN_12
-#define KEYS_GPIO_REG_MDL GPIOE
-#define KEYS_GPIO_PIN_MDL LL_GPIO_PIN_14
+#define HELM_HAS_BS_R1
+#define HELM_HAS_BS_R2
+#define HELM_HAS_BS_R3
+#define HELM_HAS_BS_R4
+#define HELM_HAS_BS_R5
+#define HELM_HAS_BS_L1
+#define HELM_HAS_BS_L2
+#define HELM_HAS_BS_L3
+#define HELM_HAS_BS_L4
+#define HELM_HAS_BS_L5
 
-// Five left and five right three-position switches. This logical ordering is
-// provisional until the physical control layout is validated.
-#define STORAGE_SWITCH_A
-#define HARDWARE_SWITCH_A
-#define SWITCHES_GPIO_REG_A_L GPIOF
-#define SWITCHES_GPIO_PIN_A_L LL_GPIO_PIN_6
-#define SWITCHES_GPIO_REG_A_H GPIOF
-#define SWITCHES_GPIO_PIN_A_H LL_GPIO_PIN_10
+#define HELM_HAS_FIVE_WAY_UPPER_LEFT
+#define HELM_HAS_FIVE_WAY_UPPER_RIGHT
+#define HELM_HAS_FIVE_WAY_LOWER_LEFT
+#define HELM_HAS_FIVE_WAY_LOWER_RIGHT
+#define HELM_HAS_QUICK_BUTTONS
 
-#define STORAGE_SWITCH_B
-#define HARDWARE_SWITCH_B
-#define SWITCHES_GPIO_REG_B_L GPIOF
-#define SWITCHES_GPIO_PIN_B_L LL_GPIO_PIN_2
-#define SWITCHES_GPIO_REG_B_H GPIOF
-#define SWITCHES_GPIO_PIN_B_H LL_GPIO_PIN_3
+#define HELM_HAS_INTERNAL_MODULE
+#define HELM_HAS_INTERNAL_FAN
+#define HELM_HAS_HAPTICS
+#define HELM_HAS_SD_CARD
 
-#define STORAGE_SWITCH_C
-#define HARDWARE_SWITCH_C
-#define SWITCHES_GPIO_REG_C_L GPIOF
-#define SWITCHES_GPIO_PIN_C_L LL_GPIO_PIN_1
-#define SWITCHES_GPIO_REG_C_H GPIOF
-#define SWITCHES_GPIO_PIN_C_H LL_GPIO_PIN_4
+// EdgeTX switches, ordered from the upper pair toward the lower pair.
+#define HELM_SWITCH_A_HIGH BS_R1_A
+#define HELM_SWITCH_A_LOW BS_R1_B
+#define HELM_SWITCH_B_HIGH BS_L1_A
+#define HELM_SWITCH_B_LOW BS_L1_B
+#define HELM_SWITCH_C_HIGH BS_R2_A
+#define HELM_SWITCH_C_LOW BS_R2_B
+#define HELM_SWITCH_D_HIGH BS_L2_A
+#define HELM_SWITCH_D_LOW BS_L2_B
+#define HELM_SWITCH_E_HIGH BS_R3_A
+#define HELM_SWITCH_E_LOW BS_R3_B
+#define HELM_SWITCH_F_HIGH BS_L3_A
+#define HELM_SWITCH_F_LOW BS_L3_B
+#define HELM_SWITCH_G_HIGH BS_R4_A
+#define HELM_SWITCH_G_LOW BS_R4_B
+#define HELM_SWITCH_H_HIGH BS_L4_A
+#define HELM_SWITCH_H_LOW BS_L4_B
+#define HELM_SWITCH_I_HIGH BS_R5_A
+#define HELM_SWITCH_I_LOW BS_R5_B
+#define HELM_SWITCH_J_HIGH BS_L5_A
+#define HELM_SWITCH_J_LOW BS_L5_B
 
-#define STORAGE_SWITCH_D
-#define HARDWARE_SWITCH_D
-#define SWITCHES_GPIO_REG_D_L GPIOH
-#define SWITCHES_GPIO_PIN_D_L LL_GPIO_PIN_5
-#define SWITCHES_GPIO_REG_D_H GPIOF
-#define SWITCHES_GPIO_PIN_D_H LL_GPIO_PIN_5
+// Upper five-way switches. Contact order is A=up, B=right, C=left,
+// D=down, and E=center for the installed JS1400 orientation.
+#define HELM_KEY_EXIT UPR_L_E
+#define HELM_KEY_SYS UPR_L_C
+#define HELM_KEY_MDL UPR_L_B
+#define HELM_KEY_TELE UPR_L_D
+#define HELM_KEY_PAGEUP UPR_R_C
+#define HELM_KEY_PAGEDN UPR_R_B
+#define HELM_KEY_UP UPR_R_A
+#define HELM_KEY_DOWN UPR_R_D
+#define HELM_KEY_ENTER UPR_R_E
 
-#define STORAGE_SWITCH_E
-#define HARDWARE_SWITCH_E
-#define SWITCHES_GPIO_REG_E_L GPIOH
-#define SWITCHES_GPIO_PIN_E_L LL_GPIO_PIN_2
-#define SWITCHES_GPIO_REG_E_H GPIOH
-#define SWITCHES_GPIO_PIN_E_H LL_GPIO_PIN_3
-
-#define STORAGE_SWITCH_F
-#define HARDWARE_SWITCH_F
-#define SWITCHES_GPIO_REG_F_L GPIOA
-#define SWITCHES_GPIO_PIN_F_L LL_GPIO_PIN_2
-#define SWITCHES_GPIO_REG_F_H GPIOA
-#define SWITCHES_GPIO_PIN_F_H LL_GPIO_PIN_3
-
-#define STORAGE_SWITCH_G
-#define HARDWARE_SWITCH_G
-#define SWITCHES_GPIO_REG_G_L GPIOC
-#define SWITCHES_GPIO_PIN_G_L LL_GPIO_PIN_3
-#define SWITCHES_GPIO_REG_G_H GPIOA
-#define SWITCHES_GPIO_PIN_G_H LL_GPIO_PIN_4
-
-#define STORAGE_SWITCH_H
-#define HARDWARE_SWITCH_H
-#define SWITCHES_GPIO_REG_H_L GPIOB
-#define SWITCHES_GPIO_PIN_H_L LL_GPIO_PIN_2
-#define SWITCHES_GPIO_REG_H_H GPIOC
-#define SWITCHES_GPIO_PIN_H_H LL_GPIO_PIN_4
-
-#define STORAGE_SWITCH_I
-#define HARDWARE_SWITCH_I
-#define SWITCHES_GPIO_REG_I_L GPIOF
-#define SWITCHES_GPIO_PIN_I_L LL_GPIO_PIN_12
-#define SWITCHES_GPIO_REG_I_H GPIOF
-#define SWITCHES_GPIO_PIN_I_H LL_GPIO_PIN_15
-
-#define STORAGE_SWITCH_J
-#define HARDWARE_SWITCH_J
-#define SWITCHES_GPIO_REG_J_L GPIOF
-#define SWITCHES_GPIO_PIN_J_L LL_GPIO_PIN_11
-#define SWITCHES_GPIO_REG_J_H GPIOF
-#define SWITCHES_GPIO_PIN_J_H LL_GPIO_PIN_14
-
-// Power polarity is intentionally not defined until verified with hardware.
-// Drivers must leave both pins in their reset state while this marker exists.
-#define HELM_POWER_CONTROL_UNVERIFIED
-#define HELM_POWER_BUTTON_GPIO GPIO_PIN(GPIOI, 5)
-#define HELM_POWER_HOLD_GPIO GPIO_PIN(GPIOI, 6)
-
-// Internal ELRS power is held safely off until its polarity is verified.
-#define HELM_INTERNAL_MODULE_POWER_UNVERIFIED
-#define HELM_INTERNAL_MODULE_POWER_GPIO GPIO_PIN(GPIOG, 7)
-
-// Four haptic motor drivers, ordered by their TIM4 channel assignment.
-#define HAPTIC_LEFT_BOTTOM_GPIO GPIO_PIN(GPIOD, 12)
-#define HAPTIC_LEFT_TOP_GPIO GPIO_PIN(GPIOD, 13)
-#define HAPTIC_RIGHT_BOTTOM_GPIO GPIO_PIN(GPIOD, 14)
-#define HAPTIC_RIGHT_TOP_GPIO GPIO_PIN(GPIOD, 15)
+//Gimbals
+#define HELM_ADC_STICK_LH GIMBAL_LH
+#define HELM_ADC_STICK_LV GIMBAL_LV
+#define HELM_ADC_STICK_RV GIMBAL_RV
+#define HELM_ADC_STICK_RH GIMBAL_RH

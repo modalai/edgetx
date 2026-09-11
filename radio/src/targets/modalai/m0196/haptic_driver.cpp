@@ -48,9 +48,9 @@ void hapticInit()
   HAPTIC_TIMER->CR1 = TIM_CR1_CEN;
 
   // Connect the pins only after all timer outputs have been forced to 0%.
-  gpio_init_af(HAPTIC_LEFT_BOTTOM_GPIO, HAPTIC_GPIO_AF, GPIO_PIN_SPEED_LOW);
   gpio_init_af(HAPTIC_LEFT_TOP_GPIO, HAPTIC_GPIO_AF, GPIO_PIN_SPEED_LOW);
+  gpio_init_af(HAPTIC_LEFT_BOTTOM_GPIO, HAPTIC_GPIO_AF, GPIO_PIN_SPEED_LOW);
+  gpio_init_af(HAPTIC_RIGHT_TOP_GPIO, HAPTIC_GPIO_AF, GPIO_PIN_SPEED_LOW);
   gpio_init_af(HAPTIC_RIGHT_BOTTOM_GPIO, HAPTIC_GPIO_AF,
                GPIO_PIN_SPEED_LOW);
-  gpio_init_af(HAPTIC_RIGHT_TOP_GPIO, HAPTIC_GPIO_AF, GPIO_PIN_SPEED_LOW);
 }

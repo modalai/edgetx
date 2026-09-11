@@ -7,6 +7,9 @@
 {% set display_switches = regular_switches | selectattr('display','!=',None) | list %}
 
 static const stm32_switch_t _switch_defs[] = {
+{% if switches | count == 0 %}
+  { "", nullptr, 0, nullptr, 0, SWITCH_HW_2POS, false, SWITCH_NONE },
+{% endif %}
 {% for switch in switches %}
   {% if switch.type == '2POS' %}
   {
@@ -55,8 +58,8 @@ static inline void _init_switches()
 
 constexpr uint8_t n_switches = {{ switches | count }};
 
-{% if display_switches | count > 0 %}
 const switch_display_pos_t _switch_display[] = {
+{% if display_switches | count > 0 %}
 {% for sw in switches %}
   {% if sw.display %}
     { {{ sw.display[0] }}, {{ sw.display[1] }} },
@@ -64,5 +67,7 @@ const switch_display_pos_t _switch_display[] = {
     { 0, 0 },
   {% endif %}
 {% endfor %}
-};
+{% else %}
+    { 0, 0 },
 {% endif %}
+};

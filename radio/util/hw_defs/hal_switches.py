@@ -59,6 +59,17 @@ def prefixsearch(dictionary, prefix):
     return None
 
 
+def get_helm_input(hw_defs, source):
+    source = str(source)
+    gpio_def = f"HELM_INPUT_{source}_GPIO"
+    pin_def = f"HELM_INPUT_{source}_PIN"
+
+    if gpio_def not in hw_defs or pin_def not in hw_defs:
+        raise ValueError(f"Unknown or disabled Helm input source '{source}'")
+
+    return hw_defs[gpio_def], hw_defs[pin_def]
+
+
 # switches from A to Z
 def parse_switches(target, hw_defs, adc_parser):
     switches = []
@@ -87,8 +98,48 @@ def parse_switches(target, hw_defs, adc_parser):
 
         cfs_idx = f"SWITCHES_{s}_CFS_IDX"
 
+        helm_input = f"HELM_SWITCH_{s}"
+        helm_input_high = f"{helm_input}_HIGH"
+        helm_input_low = f"{helm_input}_LOW"
+        helm_default = f"{helm_input}_DEFAULT"
+        helm_adc = f"HELM_ADC_SW{s}" in hw_defs
+        helm_inputs = [
+            name for name in (helm_input, helm_input_high, helm_input_low)
+            if name in hw_defs
+        ]
+        if helm_default in hw_defs and not (helm_inputs or helm_adc):
+            raise ValueError(
+                f"Switch {name} has a Helm default without a Helm input map"
+            )
+
         switch = None
-        if reg in hw_defs:
+        if helm_inputs:
+            if reg in hw_defs or reg_high in hw_defs or reg_low in hw_defs:
+                raise ValueError(
+                    f"Switch {name} has both direct and Helm input definitions"
+                )
+            if helm_input in hw_defs:
+                if helm_input_high in hw_defs or helm_input_low in hw_defs:
+                    raise ValueError(
+                        f"Switch {name} mixes two-position and three-position maps"
+                    )
+                gpio, pin = get_helm_input(hw_defs, hw_defs[helm_input])
+                switch = Switch2POS(name, gpio, pin)
+            else:
+                if helm_input_high not in hw_defs or helm_input_low not in hw_defs:
+                    raise ValueError(
+                        f"Switch {name} requires both HIGH and LOW Helm inputs"
+                    )
+                gpio_high, pin_high = get_helm_input(
+                    hw_defs, hw_defs[helm_input_high]
+                )
+                gpio_low, pin_low = get_helm_input(
+                    hw_defs, hw_defs[helm_input_low]
+                )
+                switch = Switch3POS(
+                    name, gpio_high, pin_high, gpio_low, pin_low
+                )
+        elif reg in hw_defs:
             # 2POS switch
             reg = hw_defs[reg]
             pin = hw_defs[pin]
@@ -124,6 +175,19 @@ def parse_switches(target, hw_defs, adc_parser):
                 switch.display = cfg.get("display")
             else:
                 switch.default = "NONE"
+
+            if helm_inputs or helm_adc:
+                if helm_default in hw_defs:
+                    default = hw_defs[helm_default]
+                else:
+                    default = (
+                        "2POS" if switch.type == Switch.TYPE_2POS else "3POS"
+                    )
+                if default not in ("2POS", "3POS", "TOGGLE", "NONE"):
+                    raise ValueError(
+                        f"Switch {name} has invalid Helm default '{default}'"
+                    )
+                switch.default = default
 
             switches.append(switch)
 

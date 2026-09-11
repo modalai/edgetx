@@ -46,10 +46,13 @@ constexpr uint8_t ST7567_POWER_REGULATOR = 0x2E;
 constexpr uint8_t ST7567_POWER_FOLLOWER = 0x2F;
 constexpr uint8_t ST7567_SET_BOOSTER = 0xF8;
 constexpr uint8_t ST7567_BOOSTER_4X = 0x00;
-constexpr uint8_t ST7567_NOP = 0xE3;
 constexpr uint8_t ST7567_CONTRAST_OFFSET = 20;
 constexpr uint8_t ST7567_EV_MAX = 63;
 constexpr uint8_t ST7567_PAGE_COUNT = LCD_H / 8;
+constexpr uint32_t LCD_RESET_LOW_TIME_MS = 1;
+constexpr uint32_t LCD_RESET_SETTLE_TIME_MS = 1;
+constexpr uint32_t LCD_POWER_SETTLE_TIME_MS = 20;
+constexpr uint32_t LCD_POWER_OFF_TIME_MS = 250;
 constexpr uint32_t LCD_DMA_TIMEOUT_MS = 20;
 
 static_assert(LCD_W == 128 && LCD_H == 64 && LCD_DEPTH == 1,
@@ -63,7 +66,6 @@ volatile bool lcdBusy;
 volatile uint8_t lcdPage;
 volatile uint32_t lcdRefreshCount;
 volatile uint32_t lcdDmaErrorCount;
-bool lcdDisplayOn;
 pixel_t lcdDmaBuffer[DISPLAY_BUFFER_SIZE] __DMA;
 
 void lcdWaitForSpiComplete()
@@ -110,13 +112,12 @@ void lcdConfigureController()
   lcdWriteCommand(ST7567_SET_EV);
   lcdWriteCommand(ST7567_DEFAULT_EV);
 
-  // Enable the booster, regulator, and voltage follower in stages.
+  // Enable the booster, regulator, and follower in the module's order. Its
+  // table specifies processor NOPs, not the ST7567 command 0xE3. The command
+  // hold time already supplies more processor cycles between these writes.
   lcdWriteCommand(ST7567_POWER_BOOSTER);
-  lcdWriteCommand(ST7567_NOP);
   lcdWriteCommand(ST7567_POWER_REGULATOR);
-  lcdWriteCommand(ST7567_NOP);
   lcdWriteCommand(ST7567_POWER_FOLLOWER);
-  lcdWriteCommand(ST7567_NOP);
   lcdWriteCommand(ST7567_SET_BOOSTER);
   lcdWriteCommand(ST7567_BOOSTER_4X);
 }
@@ -195,8 +196,9 @@ void lcdHardwareInit()
   LCD_SPI->CR1 = SPI_CR1_SSI | SPI_CR1_HDDIR;
   LCD_SPI->CR2 = 0;
   LCD_SPI->CFG1 = (7U << SPI_CFG1_DSIZE_Pos) | LCD_SPI_PRESCALER;
-  LCD_SPI->CFG2 = SPI_CFG2_SSM | SPI_CFG2_MASTER |
-                  (3U << SPI_CFG2_COMM_Pos);  // TX-only, SPI mode 0
+  LCD_SPI->CFG2 = SPI_CFG2_CPHA | SPI_CFG2_CPOL | SPI_CFG2_SSM |
+                  SPI_CFG2_MASTER |
+                  (3U << SPI_CFG2_COMM_Pos);  // Half-duplex TX, SPI mode 3
   LCD_SPI->CR1 |= SPI_CR1_SPE;
 
   gpio_init_af(LCD_CLK_GPIO, LCD_GPIO_AF, GPIO_PIN_SPEED_VERY_HIGH);
@@ -286,13 +288,6 @@ extern "C" void LCD_DMA_Stream_IRQHandler()
     return;
   }
 
-  if (!lcdDisplayOn) {
-    // This order also exits the compound AE/A5 power-save state.
-    lcdWriteCommand(ST7567_DISPLAY_ON);
-    lcdWriteCommand(ST7567_ALL_PIXELS_NORMAL);
-    lcdDisplayOn = true;
-  }
-
   ++lcdRefreshCount;
   lcdBusy = false;
   lcdFlushed();
@@ -304,20 +299,19 @@ void lcdInit()
 
   lcdHardwareInit();
 
-  // Hardware reset is mandatory for ST7567. All function and power-control
-  // commands below are issued within 5 ms of releasing reset.
+  // Complete the reset and power-control sequence within the ST7567's 5 ms
+  // startup window.
   LCD_RST_LOW();
-  delay_ms(1);
+  delay_ms(LCD_RESET_LOW_TIME_MS);
   LCD_RST_HIGH();
-  delay_ms(1);
+  delay_ms(LCD_RESET_SETTLE_TIME_MS);
   lcdConfigureController();
 
-  // Let the generated LCD supply settle, then initialize all visible DDRAM
-  // before allowing the controller to drive the glass.
-  delay_ms(20);
+  delay_ms(LCD_POWER_SETTLE_TIME_MS);
   lcdInitFinished = true;
   lcdClear();
   lcdRefresh(true);
+  lcdWriteCommand(ST7567_DISPLAY_ON);
 }
 
 void lcdInitFinish()
@@ -334,7 +328,7 @@ void lcdOff()
   lcdRefreshWait();
   lcdWriteCommand(ST7567_DISPLAY_OFF);
   lcdWriteCommand(ST7567_ALL_PIXELS_ON);
-  lcdDisplayOn = false;
+  delay_ms(LCD_POWER_OFF_TIME_MS);
 }
 
 void lcdSetRefVolt(uint8_t value)

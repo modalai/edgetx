@@ -39,9 +39,7 @@ struct InputTestState {
   TestPhase phase;
   uint8_t index;
   uint8_t passed;
-  uint8_t skipped;
   uint8_t expectedSwitchPosition;
-  uint16_t skippedSwitches;
   uint16_t analogMin;
   uint16_t analogMax;
   bool waitingForRelease;
@@ -144,13 +142,13 @@ EnumKeys indexedKey(uint8_t index)
 
 void showStepCount()
 {
-  lcdDrawNumber(LCD_W - 2, 0, test.passed + test.skipped + 1,
+  lcdDrawNumber(LCD_W - 2, 0, test.passed + 1,
                 RIGHT | INVERS | SMLSIZE);
 }
 
-void showSkipHint()
+void showCalibrationShortcut()
 {
-  lcdDrawText(LCD_W / 2, LCD_H - FH, "Hold ENT to skip",
+  lcdDrawText(LCD_W / 2, LCD_H - FH, "Hold ENT: calibrate",
               CENTERED | SMLSIZE);
 }
 
@@ -160,19 +158,11 @@ void countPass()
   test.waitingForRelease = false;
 }
 
-void countSkip()
+void startFactoryCalibration()
 {
-  ++test.skipped;
-  test.waitingForRelease = false;
-  test.waitingForEnterRelease = true;
-  killEvents(KEY_ENTER);
-}
-
-bool skipRequested(event_t event, bool testingEnterKey = false)
-{
-  if (event != EVT_KEY_LONG(KEY_ENTER) || testingEnterKey) return false;
-  countSkip();
-  return true;
+  calibrationSaveError = false;
+  reusableBuffer.calib.state = CALIB_START;
+  chainMenu(menuFactoryCalibration);
 }
 
 void enterSwitchPhase()
@@ -184,11 +174,6 @@ void enterSwitchPhase()
 
 void selectNextSwitch()
 {
-  while (test.index < switchGetMaxSwitches() &&
-         (test.skippedSwitches & (1u << test.index))) {
-    ++test.index;
-  }
-
   if (test.index >= switchGetMaxSwitches()) {
     test.phase = TestPhase::Analogs;
     test.index = 0;
@@ -234,12 +219,9 @@ const char* analogName(uint8_t index)
   return adcGetInputName(ADC_INPUT_FLEX, index - mainCount);
 }
 
-void finishAnalogStep(bool skipped)
+void finishAnalogStep()
 {
-  if (skipped)
-    countSkip();
-  else
-    countPass();
+  countPass();
 
   if (++test.index >= analogCount()) {
     test.phase = TestPhase::Summary;
@@ -349,6 +331,12 @@ void menuFactoryInputTest(event_t event)
     return;
   }
 
+  if (event == EVT_KEY_LONG(KEY_ENTER)) {
+    killEvents(event);
+    startFactoryCalibration();
+    return;
+  }
+
   switch (test.phase) {
     case TestPhase::SwitchBaseline: {
       lcdDrawText(LCD_W / 2, 2 * FH, "Set ALL switches UP", CENTERED);
@@ -368,19 +356,7 @@ void menuFactoryInputTest(event_t event)
         lcdDrawText(LCD_W / 2, 4 * FH,
                     switchGetDefaultName(badSwitch), CENTERED | INVERS);
         lcdDrawText(LCD_W / 2, 5 * FH, "is not UP", CENTERED);
-        showSkipHint();
-        if (event == EVT_KEY_LONG(KEY_ENTER)) {
-          killEvents(event);
-          for (uint8_t i = 0; i < switchGetMaxSwitches(); ++i) {
-            if (switchGetPosition(i) != SWITCH_HW_UP) {
-              test.skippedSwitches |= (1u << i);
-              ++test.skipped;
-            }
-          }
-          test.waitingForEnterRelease = true;
-          test.phase = TestPhase::Keys;
-          test.index = 0;
-        }
+        showCalibrationShortcut();
       }
       break;
     }
@@ -395,18 +371,14 @@ void menuFactoryInputTest(event_t event)
       auto key = indexedKey(test.index);
       lcdDrawText(LCD_W / 2, 2 * FH, "Press and release", CENTERED);
       lcdDrawText(LCD_W / 2, 4 * FH, keysGetLabel(key), CENTERED | DBLSIZE);
-      showSkipHint();
-
-      if (skipRequested(event, key == KEY_ENTER)) {
-        ++test.index;
-        break;
-      }
+      showCalibrationShortcut();
 
       auto keys = readKeys();
       auto target = 1u << key;
       if (!test.waitingForRelease && keys == target) {
         test.waitingForRelease = true;
-        killEvents(key);
+        // Keep ENTER events alive so a long press can end input testing.
+        if (key != KEY_ENTER) killEvents(key);
       }
       else if (test.waitingForRelease && !(keys & target)) {
         countPass();
@@ -428,12 +400,7 @@ void menuFactoryInputTest(event_t event)
                (test.index & 1) ? '+' : '-');
       lcdDrawText(LCD_W / 2, 2 * FH, "Press and release", CENTERED);
       lcdDrawText(LCD_W / 2, 4 * FH, label, CENTERED | DBLSIZE);
-      showSkipHint();
-
-      if (skipRequested(event)) {
-        ++test.index;
-        break;
-      }
+      showCalibrationShortcut();
 
       auto trims = readTrims();
       auto target = 1u << test.index;
@@ -449,13 +416,8 @@ void menuFactoryInputTest(event_t event)
 
     case TestPhase::RotaryLeft:
       lcdDrawText(LCD_W / 2, 2 * FH, "Turn rotary LEFT", CENTERED | DBLSIZE);
-      showSkipHint();
-      if (skipRequested(event)) {
-        test.phase = TestPhase::Switches;
-        test.index = 0;
-        selectNextSwitch();
-      }
-      else if (rotaryEncoderGetValue() < test.rotaryStart) {
+      showCalibrationShortcut();
+      if (rotaryEncoderGetValue() < test.rotaryStart) {
         test.phase = TestPhase::RotaryRight;
         test.rotaryStart = rotaryEncoderGetValue();
       }
@@ -463,13 +425,8 @@ void menuFactoryInputTest(event_t event)
 
     case TestPhase::RotaryRight:
       lcdDrawText(LCD_W / 2, 2 * FH, "Turn rotary RIGHT", CENTERED | DBLSIZE);
-      showSkipHint();
-      if (skipRequested(event)) {
-        test.phase = TestPhase::Switches;
-        test.index = 0;
-        selectNextSwitch();
-      }
-      else if (rotaryEncoderGetValue() > test.rotaryStart) {
+      showCalibrationShortcut();
+      if (rotaryEncoderGetValue() > test.rotaryStart) {
         countPass();
         enterSwitchPhase();
         selectNextSwitch();
@@ -483,14 +440,7 @@ void menuFactoryInputTest(event_t event)
       lcdDrawText(LCD_W / 2, 2 * FH, "Move switch", CENTERED);
       lcdDrawText(34, 4 * FH, switchGetDefaultName(test.index), DBLSIZE);
       lcdDrawText(75, 4 * FH, switchPositionName(expected), DBLSIZE);
-      showSkipHint();
-
-      if (skipRequested(event)) {
-        test.skippedSwitches |= (1u << test.index);
-        ++test.index;
-        selectNextSwitch();
-        break;
-      }
+      showCalibrationShortcut();
 
       if (switchGetPosition(test.index) == expected) {
         if (expected == SWITCH_HW_MID) {
@@ -524,14 +474,10 @@ void menuFactoryInputTest(event_t event)
                   CENTERED | DBLSIZE);
       lcdDrawText(18, 5 * FH, "Range:");
       lcdDrawNumber(lcdNextPos + 2, 5 * FH, span, LEFT);
-      showSkipHint();
+      showCalibrationShortcut();
 
-      if (event == EVT_KEY_LONG(KEY_ENTER)) {
-        killEvents(event);
-        finishAnalogStep(true);
-      }
-      else if (span >= (ADC_MAX_VALUE + 1) / 2) {
-        finishAnalogStep(false);
+      if (span >= (ADC_MAX_VALUE + 1) / 2) {
+        finishAnalogStep();
       }
       break;
     }
@@ -540,14 +486,10 @@ void menuFactoryInputTest(event_t event)
       lcdDrawText(LCD_W / 2, 2 * FH, "Control test complete", CENTERED | INVERS);
       lcdDrawText(24, 4 * FH, "Passed:");
       lcdDrawNumber(lcdNextPos + 3, 4 * FH, test.passed, LEFT);
-      lcdDrawText(24, 5 * FH, "Skipped:");
-      lcdDrawNumber(lcdNextPos + 3, 5 * FH, test.skipped, LEFT);
       lcdDrawText(LCD_W / 2, 7 * FH, "ENTER: calibrate",
                   CENTERED | SMLSIZE);
       if (event == EVT_KEY_BREAK(KEY_ENTER)) {
-        calibrationSaveError = false;
-        reusableBuffer.calib.state = CALIB_START;
-        chainMenu(menuFactoryCalibration);
+        startFactoryCalibration();
       }
       break;
   }

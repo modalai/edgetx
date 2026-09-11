@@ -4,7 +4,71 @@
 
 #pragma once
 
-#include "helm_basic.h"
+#if defined(HELM_REVISION_HELM_BASIC)
+  #include "helm_basic.h"
+#else
+  #error "No supported M0196 revision is selected"
+#endif
+
+// Population fallbacks.
+#if defined(HELM_HAS_BATTERY_BOARD)
+  #if defined(HELM_HAS_OB_POWER_MONITOR)
+    #error "Select either the battery board or the onboard power monitor"
+  #endif
+#else
+  #define HELM_HAS_OB_POWER_MONITOR
+#endif
+
+#if defined(HELM_HAS_ANALOG_GIMBALS)
+  #if defined(HELM_HAS_I2C_GIMBALS)
+    #error "Select either analog gimbals or I2C gimbals"
+  #endif
+#else
+  #define HELM_HAS_I2C_GIMBALS
+#endif
+
+// An analog marker selects the installed analog path, not PCB capability.
+#if defined(HELM_BS_R1_ANALOG) && !defined(HELM_HAS_BS_R1)
+  #error "HELM_BS_R1_ANALOG requires HELM_HAS_BS_R1"
+#endif
+#if defined(HELM_BS_R2_ANALOG) && !defined(HELM_HAS_BS_R2)
+  #error "HELM_BS_R2_ANALOG requires HELM_HAS_BS_R2"
+#endif
+#if defined(HELM_BS_R3_ANALOG) && !defined(HELM_HAS_BS_R3)
+  #error "HELM_BS_R3_ANALOG requires HELM_HAS_BS_R3"
+#endif
+#if defined(HELM_BS_L1_ANALOG) && !defined(HELM_HAS_BS_L1)
+  #error "HELM_BS_L1_ANALOG requires HELM_HAS_BS_L1"
+#endif
+#if defined(HELM_BS_L2_ANALOG) && !defined(HELM_HAS_BS_L2)
+  #error "HELM_BS_L2_ANALOG requires HELM_HAS_BS_L2"
+#endif
+#if defined(HELM_BS_L3_ANALOG) && !defined(HELM_HAS_BS_L3)
+  #error "HELM_BS_L3_ANALOG requires HELM_HAS_BS_L3"
+#endif
+#if defined(HELM_BS_R4_ANALOG) || defined(HELM_BS_R5_ANALOG) || \
+    defined(HELM_BS_L4_ANALOG) || defined(HELM_BS_L5_ANALOG)
+  #error "The selected board switch does not support analog stuffing"
+#endif
+
+// CMake owns source selection. Keep options that change the source graph
+// synchronized with the revision header.
+#if defined(HELM_HAS_SD_CARD) && !defined(HELM_CMAKE_HAS_SD_CARD)
+  #error "HELM_HAS_SD_CARD requires the matching CMake profile option"
+#elif !defined(HELM_HAS_SD_CARD) && defined(HELM_CMAKE_HAS_SD_CARD)
+  #error "The CMake SD option requires HELM_HAS_SD_CARD"
+#endif
+#if defined(HELM_HAS_HAPTICS) && !defined(HAPTIC)
+  #error "HELM_HAS_HAPTICS requires HAPTIC in the CMake profile"
+#elif !defined(HELM_HAS_HAPTICS) && defined(HAPTIC)
+  #error "HAPTIC requires HELM_HAS_HAPTICS"
+#endif
+#if defined(HELM_HAS_INTERNAL_MODULE) && !defined(HARDWARE_INTERNAL_MODULE)
+  #error "HELM_HAS_INTERNAL_MODULE requires its CMake profile options"
+#elif !defined(HELM_HAS_INTERNAL_MODULE) && defined(HARDWARE_INTERNAL_MODULE)
+  #error "HARDWARE_INTERNAL_MODULE requires HELM_HAS_INTERNAL_MODULE"
+#endif
+#include "pins.h"
 
 #define CPU_FREQ 400000000
 #define AHB_FREQUENCY 200000000
@@ -23,7 +87,8 @@
 
 #define TELEMETRY_EXTI_PRIO 0
 
-// ADC1: four gimbal axes followed by four joystick axes.
+// ADC1 handles controls in the D2 domain. ADC3 handles RTC VBAT and optional
+// left analog switches in the D3 domain.
 #define ADC_SAMPTIME LL_ADC_SAMPLINGTIME_8CYCLES_5
 #define ADC_CHANNEL_RTC_BAT LL_ADC_CHANNEL_VBAT
 #define ADC_VREF_PREC2 330
@@ -34,84 +99,70 @@
 #define ADC_DMA_STREAM_IRQ DMA1_Stream0_IRQn
 #define ADC_DMA_STREAM_IRQHandler DMA1_Stream0_IRQHandler
 
-#define ADC_GPIO_PIN_STICK_LH LL_GPIO_PIN_0
-#define ADC_CHANNEL_STICK_LH LL_ADC_CHANNEL_10
-#define ADC_GPIO_PIN_STICK_LV LL_GPIO_PIN_1
-#define ADC_CHANNEL_STICK_LV LL_ADC_CHANNEL_11
-#define ADC_GPIO_PIN_STICK_RV LL_GPIO_PIN_5
-#define ADC_CHANNEL_STICK_RV LL_ADC_CHANNEL_8
-#define ADC_GPIO_PIN_STICK_RH LL_GPIO_PIN_5
-#define ADC_CHANNEL_STICK_RH LL_ADC_CHANNEL_19
+#define ADC_EXT ADC3
+#define ADC_EXT_CHANNELS {ADC_CHANNEL_RTC_BAT}
+#define ADC_EXT_DMA DMA2
+#define ADC_EXT_DMA_CHANNEL LL_DMAMUX1_REQ_ADC3
+#define ADC_EXT_DMA_STREAM LL_DMA_STREAM_0
+#define ADC_EXT_DMA_STREAM_IRQ DMA2_Stream0_IRQn
+#define ADC_EXT_DMA_STREAM_IRQHandler DMA2_Stream0_IRQHandler
+#define ADC_EXT_SAMPTIME LL_ADC_SAMPLINGTIME_8CYCLES_5
 
-#ifdef SUPPORT_JOYSTICK
-#define HARDWARE_POT1
-#define ADC_GPIO_PIN_POT1 LL_GPIO_PIN_0
-#define ADC_CHANNEL_POT1 LL_ADC_CHANNEL_16
-#define HARDWARE_POT2
-#define ADC_GPIO_PIN_POT2 LL_GPIO_PIN_1
-#define ADC_CHANNEL_POT2 LL_ADC_CHANNEL_17
-#define HARDWARE_POT3
-#define ADC_GPIO_PIN_POT3 LL_GPIO_PIN_0
-#define ADC_CHANNEL_POT3 LL_ADC_CHANNEL_9
-#define HARDWARE_POT4
-#define ADC_GPIO_PIN_POT4 LL_GPIO_PIN_1
-#define ADC_CHANNEL_POT4 LL_ADC_CHANNEL_5
+// These helpers resolve an optional bootloader source from the physical input
+// catalog. Runtime keys and switches use the hardware-definition generator.
+#define HELM_INPUT_GPIO_EXPAND(name) HELM_INPUT_##name##_GPIO
+#define HELM_INPUT_GPIO(name) HELM_INPUT_GPIO_EXPAND(name)
+#define HELM_INPUT_PIN_EXPAND(name) HELM_INPUT_##name##_PIN
+#define HELM_INPUT_PIN(name) HELM_INPUT_PIN_EXPAND(name)
 
-#define ADC_GPIOA_PINS (ADC_GPIO_PIN_STICK_RH | ADC_GPIO_PIN_POT1 | ADC_GPIO_PIN_POT2)
-#define ADC_GPIOB_PINS (ADC_GPIO_PIN_POT3 | ADC_GPIO_PIN_POT4)
-#define ADC_GPIOC_PINS (ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_STICK_RV)
-#define ADC_DIRECTION {1, 1, 1, 1, 1, 1, 1, 1}
-
-#else
-
-#define ADC_GPIOA_PINS (ADC_GPIO_PIN_STICK_RH)
-#define ADC_GPIOC_PINS (ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_STICK_RV)
-#define ADC_DIRECTION {1, 1, 1, 1}
-
+// Internal CRSF module: UART4. RADIO_VBUS_CTL controls only USB VBUS.
+#if defined(HELM_HAS_INTERNAL_MODULE)
+  #define INTMODULE_TX_GPIO HELM_INTERNAL_RADIO_UART4_TX_GPIO
+  #define INTMODULE_RX_GPIO HELM_INTERNAL_RADIO_UART4_RX_GPIO
+  #define INTMODULE_USART UART4
+  #define INTMODULE_USART_IRQHandler UART4_IRQHandler
+  #define INTMODULE_USART_IRQn UART4_IRQn
+  #define INTMODULE_BOOTCMD_DEFAULT 0
+  #define SPORT_MAX_BAUDRATE 921600
+  #define HELM_RADIO_AUX_USART UART5
+  #define HELM_RADIO_AUX_RX_GPIO HELM_INTERNAL_RADIO_UART5_RX_GPIO
+  #define HELM_RADIO_AUX_TX_GPIO HELM_INTERNAL_RADIO_UART5_TX_GPIO
+  #define HELM_RADIO_AUX_GPIO_AF HELM_INTERNAL_RADIO_UART5_GPIO_AF
+  #define HELM_RADIO_IRQ_GPIO HELM_INTERNAL_RADIO_IRQ_GPIO
+  #define HELM_RADIO_TEMP_GPIO HELM_INTERNAL_RADIO_TEMP_GPIO
+  #define HELM_RADIO_VBUS_GPIO HELM_INTERNAL_RADIO_VBUS_ENABLE_GPIO
+  #define HELM_RADIO_USB_DM_GPIO HELM_INTERNAL_RADIO_USB_DM_GPIO
+  #define HELM_RADIO_USB_DP_GPIO HELM_INTERNAL_RADIO_USB_DP_GPIO
+  #define HELM_RADIO_USB_GPIO_AF HELM_INTERNAL_RADIO_USB_GPIO_AF
 #endif
 
-// Internal CRSF module: UART4 on PH13/PH14. Module power remains unmanaged
-// until HELM_INTERNAL_MODULE_POWER_UNVERIFIED is replaced by verified macros.
-#define INTMODULE_TX_GPIO GPIO_PIN(GPIOH, 13)
-#define INTMODULE_RX_GPIO GPIO_PIN(GPIOH, 14)
-#define INTMODULE_USART UART4
-#define INTMODULE_USART_IRQHandler UART4_IRQHandler
-#define INTMODULE_USART_IRQn UART4_IRQn
-#define INTMODULE_BOOTCMD_DEFAULT 0
-#define SPORT_MAX_BAUDRATE 400000
+// External USB-C uses the full-speed core on PA11 and PA12.
+#define USB_GPIO_VBUS HELM_EXTERNAL_USB_VBUS_GPIO
+#define USB_GPIO_DM HELM_EXTERNAL_USB_DM_GPIO
+#define USB_GPIO_DP HELM_EXTERNAL_USB_DP_GPIO
+#define USB_GPIO_AF HELM_EXTERNAL_USB_GPIO_AF
 
-// External USB-C uses the full-speed core on PA11/PA12.
-#define USB_GPIO_VBUS GPIO_PIN(GPIOA, 9)
-#define USB_GPIO_DM GPIO_PIN(GPIOA, 11)
-#define USB_GPIO_DP GPIO_PIN(GPIOA, 12)
-#define USB_GPIO_AF GPIO_AF10
-
-// Powertip PE12864WRF-055-H-Q (ST7567), connected in 4-line serial mode.
-#define LCD_MOSI_GPIO GPIO_PIN(GPIOE, 6)
-#define LCD_CLK_GPIO GPIO_PIN(GPIOE, 2)
-#define LCD_A0_GPIO GPIO_PIN(GPIOE, 4)
-#define LCD_NCS_GPIO GPIO_PIN(GPIOE, 3)
-#define LCD_RST_GPIO GPIO_PIN(GPIOE, 5)
+// Powertip PE12864WRF-055-H-Q_005, ST7567, four-line serial mode.
+#define LCD_MOSI_GPIO HELM_LCD_MOSI_GPIO
+#define LCD_CLK_GPIO HELM_LCD_SCK_GPIO
+#define LCD_A0_GPIO HELM_LCD_A0_GPIO
+#define LCD_NCS_GPIO HELM_LCD_CS_GPIO
+#define LCD_RST_GPIO HELM_LCD_RESET_GPIO
 #define LCD_SPI SPI4
-#define LCD_GPIO_AF GPIO_AF5
+#define LCD_GPIO_AF HELM_LCD_GPIO_AF
 #define LCD_SPI_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV8
 #define LCD_SPI_FREQUENCY (SPI45_KERNEL_FREQUENCY / 8)
 
-// Native 6-o'clock orientation is the bring-up default. These are deliberately
-// simple constants so the physical mounting can be corrected without touching
-// the controller driver.
-#define LCD_SEG_DIRECTION_COMMAND 0xA0
-#define LCD_COM_DIRECTION_COMMAND 0xC8
-#define LCD_COLUMN_OFFSET 0
+#define LCD_SEG_DIRECTION_COMMAND 0xA1
+#define LCD_COM_DIRECTION_COMMAND 0xC0
+#define LCD_COLUMN_OFFSET 4
 
-// M0196 DMAMUX1 allocation:
-//   DMA1 stream 0: ADC1 (active)
-//   DMA1 stream 1: SPI2 RX / future IMU (reserved)
-//   DMA1 stream 2: SPI2 TX / future IMU (reserved)
-//   DMA1 streams 3-6: free
-//   DMA1 stream 7: SPI4 TX / LCD (active)
-// DMA2 remains free for future serial or I2C users. BDMA channels 0 and 1 are
-// reserved for future SPI6 RX and TX respectively. SDMMC uses its internal DMA.
+// M0196 DMA allocation:
+//   DMA1 stream 0: ADC1
+//   DMA1 streams 1-2: future SPI2 RX and TX
+//   DMA1 stream 7: SPI4 TX
+//   DMA2 stream 0: ADC3
+//   BDMA channels 0-1: future SPI6 RX and TX
 #define LCD_DMA DMA1
 #define LCD_DMA_Stream DMA1_Stream7
 #define LCD_DMA_Stream_Num LL_DMA_STREAM_7
@@ -121,69 +172,156 @@
   (DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 |                \
    DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7)
 #define LCD_DMA_STATUS_COMPLETE DMA_HISR_TCIF7
-#define LCD_DMA_STATUS_ERRORS                                              \
+#define LCD_DMA_STATUS_ERRORS                                                \
   (DMA_HISR_TEIF7 | DMA_HISR_DMEIF7 | DMA_HISR_FEIF7)
 
-// Backlight: TIM8 channel 3 on PI7.
+// Backlight: TIM8 channel 3.
 #define BACKLIGHT_TIMER_FREQ (PERI2_FREQUENCY * TIMER_MULT_APB2)
 #define BACKLIGHT_TIMER TIM8
-#define BACKLIGHT_GPIO GPIO_PIN(GPIOI, 7)
-#define BACKLIGHT_GPIO_AF GPIO_AF3
+#define BACKLIGHT_GPIO HELM_BACKLIGHT_GPIO
+#define BACKLIGHT_GPIO_AF HELM_BACKLIGHT_GPIO_AF
 #define BACKLIGHT_CCMR2 (TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2)
 #define BACKLIGHT_CCER TIM_CCER_CC3E
 #define BACKLIGHT_BDTR TIM_BDTR_MOE
 #define BACKLIGHT_COUNTER_REGISTER BACKLIGHT_TIMER->CCR3
 
-// Haptics: TIM4 channels 1-4 on PD12-PD15. EdgeTX exposes one haptic
-// strength, which is mirrored to all four motor drivers.
-#define HAPTIC_PWM
-#define HAPTIC_CUSTOM_PER5MS
-#define HAPTIC_TIMER TIM4
-#define HAPTIC_TIMER_FREQ (PERI1_FREQUENCY * TIMER_MULT_APB1)
-#define HAPTIC_GPIO_AF GPIO_AF2
-#define HAPTIC_CCMR1                                                       \
-  (TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC2M_1 |              \
-   TIM_CCMR1_OC2M_2)
-#define HAPTIC_CCMR2                                                       \
-  (TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC4M_1 |              \
-   TIM_CCMR2_OC4M_2)
-#define HAPTIC_CCER                                                        \
-  (TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E)
+#if defined(HELM_HAS_HAPTICS)
+  #define HAPTIC_PWM
+  #define HAPTIC_CUSTOM_PER5MS
+  #define HAPTIC_TIMER TIM4
+  #define HAPTIC_TIMER_FREQ (PERI1_FREQUENCY * TIMER_MULT_APB1)
+  #define HAPTIC_GPIO_AF HELM_HAPTIC_GPIO_AF
+  #define HAPTIC_LEFT_TOP_GPIO HELM_HAPTIC_LEFT_TOP_GPIO
+  #define HAPTIC_LEFT_BOTTOM_GPIO HELM_HAPTIC_LEFT_BOTTOM_GPIO
+  #define HAPTIC_RIGHT_TOP_GPIO HELM_HAPTIC_RIGHT_TOP_GPIO
+  #define HAPTIC_RIGHT_BOTTOM_GPIO HELM_HAPTIC_RIGHT_BOTTOM_GPIO
+  #define HAPTIC_CCMR1                                                     \
+    (TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC2M_1 |            \
+     TIM_CCMR1_OC2M_2)
+  #define HAPTIC_CCMR2                                                     \
+    (TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC4M_1 |            \
+     TIM_CCMR2_OC4M_2)
+  #define HAPTIC_CCER                                                      \
+    (TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E)
+#endif
 
-// RGB status LED: TIM5 channels 1-3 on PH10-PH12.
-#define STATUS_LEDS
-#define RGB_LED_TIMER TIM5
-#define RGB_LED_TIMER_FREQ (PERI1_FREQUENCY * TIMER_MULT_APB1)
-#define RGB_LED_BLUE_GPIO GPIO_PIN(GPIOH, 10)
-#define RGB_LED_RED_GPIO GPIO_PIN(GPIOH, 11)
-#define RGB_LED_GREEN_GPIO GPIO_PIN(GPIOH, 12)
-#define RGB_LED_GPIO_AF GPIO_AF2
+#if defined(HELM_HAS_RGB_LED)
+  #define STATUS_LEDS
+  #define RGB_LED_TIMER TIM5
+  #define RGB_LED_TIMER_FREQ (PERI1_FREQUENCY * TIMER_MULT_APB1)
+  #define RGB_LED_BLUE_GPIO HELM_RGB_BLUE_GPIO
+  #define RGB_LED_RED_GPIO HELM_RGB_RED_GPIO
+  #define RGB_LED_GREEN_GPIO HELM_RGB_GREEN_GPIO
+  #define RGB_LED_GPIO_AF HELM_RGB_GPIO_AF
+  #define RGB_LED_CCER                                                     \
+    (TIM_CCER_CC1E | TIM_CCER_CC1P | TIM_CCER_CC2E | TIM_CCER_CC2P |      \
+     TIM_CCER_CC3E | TIM_CCER_CC3P)
+#endif
 
-// SDMMC1, four-bit bus.
-#define STORAGE_USE_SDIO
-#define SD_PRESENT_GPIO GPIO_PIN(GPIOA, 8)
-#define SD_SDIO_TRANSFER_CLK_DIV SDMMC_NSPEED_CLK_DIV
-#define SD_SDIO_PIN_D0 GPIO_PIN(GPIOC, 8)
-#define SD_SDIO_AF_D0 GPIO_AF12
-#define SD_SDIO_PIN_D1 GPIO_PIN(GPIOC, 9)
-#define SD_SDIO_AF_D1 GPIO_AF12
-#define SD_SDIO_PIN_D2 GPIO_PIN(GPIOC, 10)
-#define SD_SDIO_AF_D2 GPIO_AF12
-#define SD_SDIO_PIN_D3 GPIO_PIN(GPIOC, 11)
-#define SD_SDIO_AF_D3 GPIO_AF12
-#define SD_SDIO_PIN_CMD GPIO_PIN(GPIOD, 2)
-#define SD_SDIO_AF_CMD GPIO_AF12
-#define SD_SDIO_PIN_CLK GPIO_PIN(GPIOC, 12)
-#define SD_SDIO_AF_CLK GPIO_AF12
-#define SD_SDIO SDMMC1
+#if defined(HELM_HAS_SD_CARD)
+  #define STORAGE_USE_SDIO
+  #define SD_PRESENT_GPIO HELM_SD_DETECT_GPIO
+  #define SD_SDIO_TRANSFER_CLK_DIV SDMMC_NSPEED_CLK_DIV
+  #define SD_SDIO_PIN_D0 HELM_SD_D0_GPIO
+  #define SD_SDIO_AF_D0 HELM_SD_GPIO_AF
+  #define SD_SDIO_PIN_D1 HELM_SD_D1_GPIO
+  #define SD_SDIO_AF_D1 HELM_SD_GPIO_AF
+  #define SD_SDIO_PIN_D2 HELM_SD_D2_GPIO
+  #define SD_SDIO_AF_D2 HELM_SD_GPIO_AF
+  #define SD_SDIO_PIN_D3 HELM_SD_D3_GPIO
+  #define SD_SDIO_AF_D3 HELM_SD_GPIO_AF
+  #define SD_SDIO_PIN_CMD HELM_SD_COMMAND_GPIO
+  #define SD_SDIO_AF_CMD HELM_SD_GPIO_AF
+  #define SD_SDIO_PIN_CLK HELM_SD_CLOCK_GPIO
+  #define SD_SDIO_AF_CLK HELM_SD_GPIO_AF
+  #define SD_SDIO SDMMC1
+#endif
 
-// I2C buses are reserved for future device-specific power drivers.
-#define HELM_POWER_MONITOR_I2C I2C1
-#define HELM_POWER_MONITOR_SCL_GPIO GPIO_PIN(GPIOB, 8)
-#define HELM_POWER_MONITOR_SDA_GPIO GPIO_PIN(GPIOB, 9)
-#define HELM_BATTERY_I2C I2C2
-#define HELM_BATTERY_SCL_GPIO GPIO_PIN(GPIOB, 10)
-#define HELM_BATTERY_SDA_GPIO GPIO_PIN(GPIOB, 11)
+#if defined(HELM_HAS_SOFT_POWER)
+  #define PWR_SWITCH_GPIO HELM_POWER_BUTTON_GPIO
+  #define PWR_ON_GPIO HELM_POWER_HOLD_GPIO
+  #define PWR_BUTTON_PRESS
+#endif
+
+#if defined(HELM_HAS_OB_POWER_MONITOR) || defined(HELM_HAS_I2C_EXPANSION)
+  #define HELM_I2C1 I2C1
+  #define HELM_I2C1_SCL HELM_I2C1_SCL_GPIO
+  #define HELM_I2C1_SDA HELM_I2C1_SDA_GPIO
+  #define HELM_I2C1_AF HELM_I2C1_GPIO_AF
+  #define I2C_B1 HELM_I2C1
+  #define I2C_B1_SCL_GPIO HELM_I2C1_SCL
+  #define I2C_B1_SDA_GPIO HELM_I2C1_SDA
+  #define I2C_B1_GPIO_AF HELM_I2C1_AF
+  #define I2C_B1_CLK_RATE 100000
+#endif
+
+#if defined(HELM_HAS_OB_POWER_MONITOR)
+  #define POWER_I2C HELM_I2C1
+  #define HELM_POWER_MONITOR_I2C HELM_I2C1
+  #define HELM_POWER_MONITOR_ADDRESS 0x44
+#endif
+
+#if defined(HELM_HAS_BATTERY_BOARD)
+  #define HELM_BATTERY_I2C I2C2
+  #define HELM_BATTERY_I2C_SCL HELM_I2C2_SCL_GPIO
+  #define HELM_BATTERY_I2C_SDA HELM_I2C2_SDA_GPIO
+  #define HELM_BATTERY_I2C_AF HELM_I2C2_GPIO_AF
+  #define HELM_BATTERY_IRQ HELM_BATTERY_IRQ_GPIO
+  #define HELM_BATTERY_SHUTDOWN HELM_BATTERY_SHUTDOWN_GPIO
+#endif
+
+#if defined(HELM_HAS_I2C_GIMBALS) || defined(HELM_HAS_HALL_SENSOR)
+  #define HELM_I2C3 I2C3
+  #define HELM_I2C3_SCL HELM_I2C3_SCL_GPIO
+  #define HELM_I2C3_SDA HELM_I2C3_SDA_GPIO
+  #define HELM_I2C3_AF HELM_I2C3_GPIO_AF
+#endif
+
+#if defined(HELM_HAS_I2C_GIMBALS)
+  #define HELM_GIMBAL_RIGHT_IRQ HELM_GIMBAL_RIGHT_IRQ_GPIO
+  #define HELM_GIMBAL_LEFT_IRQ HELM_GIMBAL_LEFT_IRQ_GPIO
+#endif
+
+#if defined(HELM_HAS_OB_EEPROM)
+  #define HELM_EEPROM_SPI SPI6
+  #define HELM_EEPROM_SPI_AF HELM_EEPROM_GPIO_AF
+  #define HELM_EEPROM_MISO HELM_EEPROM_MISO_GPIO
+  #define HELM_EEPROM_SCK HELM_EEPROM_SCK_GPIO
+  #define HELM_EEPROM_MOSI HELM_EEPROM_MOSI_GPIO
+  #define HELM_EEPROM_CS HELM_EEPROM_CS_GPIO
+#endif
+
+#if defined(HELM_HAS_EXPANSION_PORT)
+  #define HELM_EXPANSION_POWER_ENABLE HELM_EXPANSION_POWER_ENABLE_GPIO
+  #define HELM_EXPANSION_POWER_GOOD HELM_EXPANSION_POWER_GOOD_GPIO
+  #define HELM_EXPANSION_PRIMARY_USART USART1
+  #define HELM_EXPANSION_AUX_USART UART8
+#endif
+
+#if defined(HELM_HAS_INTERNAL_FAN)
+  #define HELM_FAN_TIMER TIM5
+  #define HELM_FAN_TIMER_CHANNEL LL_TIM_CHANNEL_CH4
+  #define HELM_FAN_OUTPUT HELM_FAN_GPIO
+  #define HELM_FAN_OUTPUT_AF HELM_FAN_GPIO_AF
+#endif
+
+#if defined(HELM_HAS_TRAINER_PORT)
+  #define HELM_TRAINER_USART USART6
+#endif
+
+#if defined(HELM_HAS_INTERNAL_VRX)
+  #define HELM_VRX_USART USART2
+#endif
+
+#if defined(HELM_HAS_SPI_EXPANSION)
+  #define HELM_EXPANSION_SPI SPI5
+  #define HELM_EXPANSION_SPI_AF HELM_SPI5_GPIO_AF
+#endif
+
+#if defined(HELM_HAS_INTERNAL_IMU)
+  #define HELM_IMU_SPI SPI2
+  #define HELM_IMU_SPI_AF HELM_IMU_GPIO_AF
+#endif
 
 #define MS_TIMER TIM14
 #define MS_TIMER_IRQn TIM8_TRG_COM_TIM14_IRQn
