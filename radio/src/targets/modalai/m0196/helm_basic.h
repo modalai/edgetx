@@ -29,10 +29,22 @@
 #define HELM_HAS_FIVE_WAY_LOWER_RIGHT
 #define HELM_HAS_QUICK_BUTTONS
 
+#define HELM_NUM_FUNCTION_SWITCHES 5
+#define HELM_NUM_FUNCTION_GROUPS 3
+#define HELM_FUNCTION_SWITCH_1 MENU_1
+#define HELM_FUNCTION_SWITCH_2 MENU_2
+#define HELM_FUNCTION_SWITCH_3 MENU_3
+#define HELM_FUNCTION_SWITCH_4 MENU_4
+#define HELM_FUNCTION_SWITCH_5 MENU_5
+
 #define HELM_HAS_INTERNAL_MODULE
 #define HELM_HAS_INTERNAL_FAN
 #define HELM_HAS_HAPTICS
 #define HELM_HAS_SD_CARD
+
+// Test the three unmapped five-way contacts and the soft-power button.
+#define FACTORY_TEST_EXTRA_INPUTS
+#define FACTORY_TEST_POWER_BUTTON
 
 // EdgeTX switches, ordered from the upper pair toward the lower pair.
 #define HELM_SWITCH_A_HIGH BS_R1_A
@@ -56,20 +68,34 @@
 #define HELM_SWITCH_J_HIGH BS_L5_A
 #define HELM_SWITCH_J_LOW BS_L5_B
 
-// Upper five-way switches. Contact order is A=up, B=right, C=left,
-// D=down, and E=center for the installed JS1400 orientation.
+// Upper-left: A=left, B=up, C=down, D=right, E=center.
+// Upper-right: A=right, B=down, C=up, D=left, E=center.
 #define HELM_KEY_EXIT UPR_L_E
-#define HELM_KEY_SYS UPR_L_C
-#define HELM_KEY_MDL UPR_L_B
-#define HELM_KEY_TELE UPR_L_D
-#define HELM_KEY_PAGEUP UPR_R_C
-#define HELM_KEY_PAGEDN UPR_R_B
-#define HELM_KEY_UP UPR_R_A
-#define HELM_KEY_DOWN UPR_R_D
+#define HELM_KEY_SYS UPR_L_A
+#define HELM_KEY_MDL UPR_L_D
+#define HELM_KEY_TELE UPR_L_C
+#define HELM_KEY_PAGEUP UPR_R_A
+#define HELM_KEY_PAGEDN UPR_R_D
+#define HELM_KEY_UP UPR_R_C
+#define HELM_KEY_DOWN UPR_R_B
 #define HELM_KEY_ENTER UPR_R_E
 
-//Gimbals
+// Lower-left: A=left, B=up, C=down, D=right, E=center.
+#define HELM_TRIM_LHL LOW_L_A
+#define HELM_TRIM_LHR LOW_L_D
+#define HELM_TRIM_LVD LOW_L_C
+#define HELM_TRIM_LVU LOW_L_B
+
+// Lower-right: A=right, B=down, C=up, D=left, E=center.
+#define HELM_TRIM_RVD LOW_R_B
+#define HELM_TRIM_RVU LOW_R_C
+#define HELM_TRIM_RHL LOW_R_D
+#define HELM_TRIM_RHR LOW_R_A
+
+// Gimbals.
 #define HELM_ADC_STICK_LH GIMBAL_LH
 #define HELM_ADC_STICK_LV GIMBAL_LV
+#define HELM_ADC_STICK_LV_INVERTED
 #define HELM_ADC_STICK_RV GIMBAL_RV
 #define HELM_ADC_STICK_RH GIMBAL_RH
+#define HELM_ADC_STICK_RH_INVERTED

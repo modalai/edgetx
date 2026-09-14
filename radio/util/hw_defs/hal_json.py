@@ -28,6 +28,10 @@ def validate_helm_input_maps(hw_defs):
     for definition in hw_defs:
         if definition.startswith('HELM_KEY_'):
             add_use(definition)
+        elif definition.startswith('HELM_TRIM_'):
+            add_use(definition)
+        elif re.fullmatch(r'HELM_FUNCTION_SWITCH_[1-6]', definition):
+            add_use(definition)
         elif re.fullmatch(r'HELM_SWITCH_[A-Z](_HIGH|_LOW)?', definition):
             add_use(definition)
         elif re.fullmatch(

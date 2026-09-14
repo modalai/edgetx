@@ -23,8 +23,205 @@
 #include "stamp.h"
 #include <stdarg.h>
 
+#if defined(DEBUG_SEGGER_RTT) && !defined(BOOT)
+#include "hal/adc_driver.h"
+#include "hal/key_driver.h"
+#include "hal/module_port.h"
+#include "hal/switch_driver.h"
+#include "mixes.h"
+#include "pulses/pulses.h"
+#include "switches.h"
+
+#include <string.h>
+#endif
+
 #if defined(SIMU)
 traceCallbackFunc traceCallback = 0;
+#endif
+
+#if defined(DEBUG_SEGGER_RTT) && !defined(BOOT)
+
+static_assert(MAX_KEYS <= DEBUG_MONITOR_MAX_KEYS,
+              "Debug monitor key capacity is too small");
+static_assert(MAX_TRIMS * 2 <= DEBUG_MONITOR_MAX_TRIMS,
+              "Debug monitor trim capacity is too small");
+static_assert(MAX_SWITCHES <= DEBUG_MONITOR_MAX_SWITCHES,
+              "Debug monitor switch capacity is too small");
+static_assert(MAX_ANALOG_INPUTS <= DEBUG_MONITOR_MAX_ANALOGS,
+              "Debug monitor analog capacity is too small");
+static_assert(MAX_INPUTS <= DEBUG_MONITOR_MAX_INPUTS,
+              "Debug monitor input capacity is too small");
+static_assert(MAX_OUTPUT_CHANNELS <= DEBUG_MONITOR_MAX_CHANNELS,
+              "Debug monitor channel capacity is too small");
+static_assert(NUM_MODULES <= DEBUG_MONITOR_MAX_MODULES,
+              "Debug monitor module capacity is too small");
+static_assert(sizeof(DebugMonitorModulePort) == 8,
+              "Debug monitor port ABI changed");
+static_assert(sizeof(DebugMonitorModule) == 20,
+              "Debug monitor module ABI changed");
+static_assert(offsetof(DebugMonitorSnapshot, sequence) == 8,
+              "Debug monitor sequence offset changed");
+static_assert(sizeof(DebugMonitorSnapshot) == 1428,
+              "Debug monitor snapshot ABI changed");
+
+extern "C" {
+DebugMonitorSnapshot debugMonitorSnapshot = {};
+}
+
+static void copyDebugMonitorLabel(char *destination, const char *source,
+                                  size_t sourceCapacity =
+                                      DEBUG_MONITOR_LABEL_LENGTH - 1)
+{
+  memset(destination, 0, DEBUG_MONITOR_LABEL_LENGTH);
+  if (!source) return;
+
+  const size_t capacity =
+      min(sourceCapacity, (size_t)DEBUG_MONITOR_LABEL_LENGTH - 1);
+  size_t length = 0;
+  while (length < capacity && source[length]) ++length;
+  memcpy(destination, source, length);
+}
+
+static void captureDebugMonitorPort(DebugMonitorModulePort &destination,
+                                    const etx_module_driver_t &source,
+                                    uint8_t direction)
+{
+  memset(&destination, 0, sizeof(destination));
+  if (!source.port) return;
+
+  destination.active = 1;
+  destination.type = source.port->type;
+  destination.port = source.port->port;
+  destination.direction = direction;
+
+  if (source.port->type == ETX_MOD_TYPE_SERIAL) {
+    auto driver = modulePortGetSerialDrv(source);
+    if (driver && driver->getBaudrate && source.ctx) {
+      destination.baudrate = driver->getBaudrate(source.ctx);
+    }
+  }
+}
+
+static uint32_t getDebugMonitorActiveInputs()
+{
+  uint32_t active = 0;
+  for (uint8_t i = 0; i < MAX_EXPOS; ++i) {
+    auto input = expoAddress(i);
+    if (!EXPO_VALID(input)) break;
+    if (input->chn < DEBUG_MONITOR_MAX_INPUTS) {
+      active |= (1u << input->chn);
+    }
+  }
+  return active;
+}
+
+static uint32_t getDebugMonitorActiveChannels()
+{
+  uint32_t active = 0;
+  for (uint8_t i = 0; i < MAX_MIXERS; ++i) {
+    auto mix = mixAddress(i);
+    if (!mix->srcRaw) break;
+    if (mix->destCh < DEBUG_MONITOR_MAX_CHANNELS) {
+      active |= (1u << mix->destCh);
+    }
+  }
+  return active;
+}
+
+void debugMonitorCapture()
+{
+  static tmr10ms_t lastCapture = (tmr10ms_t)-10;
+  const tmr10ms_t now = get_tmr10ms();
+  if ((tmr10ms_t)(now - lastCapture) < 10) return;
+  lastCapture = now;
+
+  uint32_t sequence = debugMonitorSnapshot.sequence + 1;
+  if (!(sequence & 1u)) ++sequence;
+  debugMonitorSnapshot.sequence = sequence;
+  __DMB();
+
+  debugMonitorSnapshot.magic = DEBUG_MONITOR_MAGIC;
+  debugMonitorSnapshot.version = DEBUG_MONITOR_VERSION;
+  debugMonitorSnapshot.size = sizeof(debugMonitorSnapshot);
+  debugMonitorSnapshot.tick10ms = now;
+  debugMonitorSnapshot.keysSupported = keysGetSupported();
+  debugMonitorSnapshot.keysPressed = readKeys();
+  debugMonitorSnapshot.trimsPressed = readTrims();
+  debugMonitorSnapshot.activeInputs = getDebugMonitorActiveInputs();
+  debugMonitorSnapshot.activeChannels = getDebugMonitorActiveChannels();
+  debugMonitorSnapshot.functionSwitches = 0;
+  debugMonitorSnapshot.keyCount = keysGetMaxKeys();
+  debugMonitorSnapshot.trimCount = keysGetMaxTrims() * 2;
+  debugMonitorSnapshot.switchCount = switchGetMaxSwitches();
+  debugMonitorSnapshot.mainAnalogCount = adcGetMaxInputs(ADC_INPUT_MAIN);
+  debugMonitorSnapshot.flexAnalogCount = adcGetMaxInputs(ADC_INPUT_FLEX);
+  debugMonitorSnapshot.batteryAnalogCount = adcGetMaxInputs(ADC_INPUT_VBAT);
+  debugMonitorSnapshot.rtcBatteryAnalogCount =
+      adcGetMaxInputs(ADC_INPUT_RTC_BAT);
+  debugMonitorSnapshot.analogCount = adcGetMaxInputs(ADC_INPUT_ALL);
+  debugMonitorSnapshot.moduleCount = NUM_MODULES;
+  memset(debugMonitorSnapshot.reserved, 0,
+         sizeof(debugMonitorSnapshot.reserved));
+
+  for (uint8_t i = 0; i < MAX_KEYS; ++i) {
+    copyDebugMonitorLabel(debugMonitorSnapshot.keyNames[i],
+                          keysGetLabel((EnumKeys)i));
+  }
+
+  for (uint8_t i = 0; i < debugMonitorSnapshot.switchCount; ++i) {
+    copyDebugMonitorLabel(debugMonitorSnapshot.switchNames[i],
+                          switchGetDefaultName(i));
+    debugMonitorSnapshot.switchTypes[i] = switchGetHwType(i);
+    debugMonitorSnapshot.switchPositions[i] = switchGetPosition(i);
+    debugMonitorSnapshot.functionSwitchPhysical[i] = 0;
+    debugMonitorSnapshot.functionSwitchLogical[i] = 0;
+#if defined(FUNCTION_SWITCHES)
+    if (switchIsCustomSwitch(i)) {
+      debugMonitorSnapshot.functionSwitches |= (1u << i);
+      debugMonitorSnapshot.functionSwitchPhysical[i] =
+          switchGetPosition(i) != SWITCH_HW_UP;
+      debugMonitorSnapshot.functionSwitchLogical[i] = g_model.cfsState(i);
+    }
+#endif
+  }
+
+  for (uint8_t i = 0; i < debugMonitorSnapshot.analogCount; ++i) {
+    copyDebugMonitorLabel(debugMonitorSnapshot.analogNames[i],
+                          adcGetInputName(i));
+    debugMonitorSnapshot.analogRaw[i] = getAnalogValue(i);
+    debugMonitorSnapshot.analogFiltered[i] = anaIn(i);
+  }
+
+  for (uint8_t i = 0; i < MAX_INPUTS; ++i) {
+    copyDebugMonitorLabel(debugMonitorSnapshot.inputNames[i],
+                          g_model.inputNames[i], LEN_INPUT_NAME);
+    debugMonitorSnapshot.inputs[i] = anas[i];
+  }
+
+  for (uint8_t i = 0; i < MAX_OUTPUT_CHANNELS; ++i) {
+    copyDebugMonitorLabel(debugMonitorSnapshot.channelNames[i],
+                          g_model.limitData[i].name, LEN_CHANNEL_NAME);
+    debugMonitorSnapshot.mixers[i] = ex_chans[i];
+    debugMonitorSnapshot.outputs[i] = channelOutputs[i];
+  }
+
+  for (uint8_t i = 0; i < NUM_MODULES; ++i) {
+    auto &destination = debugMonitorSnapshot.modules[i];
+    memset(&destination, 0, sizeof(destination));
+    destination.protocol = moduleState[i].protocol;
+    destination.powered = modulePortPowered(i);
+
+    auto source = modulePortGetState(i);
+    if (source) {
+      captureDebugMonitorPort(destination.tx, source->tx, ETX_Dir_TX);
+      captureDebugMonitorPort(destination.rx, source->rx, ETX_Dir_RX);
+    }
+  }
+
+  __DMB();
+  debugMonitorSnapshot.sequence = sequence + 1;
+}
+
 #endif
 
 #if defined(SIMU)

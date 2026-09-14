@@ -1759,6 +1759,14 @@ uint32_t pwrCheck()
 
   static uint8_t pwr_check_state = PWR_CHECK_ON;
 
+#if defined(FACTORY_TEST_POWER_BUTTON)
+  if (factoryResetInputTestActive()) {
+    pwr_check_state = PWR_CHECK_ON;
+    pwr_press_time = 0;
+    return e_power_on;
+  }
+#endif
+
   bool inactivityShutdown = pwrOffDueToInactivity();
   
   if (pwr_check_state == PWR_CHECK_OFF) {

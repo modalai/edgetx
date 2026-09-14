@@ -85,9 +85,20 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, int srcMin, int sr
     int vmin = isSource ? srcMin : i_min;
     int vmax = isSource ? srcMax : i_max;
 
-    if (event == evt_rot_inc || event == EVT_KEY_FIRST(KEY_PLUS) ||
-        event == EVT_KEY_REPT(KEY_PLUS)) {
+    bool incrementEvent = event == evt_rot_inc ||
+                          event == EVT_KEY_FIRST(KEY_PLUS) ||
+                          event == EVT_KEY_REPT(KEY_PLUS);
+    bool decrementEvent = event == evt_rot_dec ||
+                          event == EVT_KEY_FIRST(KEY_MINUS) ||
+                          event == EVT_KEY_REPT(KEY_MINUS);
+#if defined(NAVIGATION_X7_UP_DOWN)
+    incrementEvent = incrementEvent || event == EVT_KEY_FIRST(KEY_UP) ||
+                     event == EVT_KEY_REPT(KEY_UP);
+    decrementEvent = decrementEvent || event == EVT_KEY_FIRST(KEY_DOWN) ||
+                     event == EVT_KEY_REPT(KEY_DOWN);
+#endif
 
+    if (incrementEvent) {
       if (IS_KEY_REPT(event) && (i_flags & INCDEC_REP10)) {
         newval += min(10, vmax - val);
       } else {
@@ -102,9 +113,7 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, int srcMin, int sr
         newval = val;
         AUDIO_KEY_ERROR();
       }
-    } else if (event == evt_rot_dec || event == EVT_KEY_FIRST(KEY_MINUS) ||
-               event == EVT_KEY_REPT(KEY_MINUS)) {
-
+    } else if (decrementEvent) {
       if (IS_KEY_REPT(event) && (i_flags & INCDEC_REP10)) {
         newval -= min(10, val - vmin);
       } else {
@@ -277,6 +286,10 @@ void check(event_t event, uint8_t curr, const MenuHandler *menuTab,
     case EVT_ROTARY_RIGHT:
     case EVT_KEY_FIRST(KEY_MINUS):
     case EVT_KEY_REPT(KEY_MINUS):
+#if defined(NAVIGATION_X7_UP_DOWN)
+    case EVT_KEY_FIRST(KEY_DOWN):
+    case EVT_KEY_REPT(KEY_DOWN):
+#endif
       AUDIO_KEY_PRESS();
       if (s_editMode > 0) break;
       if ((COLATTR(l_posVert) & NAVIGATION_LINE_BY_LINE)) {
@@ -316,6 +329,10 @@ void check(event_t event, uint8_t curr, const MenuHandler *menuTab,
     case EVT_ROTARY_LEFT:
     case EVT_KEY_FIRST(KEY_PLUS):
     case EVT_KEY_REPT(KEY_PLUS):
+#if defined(NAVIGATION_X7_UP_DOWN)
+    case EVT_KEY_FIRST(KEY_UP):
+    case EVT_KEY_REPT(KEY_UP):
+#endif
       AUDIO_KEY_PRESS();
       if (s_editMode > 0) break;
       if ((COLATTR(l_posVert) & NAVIGATION_LINE_BY_LINE)) {

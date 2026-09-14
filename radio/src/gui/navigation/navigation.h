@@ -28,6 +28,10 @@
   #define NAVIGATION_XLITE
 #elif defined(KEYS_GPIO_REG_LEFT)
   #define NAVIGATION_9X
+#elif defined(RADIO_HELM)
+  #define NAVIGATION_X7
+  #define NAVIGATION_X7_TX12
+  #define NAVIGATION_X7_UP_DOWN
 #elif defined(KEYS_GPIO_REG_PAGEUP) && defined(KEYS_GPIO_REG_TELE)
   #define NAVIGATION_X7
   #define NAVIGATION_X7_TX12

@@ -191,6 +191,65 @@ def parse_switches(target, hw_defs, adc_parser):
 
             switches.append(switch)
 
+    helm_function_defs = [
+        name for name in hw_defs if name.startswith("HELM_FUNCTION_SWITCH_")
+    ]
+    valid_helm_function_defs = {
+        f"HELM_FUNCTION_SWITCH_{i}" for i in range(1, 6 + 1)
+    }
+    invalid_helm_function_defs = [
+        name for name in helm_function_defs
+        if name not in valid_helm_function_defs
+    ]
+    if invalid_helm_function_defs:
+        raise ValueError(
+            "Invalid Helm function switch definitions: "
+            + ", ".join(sorted(invalid_helm_function_defs))
+        )
+
+    mapped_helm_function_defs = [
+        f"HELM_FUNCTION_SWITCH_{i}" for i in range(1, 6 + 1)
+        if f"HELM_FUNCTION_SWITCH_{i}" in hw_defs
+    ]
+    legacy_function_defs = [
+        f"FUNCTION_SWITCH_{i}" for i in range(1, 6 + 1)
+        if f"FUNCTION_SWITCH_{i}" in hw_defs
+    ]
+
+    if mapped_helm_function_defs and legacy_function_defs:
+        raise ValueError(
+            "Do not mix Helm and legacy function switch definitions"
+        )
+
+    if mapped_helm_function_defs:
+        if "FUNCTION_SWITCHES" not in hw_defs:
+            raise ValueError(
+                "Helm function switch mappings require FUNCTION_SWITCHES"
+            )
+
+        expected_defs = [
+            f"HELM_FUNCTION_SWITCH_{i}"
+            for i in range(1, len(mapped_helm_function_defs) + 1)
+        ]
+        if mapped_helm_function_defs != expected_defs:
+            raise ValueError(
+                "Helm function switch mappings must start at 1 and be contiguous"
+            )
+
+        configured_count = hw_defs.get("HELM_NUM_FUNCTION_SWITCHES")
+        if configured_count != len(mapped_helm_function_defs):
+            raise ValueError(
+                "HELM_NUM_FUNCTION_SWITCHES does not match the mapped switches"
+            )
+
+        for i, definition in enumerate(mapped_helm_function_defs):
+            gpio, pin = get_helm_input(hw_defs, hw_defs[definition])
+            switch = Switch2POS(f"SW{i + 1}", gpio, pin)
+            switch.default = "2POS"
+            switch.is_cfs = True
+            switch.cfs_idx = i
+            switches.append(switch)
+
     for i in range(1, 6 + 1):
         f_sw_marker = f"FUNCTION_SWITCH_{i}"
         if f_sw_marker in hw_defs:

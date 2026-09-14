@@ -30,6 +30,7 @@ enum class TestPhase : uint8_t {
   Trims,
   RotaryLeft,
   RotaryRight,
+  ExtraInputs,
   Switches,
   Analogs,
   Summary,
@@ -44,7 +45,9 @@ struct InputTestState {
   uint16_t analogMax;
   bool waitingForRelease;
   bool waitingForEnterRelease;
+#if defined(ROTARY_ENCODER_NAVIGATION)
   rotenc_t rotaryStart;
+#endif
 };
 
 FactoryMenuState factoryMenuState = FactoryMenuState::Confirm;
@@ -108,7 +111,12 @@ void resetInputTest()
   test = {};
   test.phase = TestPhase::SwitchBaseline;
   test.waitingForEnterRelease = (readKeys() & (1u << KEY_ENTER)) != 0;
+#if defined(ROTARY_ENCODER_NAVIGATION)
   test.rotaryStart = rotaryEncoderGetValue();
+#endif
+#if defined(FACTORY_TEST_EXTRA_INPUTS)
+  boardFactoryTestInitExtraInputs();
+#endif
 }
 
 void startInputTest()
@@ -185,6 +193,20 @@ void selectNextSwitch()
   test.expectedSwitchPosition =
       switchGetHwType(test.index) == SWITCH_HW_3POS ? SWITCH_HW_MID
                                                     : SWITCH_HW_DOWN;
+}
+
+void enterExtraInputPhase()
+{
+#if defined(FACTORY_TEST_EXTRA_INPUTS)
+  if (boardFactoryTestGetExtraInputCount() > 0) {
+    test.phase = TestPhase::ExtraInputs;
+    test.index = 0;
+    return;
+  }
+#endif
+
+  enterSwitchPhase();
+  selectNextSwitch();
 }
 
 const char* switchPositionName(SwitchHwPos position)
@@ -390,8 +412,12 @@ void menuFactoryInputTest(event_t event)
     case TestPhase::Trims: {
       auto trimDirections = keysGetMaxTrims() * 2;
       if (test.index >= trimDirections) {
+#if defined(ROTARY_ENCODER_NAVIGATION)
         test.phase = TestPhase::RotaryLeft;
         test.rotaryStart = rotaryEncoderGetValue();
+#else
+        enterExtraInputPhase();
+#endif
         break;
       }
 
@@ -414,6 +440,7 @@ void menuFactoryInputTest(event_t event)
       break;
     }
 
+#if defined(ROTARY_ENCODER_NAVIGATION)
     case TestPhase::RotaryLeft:
       lcdDrawText(LCD_W / 2, 2 * FH, "Turn rotary LEFT", CENTERED | DBLSIZE);
       showCalibrationShortcut();
@@ -428,10 +455,39 @@ void menuFactoryInputTest(event_t event)
       showCalibrationShortcut();
       if (rotaryEncoderGetValue() > test.rotaryStart) {
         countPass();
-        enterSwitchPhase();
-        selectNextSwitch();
+        enterExtraInputPhase();
       }
       break;
+#endif
+
+    case TestPhase::ExtraInputs: {
+#if defined(FACTORY_TEST_EXTRA_INPUTS)
+      if (test.index >= boardFactoryTestGetExtraInputCount()) {
+        enterSwitchPhase();
+        selectNextSwitch();
+        break;
+      }
+
+      lcdDrawText(LCD_W / 2, 2 * FH, "Press and release", CENTERED);
+      lcdDrawText(LCD_W / 2, 4 * FH,
+                  boardFactoryTestGetExtraInputName(test.index),
+                  CENTERED | DBLSIZE);
+      showCalibrationShortcut();
+
+      auto active = boardFactoryTestIsExtraInputActive(test.index);
+      if (!test.waitingForRelease && active) {
+        test.waitingForRelease = true;
+      }
+      else if (test.waitingForRelease && !active) {
+        countPass();
+        ++test.index;
+      }
+#else
+      enterSwitchPhase();
+      selectNextSwitch();
+#endif
+      break;
+    }
 
     case TestPhase::Switches: {
       if (test.phase != TestPhase::Switches) break;

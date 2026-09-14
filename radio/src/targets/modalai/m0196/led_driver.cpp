@@ -4,6 +4,26 @@
 
 #include "board.h"
 
+#if defined(FUNCTION_SWITCHES)
+
+void fsLedOff(uint8_t index)
+{
+  (void)index;
+}
+
+void fsLedOn(uint8_t index)
+{
+  (void)index;
+}
+
+bool fsLedState(uint8_t index)
+{
+  (void)index;
+  return false;
+}
+
+#endif
+
 #if defined(HELM_HAS_RGB_LED)
 
 static void setRgb(uint8_t red, uint8_t green, uint8_t blue)

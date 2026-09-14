@@ -36,7 +36,11 @@ __weak void keysInit()
 
 __weak uint32_t readKeys()
 {
-  return _read_keys();
+  uint32_t keys = _read_keys();
+#if defined(HELM_HOST_KEY_INJECTION) && defined(DEBUG_SEGGER_RTT)
+  keys |= hostKeyInjectionRead() & keysGetSupported();
+#endif
+  return keys;
 }
 
 __weak uint32_t readTrims()

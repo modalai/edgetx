@@ -16,6 +16,7 @@
 #include "rtc.h"
 #include "stm32_gpio.h"
 #include "stm32_gpio_driver.h"
+#include "stm32_hal_ll.h"
 #include "stm32h7xx_ll_gpio.h"
 #include "system_clock.h"
 #include "timers_driver.h"
@@ -26,6 +27,10 @@
 
 #if defined(HELM_DIAGNOSTICS)
 #include "diagnostics.h"
+#endif
+
+#if defined(HELM_HOST_KEY_INJECTION) && defined(DEBUG_SEGGER_RTT)
+#include "rtt_key_injection.h"
 #endif
 
 #if defined(HELM_HAS_OB_POWER_MONITOR)
@@ -64,6 +69,71 @@
 
 HardwareOptions hardwareOptions;
 static bool hseClockFailureRecovered;
+
+#if defined(FACTORY_TEST_EXTRA_INPUTS)
+namespace {
+
+struct FactoryTestInput {
+  const char* name;
+  GPIO_TypeDef* gpio;
+  uint32_t pin;
+};
+
+const FactoryTestInput factoryTestInputs[] = {
+  {"UL UP", HELM_INPUT_GPIO(UPR_L_B), HELM_INPUT_PIN(UPR_L_B)},
+  {"LL CLICK", HELM_INPUT_GPIO(LOW_L_E), HELM_INPUT_PIN(LOW_L_E)},
+  {"LR CLICK", HELM_INPUT_GPIO(LOW_R_E), HELM_INPUT_PIN(LOW_R_E)},
+};
+
+constexpr uint8_t FACTORY_TEST_INPUT_COUNT =
+    sizeof(factoryTestInputs) / sizeof(factoryTestInputs[0]);
+
+}  // namespace
+
+void boardFactoryTestInitExtraInputs()
+{
+  LL_GPIO_InitTypeDef init;
+  LL_GPIO_StructInit(&init);
+  init.Mode = LL_GPIO_MODE_INPUT;
+  init.Pull = LL_GPIO_PULL_UP;
+
+  for (const auto& input : factoryTestInputs) {
+    stm32_gpio_enable_clock(input.gpio);
+    init.Pin = input.pin;
+    LL_GPIO_Init(input.gpio, &init);
+  }
+}
+
+uint8_t boardFactoryTestGetExtraInputCount()
+{
+#if defined(FACTORY_TEST_POWER_BUTTON)
+  return FACTORY_TEST_INPUT_COUNT + 1;
+#else
+  return FACTORY_TEST_INPUT_COUNT;
+#endif
+}
+
+const char* boardFactoryTestGetExtraInputName(uint8_t index)
+{
+  if (index < FACTORY_TEST_INPUT_COUNT) return factoryTestInputs[index].name;
+#if defined(FACTORY_TEST_POWER_BUTTON)
+  if (index == FACTORY_TEST_INPUT_COUNT) return "POWER";
+#endif
+  return "";
+}
+
+bool boardFactoryTestIsExtraInputActive(uint8_t index)
+{
+  if (index < FACTORY_TEST_INPUT_COUNT) {
+    const auto& input = factoryTestInputs[index];
+    return !LL_GPIO_IsInputPinSet(input.gpio, input.pin);
+  }
+#if defined(FACTORY_TEST_POWER_BUTTON)
+  if (index == FACTORY_TEST_INPUT_COUNT) return pwrPressed();
+#endif
+  return false;
+}
+#endif
 
 extern uint32_t _reboot_cmd;
 extern "C" void default_isr_handler();
@@ -202,6 +272,9 @@ void boardOff()
 #if !defined(BOOT)
 void per5ms()
 {
+#if defined(HELM_HOST_KEY_INJECTION) && defined(DEBUG_SEGGER_RTT)
+  rttKeyInjectionPoll();
+#endif
 #if defined(HAPTIC)
   DEBUG_TIMER_START(debugTimerHaptic);
   HAPTIC_HEARTBEAT();
