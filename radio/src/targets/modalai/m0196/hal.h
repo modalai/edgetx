@@ -68,6 +68,13 @@
 #elif !defined(HELM_HAS_INTERNAL_MODULE) && defined(HARDWARE_INTERNAL_MODULE)
   #error "HARDWARE_INTERNAL_MODULE requires HELM_HAS_INTERNAL_MODULE"
 #endif
+#if defined(HELM_NUM_FUNCTION_SWITCHES) && \
+    !defined(HELM_CMAKE_HAS_FUNCTION_SWITCHES)
+  #error "HELM function switches require the matching CMake profile option"
+#elif !defined(HELM_NUM_FUNCTION_SWITCHES) && \
+      defined(HELM_CMAKE_HAS_FUNCTION_SWITCHES)
+  #error "The CMake function-switch option requires HELM mappings"
+#endif
 #include "pins.h"
 
 #define CPU_FREQ 400000000

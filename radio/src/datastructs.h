@@ -109,7 +109,9 @@ static inline void check_struct()
 
 #if defined(RADIO_TPRO) || defined(RADIO_TPROV2) || defined(RADIO_BUMBLEBEE)
   CHKSIZE(ModelData, 6355);
-#elif defined(RADIO_MODAL) || defined(RADIO_HELM)
+#elif defined(RADIO_HELM)
+  CHKSIZE(ModelData, 6501);
+#elif defined(RADIO_MODAL)
   CHKSIZE(ModelData, 6479);
 #elif defined(RADIO_FAMILY_T20)
   CHKSIZE(ModelData, 6391);

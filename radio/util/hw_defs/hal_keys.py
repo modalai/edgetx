@@ -180,6 +180,14 @@ def get_trim_switch(hw_defs, tag):
 
     gpio = f'TRIMS_GPIO_REG_{tag}'
     pin  = f'TRIMS_GPIO_PIN_{tag}'
+    helm_input = f'HELM_TRIM_{tag}'
+    direct_input = (gpio in hw_defs) or (pin in hw_defs)
+
+    if direct_input and helm_input in hw_defs:
+        raise ValueError(f"Trim {tag} has both direct and Helm input definitions")
+
+    if helm_input in hw_defs:
+        return get_helm_input(hw_defs, hw_defs[helm_input])
 
     if (gpio in hw_defs) and (pin in hw_defs):
         key = Key(hw_defs[gpio], hw_defs[pin])

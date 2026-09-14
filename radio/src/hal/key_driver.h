@@ -59,6 +59,10 @@ void pollKeys();
 // returns a bit field with each key set as (1 << KEY_xxx)
 uint32_t readKeys();
 
+#if defined(HELM_HOST_KEY_INJECTION) && defined(DEBUG_SEGGER_RTT)
+uint32_t hostKeyInjectionRead();
+#endif
+
 // returns a bit field with each trim key
 uint32_t readTrims();
 

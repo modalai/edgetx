@@ -59,6 +59,91 @@ EXTERN_C(extern volatile uint32_t g_tmr10ms);
 #define TRACE_WARNING_WP(...) debugPrintf(__VA_ARGS__)
 #define TRACE_ERROR(...)      debugPrintf("-E- " __VA_ARGS__)
 
+#if defined(DEBUG_SEGGER_RTT) && !defined(BOOT)
+
+// Stable binary interface for host-side development monitors.
+#define DEBUG_MONITOR_MAGIC 0x4d585445u  // "ETXM" in target memory
+#define DEBUG_MONITOR_VERSION 1u
+#define DEBUG_MONITOR_LABEL_LENGTH 8u
+#define DEBUG_MONITOR_MAX_KEYS 16u
+#define DEBUG_MONITOR_MAX_TRIMS 16u
+#define DEBUG_MONITOR_MAX_SWITCHES 20u
+#define DEBUG_MONITOR_MAX_ANALOGS 22u
+#define DEBUG_MONITOR_MAX_INPUTS 32u
+#define DEBUG_MONITOR_MAX_CHANNELS 32u
+#define DEBUG_MONITOR_MAX_MODULES 2u
+
+typedef struct {
+  uint32_t baudrate;
+  uint8_t active;
+  uint8_t type;
+  uint8_t port;
+  uint8_t direction;
+} DebugMonitorModulePort;
+
+typedef struct {
+  DebugMonitorModulePort tx;
+  DebugMonitorModulePort rx;
+  uint8_t protocol;
+  uint8_t powered;
+  uint8_t reserved[2];
+} DebugMonitorModule;
+
+typedef struct {
+  uint32_t magic;
+  uint16_t version;
+  uint16_t size;
+  uint32_t sequence;
+  uint32_t tick10ms;
+
+  uint32_t keysSupported;
+  uint32_t keysPressed;
+  uint32_t trimsPressed;
+  uint32_t activeInputs;
+  uint32_t activeChannels;
+  uint32_t functionSwitches;
+
+  uint8_t keyCount;
+  uint8_t trimCount;
+  uint8_t switchCount;
+  uint8_t analogCount;
+  uint8_t mainAnalogCount;
+  uint8_t flexAnalogCount;
+  uint8_t batteryAnalogCount;
+  uint8_t rtcBatteryAnalogCount;
+  uint8_t moduleCount;
+  uint8_t reserved[3];
+
+  char keyNames[DEBUG_MONITOR_MAX_KEYS][DEBUG_MONITOR_LABEL_LENGTH];
+  char switchNames[DEBUG_MONITOR_MAX_SWITCHES][DEBUG_MONITOR_LABEL_LENGTH];
+  uint8_t switchTypes[DEBUG_MONITOR_MAX_SWITCHES];
+  uint8_t switchPositions[DEBUG_MONITOR_MAX_SWITCHES];
+  uint8_t functionSwitchPhysical[DEBUG_MONITOR_MAX_SWITCHES];
+  uint8_t functionSwitchLogical[DEBUG_MONITOR_MAX_SWITCHES];
+
+  char analogNames[DEBUG_MONITOR_MAX_ANALOGS][DEBUG_MONITOR_LABEL_LENGTH];
+  uint16_t analogRaw[DEBUG_MONITOR_MAX_ANALOGS];
+  uint16_t analogFiltered[DEBUG_MONITOR_MAX_ANALOGS];
+
+  char inputNames[DEBUG_MONITOR_MAX_INPUTS][DEBUG_MONITOR_LABEL_LENGTH];
+  int16_t inputs[DEBUG_MONITOR_MAX_INPUTS];
+
+  char channelNames[DEBUG_MONITOR_MAX_CHANNELS][DEBUG_MONITOR_LABEL_LENGTH];
+  int16_t mixers[DEBUG_MONITOR_MAX_CHANNELS];
+  int16_t outputs[DEBUG_MONITOR_MAX_CHANNELS];
+
+  DebugMonitorModule modules[DEBUG_MONITOR_MAX_MODULES];
+} DebugMonitorSnapshot;
+
+EXTERN_C(extern DebugMonitorSnapshot debugMonitorSnapshot);
+void debugMonitorCapture();
+
+#else
+
+#define debugMonitorCapture()
+
+#endif
+
 #if defined(DEBUG_WINDOWS)
 #define TRACE_WINDOWS(f_, ...) TRACE(f_, ##__VA_ARGS__)
 #define TRACE_WINDOWS_INDENT(f_, ...) debugPrintf((TRACE_TIME_FORMAT "%s" f_ CRLF), TRACE_TIME_VALUE, getIndentString().c_str(), ##__VA_ARGS__)

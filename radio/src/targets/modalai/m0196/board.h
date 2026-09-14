@@ -47,7 +47,13 @@ extern HardwareOptions hardwareOptions;
 
 #define SLAVE_MODE() (g_model.trainerData.mode == TRAINER_MODE_SLAVE)
 #define TRAINER_CONNECTED() false
-#define NUM_FUNCTIONS_SWITCHES 0
+
+#if defined(FUNCTION_SWITCHES)
+  #define NUM_FUNCTIONS_SWITCHES HELM_NUM_FUNCTION_SWITCHES
+  #define NUM_FUNCTIONS_GROUPS HELM_NUM_FUNCTION_GROUPS
+#else
+  #define NUM_FUNCTIONS_SWITCHES 0
+#endif
 
 #define BATTERY_WARN 65
 #define BATTERY_MIN 60
@@ -89,6 +95,13 @@ void hapticOn(uint32_t pwmPercent);
 
 #if defined(__cplusplus) && !defined(SIMU)
 }
+#endif
+
+#if defined(FACTORY_TEST_EXTRA_INPUTS)
+void boardFactoryTestInitExtraInputs();
+uint8_t boardFactoryTestGetExtraInputCount();
+const char* boardFactoryTestGetExtraInputName(uint8_t index);
+bool boardFactoryTestIsExtraInputActive(uint8_t index);
 #endif
 
 void debugPutc(const char c);

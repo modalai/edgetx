@@ -181,6 +181,7 @@ void mixerTask()
       mixerTaskLock();
 
       doMixerCalculations();
+      debugMonitorCapture();
       pulsesSendChannels();
       doMixerPeriodicUpdates();
 
