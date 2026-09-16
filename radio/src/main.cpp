@@ -28,6 +28,10 @@
 #include "edgetx.h"
 #include "lua/lua_states.h"
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+#include "sdcard.h"
+#endif
+
 #if defined(LIBOPENUI)
 #include "LvglWrapper.h"
 #include "view_main.h"
@@ -86,10 +90,12 @@ void openUsbMenu()
     TRACE("USB set joystick");
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   });
-  _usbMenu->addLine(STR_USB_MASS_STORAGE, [] {
-    TRACE("USB mass storage");
-    setSelectedUsbMode(USB_MASS_STORAGE_MODE);
-  });
+  if (storageAllowsMassStorage()) {
+    _usbMenu->addLine(STR_USB_MASS_STORAGE, [] {
+      TRACE("USB mass storage");
+      setSelectedUsbMode(USB_MASS_STORAGE_MODE);
+    });
+  }
 #if defined(USB_SERIAL)
   _usbMenu->addLine(STR_USB_SERIAL, [] {
     TRACE("USB serial");
@@ -102,7 +108,7 @@ void openUsbMenu()
 
 void onUSBConnectMenu(const char *result)
 {
-  if (result == STR_USB_MASS_STORAGE) {
+  if (result == STR_USB_MASS_STORAGE && storageAllowsMassStorage()) {
     setSelectedUsbMode(USB_MASS_STORAGE_MODE);
   } else if (result == STR_USB_JOYSTICK) {
     setSelectedUsbMode(USB_JOYSTICK_MODE);
@@ -121,11 +127,20 @@ void openUsbMenu()
 {
   if (popupMenuHandler != onUSBConnectMenu) {
     POPUP_MENU_TITLE(STR_SELECT_MODE);
+    if (!storageAllowsMassStorage()) {
 #if defined(USB_SERIAL)
-    POPUP_MENU_START(onUSBConnectMenu, 3, STR_USB_JOYSTICK, STR_USB_MASS_STORAGE, STR_USB_SERIAL);
+      POPUP_MENU_START(onUSBConnectMenu, 2, STR_USB_JOYSTICK, STR_USB_SERIAL);
 #else
-    POPUP_MENU_START(onUSBConnectMenu, 2, STR_USB_JOYSTICK, STR_USB_MASS_STORAGE);
+      POPUP_MENU_START(onUSBConnectMenu, 1, STR_USB_JOYSTICK);
 #endif
+    }
+    else {
+#if defined(USB_SERIAL)
+      POPUP_MENU_START(onUSBConnectMenu, 3, STR_USB_JOYSTICK, STR_USB_MASS_STORAGE, STR_USB_SERIAL);
+#else
+      POPUP_MENU_START(onUSBConnectMenu, 2, STR_USB_JOYSTICK, STR_USB_MASS_STORAGE);
+#endif
+    }
   }
 }
 
@@ -161,7 +176,11 @@ void handleUsbConnection()
       if (g_eeGeneral.USBMode == USB_UNSELECTED_MODE) {
         openUsbMenu();
       } else {
-        setSelectedUsbMode(g_eeGeneral.USBMode);
+        auto mode = g_eeGeneral.USBMode;
+        if (mode == USB_MASS_STORAGE_MODE && !storageAllowsMassStorage()) {
+          mode = USB_JOYSTICK_MODE;
+        }
+        setSelectedUsbMode(mode);
       }
     }
 
@@ -362,8 +381,41 @@ void guiMain(event_t evt)
 }
 #elif defined(GUI)
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+static bool factoryStoragePageIsReadOnly(MenuHandlerFunc handler)
+{
+  for (const auto& page : menuTabModel) {
+    if (page.menuFunc == handler) return true;
+  }
+
+  return handler == menuRadioSdManager ||
+         handler == menuRadioSpecialFunctions ||
+         handler == menuRadioTrainer;
+}
+
+static event_t filterFactoryStorageEvent(event_t event)
+{
+  if (!storageIsReadOnly() ||
+      !factoryStoragePageIsReadOnly(menuHandlers[menuLevel])) {
+    return event;
+  }
+
+  s_editMode = 0;
+  if (IS_KEY_EVT(event, KEY_ENTER)) {
+    if (event == EVT_KEY_BREAK(KEY_ENTER)) {
+      POPUP_WARNING("SD card required");
+    }
+    return 0;
+  }
+  return event;
+}
+#endif
+
 bool handleGui(event_t event)
 {
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  event = filterFactoryStorageEvent(event);
+#endif
   bool refreshNeeded;
 #if defined(LUA)
   bool isTelemView =
@@ -514,13 +566,14 @@ void perMain()
 #endif
 
   if ((!usbPlugged() || (getSelectedUsbMode() == USB_UNSELECTED_MODE)) &&
-      SD_CARD_PRESENT() && !sdMounted()) {
+      SD_CARD_PRESENT() && storageVolumeMode() == StorageVolumeMode::None) {
     sdMount();
   }
 
   // In case the SD card is removed during the session
   if ((!usbPlugged() || (getSelectedUsbMode() == USB_UNSELECTED_MODE)) &&
-      !SD_CARD_PRESENT() && !UNEXPECTED_SHUTDOWN()) {
+      storageVolumeMode() == StorageVolumeMode::SdCard && !SD_CARD_PRESENT() &&
+      !UNEXPECTED_SHUTDOWN()) {
     // TODO: implement for b/w
 #if defined(COLORLCD)
     drawFatalErrorScreen(STR_NO_SDCARD);

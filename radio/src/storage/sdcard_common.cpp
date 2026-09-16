@@ -27,6 +27,10 @@
 
 #include "hal/abnormal_reboot.h"
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  #include "storage/helm_device_settings.h"
+#endif
+
 #if defined(COLORLCD)
   #include "theme_manager.h"
 #endif
@@ -79,6 +83,16 @@ void storageCheck(bool immediately)
 {
   // Don't write anything to SD card if in EM
   if (UNEXPECTED_SHUTDOWN()) return;
+
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  if (storageIsReadOnly()) {
+    if ((storageDirtyMsk & EE_GENERAL) && !helmDeviceSettingsSaveCurrent()) {
+      TRACE("HELM EEPROM settings write failed");
+    }
+    storageDirtyMsk = 0;
+    return;
+  }
+#endif
 
   static constexpr uint8_t retryLimit = 10;
 
@@ -274,6 +288,10 @@ void storageReadAll()
     TRACE("No current model or SD card error");
   }
 #endif
+
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  helmDeviceSettingsLoadAndApply();
+#endif
 }
 
 #if !defined(COLORLCD)
@@ -282,4 +300,3 @@ void checkModelIdUnique(uint8_t index, uint8_t module)
   //TODO
 }
 #endif
-

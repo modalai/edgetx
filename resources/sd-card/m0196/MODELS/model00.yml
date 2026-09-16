@@ -1,6 +1,6 @@
 semver: 3.0.0
 header: 
-   name: "HELM BASIC"
+   name: "FALCONER 1"
 telemetryProtocol: 0
 thrTrim: 0
 noGlobalFunctions: 0
@@ -87,6 +87,227 @@ mixData:
    speedUp: 0
    speedDown: 0
    name: ""
+ -
+   destCh: 4
+   srcRaw: "SG"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 5
+   srcRaw: "SK"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 6
+   srcRaw: "SE"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 75
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 6
+   srcRaw: "SD"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 25
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 7
+   srcRaw: "SA"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 8
+   srcRaw: "SB"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 9
+   srcRaw: "SF"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 10
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: "GV1"
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 11
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: "GV2"
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 12
+   srcRaw: "SC"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 13
+   srcRaw: "SJ"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 14
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: "GV3"
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   destCh: 15
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: "GV4"
+   offset: 0
+   swtch: "NONE"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
 expoData: 
  -
    mode: 3
@@ -144,7 +365,96 @@ expoData:
    chn: 3
    flightModes: 000000000
    name: ""
+customFn:
+   0:
+      swtch: "SH0"
+      func: ADJUST_GVAR
+      def: "0,IncDec,50,1"
+   1:
+      swtch: "SH2"
+      func: ADJUST_GVAR
+      def: "0,IncDec,-50,1"
+   2:
+      swtch: "SI0"
+      func: ADJUST_GVAR
+      def: "1,IncDec,25,1"
+   3:
+      swtch: "SI2"
+      func: ADJUST_GVAR
+      def: "1,IncDec,-25,1"
+   4:
+      swtch: "SL0"
+      func: ADJUST_GVAR
+      def: "2,IncDec,25,1"
+   5:
+      swtch: "SL2"
+      func: ADJUST_GVAR
+      def: "2,IncDec,-25,1"
+   6:
+      swtch: "SM0"
+      func: ADJUST_GVAR
+      def: "3,IncDec,50,1"
+   7:
+      swtch: "SM2"
+      func: ADJUST_GVAR
+      def: "3,IncDec,-50,1"
+   8:
+      swtch: "ONE"
+      func: ADJUST_GVAR
+      def: "0,Cst,0,1"
+   9:
+      swtch: "ONE"
+      func: ADJUST_GVAR
+      def: "1,Cst,0,1"
+   10:
+      swtch: "ONE"
+      func: ADJUST_GVAR
+      def: "2,Cst,0,1"
+   11:
+      swtch: "ONE"
+      func: ADJUST_GVAR
+      def: "3,Cst,0,1"
+flightModeData:
+   0:
+      gvars:
+         0:
+            val: 0
+         1:
+            val: 0
+         2:
+            val: 0
+         3:
+            val: 0
 thrTraceSrc: Thr
+gvars:
+   0:
+      name: "C11"
+      min: 924
+      max: 924
+      popup: 0
+      prec: 0
+      unit: 0
+   1:
+      name: "C12"
+      min: 924
+      max: 924
+      popup: 0
+      prec: 0
+      unit: 0
+   2:
+      name: "C15"
+      min: 924
+      max: 924
+      popup: 0
+      prec: 0
+      unit: 0
+   3:
+      name: "C16"
+      min: 924
+      max: 924
+      popup: 0
+      prec: 0
+      unit: 0
 rssiSource: none
 rfAlarms: 
    warning: 45

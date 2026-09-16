@@ -24,6 +24,10 @@
 
 #include "debug.h"
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE) && !defined(BOOT)
+  #include "storage/factory_volume.h"
+#endif
+
 #if defined(SIMU_DISKIO)
   extern const diskio_driver_t simu_diskio_driver;
   #define _STORAGE_DRIVER simu_diskio_driver
@@ -66,6 +70,12 @@ void storageInit()
   if (!fatfsRegisterDriver(drv, 0)) {
     TRACE("fatfsRegisterDriver: [FAILED]");
   }
+
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE) && !defined(BOOT)
+  if (!fatfsRegisterDriver(&factoryVolumeDiskioDriver, 0)) {
+    TRACE("factory fatfsRegisterDriver: [FAILED]");
+  }
+#endif
 }
 
 void storageDeInit()

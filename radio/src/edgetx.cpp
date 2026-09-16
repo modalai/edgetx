@@ -44,6 +44,10 @@
   #include "factory_reset.h"
 #endif
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  #include "storage/helm_device_settings.h"
+#endif
+
 #include "switches.h"
 #include "inactivity_timer.h"
 #include "input_mapping.h"
@@ -657,6 +661,7 @@ static void checkRTCBattery()
 }
 
 void checkSDfreeStorage() {
+  if (storageIsReadOnly()) return;
   if(sdIsFull()) {
     ALERT(STR_SD_CARD, STR_SDCARD_FULL, AU_ERROR);
   }
@@ -1145,7 +1150,7 @@ void edgeTxResume()
 {
   TRACE("edgeTxResume");
 
-  if (!sdMounted()) sdInit();
+  if (!storageMounted()) sdInit();
 
   luaInitMainState();
 #if defined(COLORLCD) && defined(LUA)
@@ -1446,11 +1451,11 @@ void edgeTxInit()
   // SDCARD related stuff, only enable if normal boot
   if (!UNEXPECTED_SHUTDOWN()) {
 
-    if (!sdMounted())
+    if (!storageMounted())
       sdInit();
 
 #if !defined(COLORLCD)
-    if (!sdMounted()) {
+    if (!storageMounted()) {
       g_eeGeneral.pwrOffSpeed = 2;
       runFatalErrorScreen(STR_NO_SDCARD);
     }
@@ -1586,6 +1591,12 @@ void edgeTxInit()
     ALERT(STR_TEST_WARNING, TR_TEST_NOTSAFE, AU_ERROR);
 #endif
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+    if (helmDeviceSettingsStatus() == HelmDeviceSettingsStatus::Fault) {
+      ALERT("EEPROM", "Factory defaults active", AU_ERROR);
+    }
+#endif
+
 #if defined(FUNCTION_SWITCHES)
     setFSStartupPosition();
 #if defined(SIMU)
@@ -1603,6 +1614,10 @@ void edgeTxInit()
     else if (factoryResetPending == FactoryResetPendingState::Test) {
       cancelSplash();
       chainMenu(menuFactoryInputTest);
+    }
+    else if (factoryResetPending == FactoryResetPendingState::Calibration) {
+      cancelSplash();
+      chainMenu(menuFactoryCalibration);
     }
     else
 #endif

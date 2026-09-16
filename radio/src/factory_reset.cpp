@@ -1,32 +1,38 @@
 /*
  * Copyright (C) EdgeTX
  *
- * License GPLv2: http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * License GPLv2: This program is free software. You can redistribute it
+ * and modify it under the terms of the GNU General Public License, version 2.
  */
 
 #include "factory_reset.h"
 
 #include <algorithm>
+#include <stdio.h>
 #include <string.h>
 
-#include "crc.h"
 #include "edgetx.h"
 #include "hal/storage.h"
 #include "hal/watchdog_driver.h"
 #include "memory_sections.h"
 #include "sdcard.h"
+#include "storage/factory_volume.h"
+#include "storage/helm_device_settings.h"
 
 namespace {
 
-constexpr char FACTORY_RESET_MARKER[] = RADIO_PATH "/.factory-reset-pending";
+constexpr char FACTORY_RESET_MARKER[] = "0:" RADIO_PATH "/.factory-reset-pending";
 constexpr char MARKER_RESTORING[] = "RESTORING\n";
 constexpr char MARKER_TEST[] = "TEST\n";
 constexpr uint16_t IO_BUFFER_SIZE = 4096;
+constexpr size_t PATH_BUFFER_SIZE = 512;
 
 uint8_t formatWork[FF_MAX_SS] __DMA;
 uint8_t ioBuffer[IO_BUFFER_SIZE] __DMA;
+uint8_t verifyBuffer[IO_BUFFER_SIZE] __DMA;
 bool runtimeSuspended = false;
 bool inputTestActive = false;
+uint16_t copiedFiles;
 
 FactoryResetResult result(FactoryResetStage stage, FRESULT error,
                           const char* path = nullptr)
@@ -37,7 +43,7 @@ FactoryResetResult result(FactoryResetStage stage, FRESULT error,
 void report(FactoryResetProgress progress, FactoryResetStage stage,
             uint16_t current, uint16_t total, const char* path = nullptr)
 {
-  watchdogSuspend(6000);  // Keep a one-minute margin during blocking I/O.
+  watchdogSuspend(6000);
   if (progress) progress(stage, current, total, path);
 }
 
@@ -53,79 +59,190 @@ FRESULT writeMarker(const char* value)
   status = f_write(&file, value, length, &written);
   if (status == FR_OK && written != length) status = FR_DISK_ERR;
   if (status == FR_OK) status = f_sync(&file);
-
-  auto closeStatus = f_close(&file);
+  const auto closeStatus = f_close(&file);
   return status == FR_OK ? closeStatus : status;
 }
 
 FRESULT createDirectory(const char* path)
 {
-  auto status = f_mkdir(path);
+  const auto status = f_mkdir(path);
   return status == FR_EXIST ? FR_OK : status;
 }
 
-FRESULT writeEntry(const FactorySdEntry& entry)
+bool makePath(char* output, size_t size, const char* drive,
+              const char* relative)
 {
-  FIL file = {};
-  auto status = f_open(&file, entry.path, FA_CREATE_ALWAYS | FA_WRITE);
-  if (status != FR_OK) return status;
+  const int length = snprintf(output, size, "%s%s", drive, relative);
+  return length >= 0 && static_cast<size_t>(length) < size;
+}
 
-  uint32_t position = 0;
-  while (position < entry.size) {
-    const auto count = static_cast<UINT>(
-        std::min<uint32_t>(IO_BUFFER_SIZE, entry.size - position));
-    UINT written = 0;
-    status = f_write(&file, factorySdData + entry.offset + position, count,
-                     &written);
-    if (status != FR_OK || written != count) {
-      if (status == FR_OK) status = FR_DISK_ERR;
-      break;
-    }
-    position += written;
+bool appendPath(char* output, size_t size, const char* parent,
+                const char* name)
+{
+  const int length = strcmp(parent, "/") == 0
+                         ? snprintf(output, size, "/%s", name)
+                         : snprintf(output, size, "%s/%s", parent, name);
+  return length >= 0 && static_cast<size_t>(length) < size;
+}
+
+FRESULT copyFile(const char* relative, FactoryResetProgress progress)
+{
+  char sourcePath[PATH_BUFFER_SIZE];
+  char destinationPath[PATH_BUFFER_SIZE];
+  if (!makePath(sourcePath, sizeof(sourcePath), "1:", relative) ||
+      !makePath(destinationPath, sizeof(destinationPath), "0:", relative)) {
+    return FR_INVALID_NAME;
+  }
+
+  report(progress, FactoryResetStage::Write, ++copiedFiles,
+         factorySdFileCount, relative);
+
+  FIL source = {};
+  FIL destination = {};
+  auto status = f_open(&source, sourcePath, FA_READ);
+  if (status != FR_OK) return status;
+  status = f_open(&destination, destinationPath, FA_CREATE_ALWAYS | FA_WRITE);
+  if (status != FR_OK) {
+    f_close(&source);
+    return status;
+  }
+
+  while (status == FR_OK) {
+    UINT bytesRead = 0;
+    UINT bytesWritten = 0;
+    status = f_read(&source, ioBuffer, sizeof(ioBuffer), &bytesRead);
+    if (status != FR_OK || bytesRead == 0) break;
+    status = f_write(&destination, ioBuffer, bytesRead, &bytesWritten);
+    if (status == FR_OK && bytesWritten != bytesRead) status = FR_DISK_ERR;
     watchdogSuspend(6000);
   }
 
-  if (status == FR_OK) status = f_sync(&file);
-  auto closeStatus = f_close(&file);
+  if (status == FR_OK) status = f_sync(&destination);
+  const auto sourceClose = f_close(&source);
+  const auto destinationClose = f_close(&destination);
+  if (status == FR_OK) status = sourceClose;
+  if (status == FR_OK) status = destinationClose;
+  return status;
+}
+
+FRESULT copyDirectory(const char* relative, FactoryResetProgress progress)
+{
+  char sourcePath[PATH_BUFFER_SIZE];
+  char destinationPath[PATH_BUFFER_SIZE];
+  if (!makePath(sourcePath, sizeof(sourcePath), "1:", relative) ||
+      !makePath(destinationPath, sizeof(destinationPath), "0:", relative)) {
+    return FR_INVALID_NAME;
+  }
+
+  if (strcmp(relative, "/") != 0) {
+    auto status = createDirectory(destinationPath);
+    if (status != FR_OK) return status;
+  }
+
+  DIR directory = {};
+  auto status = f_opendir(&directory, sourcePath);
+  if (status != FR_OK) return status;
+
+  FILINFO info = {};
+  while ((status = f_readdir(&directory, &info)) == FR_OK && info.fname[0]) {
+    if (strcmp(info.fname, ".") == 0 || strcmp(info.fname, "..") == 0)
+      continue;
+
+    char child[PATH_BUFFER_SIZE];
+    if (!appendPath(child, sizeof(child), relative, info.fname)) {
+      status = FR_INVALID_NAME;
+      break;
+    }
+    status = (info.fattrib & AM_DIR) ? copyDirectory(child, progress)
+                                     : copyFile(child, progress);
+    if (status != FR_OK) break;
+  }
+
+  const auto closeStatus = f_closedir(&directory);
   return status == FR_OK ? closeStatus : status;
 }
 
-FRESULT verifyEntry(const FactorySdEntry& entry)
+FRESULT verifyFile(const char* relative, FactoryResetProgress progress,
+                   uint16_t& verifiedFiles)
 {
-  FILINFO info = {};
-  auto status = f_stat(entry.path, &info);
-  if (status != FR_OK) return status;
-  if ((info.fattrib & AM_DIR) || info.fsize != entry.size) return FR_INT_ERR;
+  char sourcePath[PATH_BUFFER_SIZE];
+  char destinationPath[PATH_BUFFER_SIZE];
+  if (!makePath(sourcePath, sizeof(sourcePath), "1:", relative) ||
+      !makePath(destinationPath, sizeof(destinationPath), "0:", relative)) {
+    return FR_INVALID_NAME;
+  }
 
-  FIL file = {};
-  status = f_open(&file, entry.path, FA_READ);
-  if (status != FR_OK) return status;
+  report(progress, FactoryResetStage::Verify, ++verifiedFiles,
+         factorySdFileCount, relative);
 
-  uint32_t remaining = entry.size;
-  uint16_t checksum = 0;
-  while (remaining > 0) {
-    const auto count =
-        static_cast<UINT>(std::min<uint32_t>(IO_BUFFER_SIZE, remaining));
-    UINT bytesRead = 0;
-    status = f_read(&file, ioBuffer, count, &bytesRead);
-    if (status != FR_OK || bytesRead != count) {
-      if (status == FR_OK) status = FR_DISK_ERR;
+  FIL source = {};
+  FIL destination = {};
+  auto status = f_open(&source, sourcePath, FA_READ);
+  if (status != FR_OK) return status;
+  status = f_open(&destination, destinationPath, FA_READ);
+  if (status != FR_OK) {
+    f_close(&source);
+    return status;
+  }
+
+  if (f_size(&source) != f_size(&destination)) status = FR_INT_ERR;
+  while (status == FR_OK) {
+    UINT sourceRead = 0;
+    UINT destinationRead = 0;
+    status = f_read(&source, ioBuffer, sizeof(ioBuffer), &sourceRead);
+    if (status != FR_OK) break;
+    status = f_read(&destination, verifyBuffer, sizeof(verifyBuffer),
+                    &destinationRead);
+    if (status != FR_OK) break;
+    if (sourceRead != destinationRead ||
+        memcmp(ioBuffer, verifyBuffer, sourceRead) != 0) {
+      status = FR_INT_ERR;
       break;
     }
-    checksum = crc16(CRC_1021, ioBuffer, bytesRead, checksum);
-    remaining -= bytesRead;
+    if (sourceRead == 0) break;
     watchdogSuspend(6000);
   }
 
-  auto closeStatus = f_close(&file);
-  if (status == FR_OK) status = closeStatus;
-  if (status == FR_OK && checksum != entry.checksum) status = FR_INT_ERR;
+  const auto sourceClose = f_close(&source);
+  const auto destinationClose = f_close(&destination);
+  if (status == FR_OK) status = sourceClose;
+  if (status == FR_OK) status = destinationClose;
   return status;
+}
+
+FRESULT verifyDirectory(const char* relative, FactoryResetProgress progress,
+                        uint16_t& verifiedFiles)
+{
+  char sourcePath[PATH_BUFFER_SIZE];
+  if (!makePath(sourcePath, sizeof(sourcePath), "1:", relative))
+    return FR_INVALID_NAME;
+
+  DIR directory = {};
+  auto status = f_opendir(&directory, sourcePath);
+  if (status != FR_OK) return status;
+
+  FILINFO info = {};
+  while ((status = f_readdir(&directory, &info)) == FR_OK && info.fname[0]) {
+    if (strcmp(info.fname, ".") == 0 || strcmp(info.fname, "..") == 0)
+      continue;
+    char child[PATH_BUFFER_SIZE];
+    if (!appendPath(child, sizeof(child), relative, info.fname)) {
+      status = FR_INVALID_NAME;
+      break;
+    }
+    status = (info.fattrib & AM_DIR)
+                 ? verifyDirectory(child, progress, verifiedFiles)
+                 : verifyFile(child, progress, verifiedFiles);
+    if (status != FR_OK) break;
+  }
+
+  const auto closeStatus = f_closedir(&directory);
+  return status == FR_OK ? closeStatus : status;
 }
 
 void cleanUpFailedRestore()
 {
-  f_chdir("/");
+  f_chdrive("0:");
   sdDone();
   watchdogSuspend(0);
 }
@@ -134,6 +251,17 @@ void cleanUpFailedRestore()
 
 FactoryResetPendingState factoryResetPendingState()
 {
+  if (storageIsReadOnly()) {
+    switch (helmDeviceSettingsStatus()) {
+      case HelmDeviceSettingsStatus::InputTestRequired:
+        return FactoryResetPendingState::Test;
+      case HelmDeviceSettingsStatus::CalibrationRequired:
+        return FactoryResetPendingState::Calibration;
+      default:
+        return FactoryResetPendingState::None;
+    }
+  }
+
   FIL file = {};
   if (f_open(&file, FACTORY_RESET_MARKER, FA_READ) != FR_OK)
     return FactoryResetPendingState::None;
@@ -141,19 +269,19 @@ FactoryResetPendingState factoryResetPendingState()
   char marker[sizeof(MARKER_RESTORING)] = {};
   UINT bytesRead = 0;
   auto status = f_read(&file, marker, sizeof(marker) - 1, &bytesRead);
-  auto closeStatus = f_close(&file);
+  const auto closeStatus = f_close(&file);
   if (status != FR_OK || closeStatus != FR_OK)
     return FactoryResetPendingState::Restoring;
-
   if (bytesRead == strlen(MARKER_TEST) &&
       memcmp(marker, MARKER_TEST, bytesRead) == 0)
     return FactoryResetPendingState::Test;
-
   return FactoryResetPendingState::Restoring;
 }
 
 FactoryResetResult factoryResetRestoreSd(FactoryResetProgress progress)
 {
+  if (!storageIsPresent()) return result(FactoryResetStage::Mount, FR_NOT_READY);
+
   if (!runtimeSuspended) {
     edgeTxClose(false);
     runtimeSuspended = true;
@@ -161,10 +289,9 @@ FactoryResetResult factoryResetRestoreSd(FactoryResetProgress progress)
 
   report(progress, FactoryResetStage::Format, 0, 1);
   storageInit();
-
   MKFS_PARM options = {};
   options.fmt = FM_FAT32;
-  auto status = f_mkfs("", &options, formatWork, sizeof(formatWork));
+  auto status = f_mkfs("0:", &options, formatWork, sizeof(formatWork));
   if (status != FR_OK) {
     cleanUpFailedRestore();
     return result(FactoryResetStage::Format, status);
@@ -172,56 +299,32 @@ FactoryResetResult factoryResetRestoreSd(FactoryResetProgress progress)
 
   report(progress, FactoryResetStage::Mount, 0, 1);
   sdMount();
-  if (!sdMounted()) {
+  if (!sdMounted() ||
+      f_mount(factoryVolumeFileSystem(), "1:", 1) != FR_OK) {
     cleanUpFailedRestore();
     return result(FactoryResetStage::Mount, FR_NOT_READY);
   }
-  f_chdir("/");
 
-  report(progress, FactoryResetStage::Prepare, 0, factorySdEntryCount);
-  status = createDirectory(RADIO_PATH);
+  report(progress, FactoryResetStage::Prepare, 0, factorySdFileCount);
+  status = createDirectory("0:" RADIO_PATH);
   if (status == FR_OK) status = writeMarker(MARKER_RESTORING);
   if (status != FR_OK) {
     cleanUpFailedRestore();
     return result(FactoryResetStage::Prepare, status, RADIO_PATH);
   }
 
-  for (uint16_t i = 0; i < factorySdEntryCount; ++i) {
-    const auto& entry = factorySdEntries[i];
-    if (entry.type != FactorySdEntryType::Directory) continue;
-    report(progress, FactoryResetStage::Prepare, i + 1, factorySdEntryCount,
-           entry.path);
-    status = createDirectory(entry.path);
-    if (status != FR_OK) {
-      cleanUpFailedRestore();
-      return result(FactoryResetStage::Prepare, status, entry.path);
-    }
+  copiedFiles = 0;
+  status = copyDirectory("/", progress);
+  if (status != FR_OK) {
+    cleanUpFailedRestore();
+    return result(FactoryResetStage::Write, status);
   }
 
-  uint16_t fileIndex = 0;
-  for (uint16_t i = 0; i < factorySdEntryCount; ++i) {
-    const auto& entry = factorySdEntries[i];
-    if (entry.type != FactorySdEntryType::File) continue;
-    report(progress, FactoryResetStage::Write, ++fileIndex,
-           factorySdFileCount, entry.path);
-    status = writeEntry(entry);
-    if (status != FR_OK) {
-      cleanUpFailedRestore();
-      return result(FactoryResetStage::Write, status, entry.path);
-    }
-  }
-
-  fileIndex = 0;
-  for (uint16_t i = 0; i < factorySdEntryCount; ++i) {
-    const auto& entry = factorySdEntries[i];
-    if (entry.type != FactorySdEntryType::File) continue;
-    report(progress, FactoryResetStage::Verify, ++fileIndex,
-           factorySdFileCount, entry.path);
-    status = verifyEntry(entry);
-    if (status != FR_OK) {
-      cleanUpFailedRestore();
-      return result(FactoryResetStage::Verify, status, entry.path);
-    }
+  uint16_t verifiedFiles = 0;
+  status = verifyDirectory("/", progress, verifiedFiles);
+  if (status != FR_OK) {
+    cleanUpFailedRestore();
+    return result(FactoryResetStage::Verify, status);
   }
 
   report(progress, FactoryResetStage::Marker, 1, 1);
@@ -232,7 +335,7 @@ FactoryResetResult factoryResetRestoreSd(FactoryResetProgress progress)
   }
 
   report(progress, FactoryResetStage::Reload, 1, 1);
-  f_chdir("/");
+  f_chdrive("0:");
   sdDone();
   edgeTxResume();
   runtimeSuspended = false;
@@ -240,9 +343,15 @@ FactoryResetResult factoryResetRestoreSd(FactoryResetProgress progress)
   return result(FactoryResetStage::None, FR_OK);
 }
 
+bool factoryResetBeginWithoutSd()
+{
+  return storageIsReadOnly() && helmDeviceSettingsReset();
+}
+
 FRESULT factoryResetClearPending()
 {
-  auto status = f_unlink(FACTORY_RESET_MARKER);
+  if (storageIsReadOnly()) return FR_OK;
+  const auto status = f_unlink(FACTORY_RESET_MARKER);
   if (status == FR_NO_FILE || status == FR_NO_PATH) return FR_OK;
   return status;
 }

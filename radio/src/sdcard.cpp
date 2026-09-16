@@ -27,6 +27,9 @@
 
 #include "edgetx.h"
 #include "lib_file.h"
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  #include "storage/factory_volume.h"
+#endif
 
 #if FF_MAX_SS != FF_MIN_SS
 #error "Variable sector size is not supported"
@@ -488,6 +491,10 @@ bool sdIsFull() { return false; }
 
 static bool _g_FATFS_init = false;
 static FATFS g_FATFS_Obj __DMA; // this is in uninitialised section !!!
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+static bool factoryFatFsInit = false;
+#endif
+static StorageVolumeMode activeStorageVolume = StorageVolumeMode::None;
 
 #if defined(LOG_TELEMETRY)
 FIL g_telemetryFile = {};
@@ -504,6 +511,23 @@ void sdInit()
 {
   TRACE("sdInit");
   storageInit();
+
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  if (!storageIsPresent()) {
+    storagePreMountHook();
+    if (f_mount(factoryVolumeFileSystem(), "1:", 1) == FR_OK &&
+        f_chdrive("1:") == FR_OK) {
+      factoryFatFsInit = true;
+      activeStorageVolume = StorageVolumeMode::Factory;
+      TRACE("factory volume mounted");
+    }
+    else {
+      TRACE("factory volume mount failed");
+    }
+    return;
+  }
+#endif
+
   sdMount();
 }
 
@@ -513,9 +537,11 @@ void sdMount()
 
   storagePreMountHook();
   
-  if (f_mount(&g_FATFS_Obj, "", 1) == FR_OK) {
+  if (f_mount(&g_FATFS_Obj, "0:", 1) == FR_OK &&
+      f_chdrive("0:") == FR_OK) {
     // call sdGetFreeSectors() now because f_getfree() takes a long time first time it's called
     _g_FATFS_init = true;
+    activeStorageVolume = StorageVolumeMode::SdCard;
     sdGetFreeSectors();
 
 #if defined(LOG_TELEMETRY)
@@ -541,18 +567,24 @@ void sdDone()
 {
   TRACE("sdDone");
 
-  if (sdMounted()) {
+  if (storageMounted()) {
     audioQueue.stopSD();
 
 #if defined(LOG_TELEMETRY)
-    f_close(&g_telemetryFile);
+    if (sdMounted()) f_close(&g_telemetryFile);
 #endif
 
 #if defined(LOG_BLUETOOTH)
-    f_close(&g_bluetoothFile);
+    if (sdMounted()) f_close(&g_bluetoothFile);
 #endif
 
-    f_mount(nullptr, "", 0);  // unmount SD
+    f_mount(nullptr, "0:", 0);
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+    f_mount(nullptr, "1:", 0);
+    factoryFatFsInit = false;
+#endif
+    _g_FATFS_init = false;
+    activeStorageVolume = StorageVolumeMode::None;
   }
 
   storageDeInit();
@@ -563,6 +595,37 @@ uint32_t sdMounted()
 #if defined(SIMU) && !defined(SIMU_DISKIO)
   return true;
 #else
-  return _g_FATFS_init && (g_FATFS_Obj.fs_type != 0);
+  return activeStorageVolume == StorageVolumeMode::SdCard &&
+         _g_FATFS_init && (g_FATFS_Obj.fs_type != 0);
 #endif
+}
+
+StorageVolumeMode storageVolumeMode()
+{
+#if defined(SIMU) && !defined(SIMU_DISKIO)
+  return StorageVolumeMode::SdCard;
+#else
+  return activeStorageVolume;
+#endif
+}
+
+bool storageMounted()
+{
+  if (sdMounted()) return true;
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  return activeStorageVolume == StorageVolumeMode::Factory &&
+         factoryFatFsInit && (factoryVolumeFileSystem()->fs_type != 0);
+#else
+  return false;
+#endif
+}
+
+bool storageIsReadOnly()
+{
+  return activeStorageVolume == StorageVolumeMode::Factory;
+}
+
+bool storageAllowsMassStorage()
+{
+  return sdMounted();
 }

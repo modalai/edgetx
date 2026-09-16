@@ -127,6 +127,17 @@ void sdMount();
 void sdDone();
 uint32_t sdMounted();
 
+enum class StorageVolumeMode : uint8_t {
+  None,
+  SdCard,
+  Factory,
+};
+
+StorageVolumeMode storageVolumeMode();
+bool storageMounted();
+bool storageIsReadOnly();
+bool storageAllowsMassStorage();
+
 uint32_t sdGetNoSectors();
 uint32_t sdGetSize();
 uint32_t sdGetFreeSectors();

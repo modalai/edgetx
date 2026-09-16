@@ -365,6 +365,15 @@ void drawSmallSwitch(coord_t x, coord_t y, int width, unsigned int index)
   }
 }
 
+static bool mainViewSwitchIsVisible(uint8_t index)
+{
+#if defined(MAIN_VIEW_HIDDEN_SWITCHES)
+  return index >= 32 || !(MAIN_VIEW_HIDDEN_SWITCHES & (1u << index));
+#else
+  return true;
+#endif
+}
+
 void menuMainView(event_t event)
 {
   uint8_t view = g_eeGeneral.view;
@@ -528,7 +537,8 @@ void menuMainView(event_t event)
         uint8_t leftMaxRow = 0;
         uint8_t rightMaxRow = 0;
         for (uint8_t n = 0; n < switchGetMaxSwitches(); n += 1)
-            if (SWITCH_EXISTS(n) && !switchIsFlex(n) && !switchIsCustomSwitch(n)) {
+            if (SWITCH_EXISTS(n) && !switchIsFlex(n) &&
+                !switchIsCustomSwitch(n) && mainViewSwitchIsVisible(n)) {
               auto switch_display = switchGetDisplayPosition(n);
               if (switch_display.col) {
                 if (switch_display.row > rightMaxRow)
@@ -542,7 +552,8 @@ void menuMainView(event_t event)
 
         if (leftMaxRow < 3 && rightMaxRow < 3) {
           for (int i = 0; i < maxSwitch; ++i) {
-            if (SWITCH_EXISTS(i) && !switchIsFlex(i) && !switchIsCustomSwitch(i)) {
+            if (SWITCH_EXISTS(i) && !switchIsFlex(i) &&
+                !switchIsCustomSwitch(i) && mainViewSwitchIsVisible(i)) {
               auto switch_display = switchGetDisplayPosition(i);
               coord_t x = switch_display.col == 0 ? 3 * FW + 3 : 18 * FW + 1;
               coord_t y = 33 + switch_display.row * FH;
@@ -557,7 +568,8 @@ void menuMainView(event_t event)
         }
         else {
           for (int i = 0; i < maxSwitch; ++i) {
-            if (SWITCH_EXISTS(i) && !switchIsFlex(i) && !switchIsCustomSwitch(i)) {
+            if (SWITCH_EXISTS(i) && !switchIsFlex(i) &&
+                !switchIsCustomSwitch(i) && mainViewSwitchIsVisible(i)) {
               auto switch_display = switchGetDisplayPosition(i);
               coord_t x = (switch_display.col == 0 ? 8 : 96) + switch_display.row * 5;
               if (maxSwitch < 9) x += 3;

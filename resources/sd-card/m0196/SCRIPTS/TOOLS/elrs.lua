@@ -1,4 +1,4 @@
--- TNS|ModalAI CRSF RC|TNE
+-- TNS|ModalAI RC|TNE
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Copyright (C) OpenTX, adapted for ExpressLRS                          #

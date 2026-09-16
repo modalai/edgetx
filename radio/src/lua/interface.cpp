@@ -521,6 +521,10 @@ int luaLoadScriptFileToState(lua_State * L, const char * filename, const char * 
     scriptNeedsCompile = false;
   }
 
+  if (scriptNeedsCompile && storageIsReadOnly()) {
+    scriptNeedsCompile = false;
+  }
+
   if (loadFileType == 2) {
     // change file extension to binary version
     strcpy(filenameFull + fnamelen, SCRIPT_BIN_EXT);

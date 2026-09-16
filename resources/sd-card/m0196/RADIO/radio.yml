@@ -1,4 +1,4 @@
-checksum: 53598
+checksum: 11443
 manuallyEdited: 0
 timezoneMinutes: 0
 ppmunit: 0
@@ -84,7 +84,7 @@ serialPort:
 switchConfig: 
    SA:
       name: ""
-      type: 3POS
+      type: 2POS
    SB:
       name: ""
       type: 3POS
@@ -99,10 +99,10 @@ switchConfig:
       type: 3POS
    SF:
       name: ""
-      type: 3POS
+      type: 2POS
    SG:
       name: ""
-      type: 3POS
+      type: 2POS
    SH:
       name: ""
       type: 3POS
@@ -110,6 +110,15 @@ switchConfig:
       name: ""
       type: 3POS
    SJ:
+      name: ""
+      type: 3POS
+   SK:
+      name: ""
+      type: 3POS
+   SL:
+      name: ""
+      type: 3POS
+   SM:
       name: ""
       type: 3POS
    SW1:

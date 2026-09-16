@@ -16,6 +16,9 @@
 #include "hal/rotary_encoder.h"
 #include "hal/switch_driver.h"
 #include "storage/storage.h"
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  #include "storage/helm_device_settings.h"
+#endif
 
 namespace {
 
@@ -127,6 +130,25 @@ void startInputTest()
 
 void runRestore()
 {
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  if (storageIsReadOnly()) {
+    if (factoryResetBeginWithoutSd()) {
+      edgeTxClose(false);
+      edgeTxResume();
+      watchdogSuspend(0);
+    }
+    else {
+      TRACE("HELM EEPROM reset failed; defaults remain active");
+      POPUP_WARNING("EEPROM reset failed");
+      AUDIO_ERROR();
+      return;
+    }
+    factoryMenuState = FactoryMenuState::Confirm;
+    startInputTest();
+    return;
+  }
+#endif
+
   lastRestoreResult = factoryResetRestoreSd(drawProgress);
   if (lastRestoreResult.ok()) {
     factoryMenuState = FactoryMenuState::Confirm;
@@ -169,6 +191,16 @@ void countPass()
 void startFactoryCalibration()
 {
   calibrationSaveError = false;
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  if (storageIsReadOnly() &&
+      !helmDeviceSettingsSetWorkflow(
+          HelmDeviceWorkflow::CalibrationRequired)) {
+    TRACE("HELM EEPROM calibration state write failed");
+    POPUP_WARNING("EEPROM write failed");
+    AUDIO_ERROR();
+    return;
+  }
+#endif
   reusableBuffer.calib.state = CALIB_START;
   chainMenu(menuFactoryCalibration);
 }
@@ -256,6 +288,22 @@ void finishAnalogStep()
 
 void finishFactoryCalibration()
 {
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  if (storageIsReadOnly()) {
+    storageDirtyMsk = 0;
+    if (!helmDeviceSettingsFinishCalibration()) {
+      helmDeviceSettingsRestoreFactoryDefaults();
+      POPUP_WARNING("EEPROM fault: factory defaults active");
+      AUDIO_ERROR();
+    }
+    calibrationSaveError = false;
+    menuCalibrationState = CALIB_START;
+    menuLevel = 0;
+    chainMenu(menuMainView);
+    return;
+  }
+#endif
+
   storageCheck(true);
   if (storageDirtyMsk & EE_GENERAL) {
     calibrationSaveError = true;
@@ -284,8 +332,14 @@ void menuFactoryReset(event_t event)
 
   title("Factory reset");
   if (factoryMenuState == FactoryMenuState::Confirm) {
-    lcdDrawText(LCD_W / 2, 2 * FH, "ERASES THE SD CARD", CENTERED | INVERS);
-    lcdDrawText(LCD_W / 2, 3 * FH, "Restores factory files", CENTERED);
+    if (storageIsReadOnly()) {
+      lcdDrawText(LCD_W / 2, 2 * FH, "RESETS DEVICE DATA", CENTERED | INVERS);
+      lcdDrawText(LCD_W / 2, 3 * FH, "Files stay unchanged", CENTERED);
+    }
+    else {
+      lcdDrawText(LCD_W / 2, 2 * FH, "ERASES THE SD CARD", CENTERED | INVERS);
+      lcdDrawText(LCD_W / 2, 3 * FH, "Restores factory files", CENTERED);
+    }
     lcdDrawText(LCD_W / 2, 5 * FH, "Hold ENTER to start", CENTERED);
     lcdDrawText(LCD_W / 2, 6 * FH, "EXIT cancels", CENTERED | SMLSIZE);
 
@@ -553,7 +607,10 @@ void menuFactoryInputTest(event_t event)
 
 void menuFactoryCalibration(event_t event)
 {
-  if (event == EVT_ENTRY) factoryResetSetInputTestActive(false);
+  if (event == EVT_ENTRY) {
+    factoryResetSetInputTestActive(false);
+    reusableBuffer.calib.state = CALIB_START;
+  }
 
   if (calibrationSaveError) {
     title("Factory reset");

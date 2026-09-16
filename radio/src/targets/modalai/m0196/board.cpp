@@ -42,8 +42,8 @@
 #if defined(HELM_HAS_I2C_GIMBALS)
   #warning "M0196 I2C gimbals are selected, but their driver is not implemented"
 #endif
-#if defined(HELM_HAS_OB_EEPROM)
-  #warning "M0196 onboard EEPROM is populated, but its driver is not implemented"
+#if defined(HELM_HAS_OB_EEPROM) && !defined(BOOT)
+  #include "eeprom_93aa66.h"
 #endif
 #if defined(HELM_HAS_EXPANSION_PORT)
   #warning "M0196 expansion port is populated, but its module driver is not implemented"
@@ -82,6 +82,8 @@ struct FactoryTestInput {
 const FactoryTestInput factoryTestInputs[] = {
   {"UL UP", HELM_INPUT_GPIO(UPR_L_B), HELM_INPUT_PIN(UPR_L_B)},
   {"LL CLICK", HELM_INPUT_GPIO(LOW_L_E), HELM_INPUT_PIN(LOW_L_E)},
+  {"LR UP", HELM_INPUT_GPIO(LOW_R_C), HELM_INPUT_PIN(LOW_R_C)},
+  {"LR DOWN", HELM_INPUT_GPIO(LOW_R_B), HELM_INPUT_PIN(LOW_R_B)},
   {"LR CLICK", HELM_INPUT_GPIO(LOW_R_E), HELM_INPUT_PIN(LOW_R_E)},
 };
 
@@ -213,6 +215,9 @@ void boardInit()
   }
 
   timersInit();
+#if defined(HELM_HAS_OB_EEPROM) && !defined(BOOT)
+  helmEepromInit();
+#endif
 #if defined(HELM_HAS_OB_POWER_MONITOR)
   voxl_pm_init();
 #endif

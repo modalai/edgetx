@@ -737,7 +737,7 @@ void AudioQueue::playFile(const char * filename, uint8_t flags, uint8_t id, int8
   }
 #endif
 
-  if (!sdMounted())
+  if (!storageMounted())
     return;
 
   if (g_eeGeneral.beepMode == e_mode_quiet)
