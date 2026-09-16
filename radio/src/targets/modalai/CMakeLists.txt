@@ -56,9 +56,31 @@ if(PCB STREQUAL M207)
     #endif()
     add_definitions(-DRADIO_MODAL)
     set(ENABLE_SERIAL_PASSTHROUGH ON CACHE BOOL "Enable serial passthrough")
+    # LCD controller. The Zorro Blue ships with an ST7565 panel, which is the
+    # default and must stay the default; ST7567 selects the init sequence for
+    # the PE12864WRF-055H22Q_005 bench panel.
+    #
+    # This is a cache variable, and the superbuild only forwards -D arguments
+    # from the invocation that set them (see the "specified on the command line"
+    # filter in the top-level CMakeLists.txt). So once the arm-none-eabi
+    # sub-project has been configured with a value it keeps it, and a later plain
+    # `cmake .` will not clear it. Changing this needs both:
+    #     cmake -DLCD_IC=ST7565 .
+    #     make arm-none-eabi-configure
+    # Getting it wrong is nearly invisible -- the two init sequences differ in
+    # SEG/COM scan direction, so the only symptom is a 180-degree rotated screen.
+    # Hence the status message below: always check it against the panel you have.
     set(LCD_IC "ST7565" CACHE STRING "LCD controller IC (ST7565 or ST7567)")
+    set_property(CACHE LCD_IC PROPERTY STRINGS ST7565 ST7567)
     if(LCD_IC STREQUAL ST7567)
       add_definitions(-DLCD_IC_ST7567)
+      message(STATUS "LCD controller: ST7567 (PE12864WRF bench panel, NOT stock)")
+    elseif(LCD_IC STREQUAL ST7565)
+      message(STATUS "LCD controller: ST7565 (stock Zorro Blue panel)")
+    else()
+      message(FATAL_ERROR
+        "LCD_IC must be ST7565 or ST7567, got '${LCD_IC}'. "
+        "A misspelled value used to fall back to ST7565 silently.")
     endif()
   endif()
 endif()
