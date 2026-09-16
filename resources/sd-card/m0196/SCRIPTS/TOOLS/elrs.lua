@@ -1,4 +1,4 @@
--- TNS|ExpressLRS|TNE
+-- TNS|ModalAI CRSF RC|TNE
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Copyright (C) OpenTX, adapted for ExpressLRS                          #
@@ -155,12 +155,10 @@ local function fieldGetStrOrOpts(data, offset, last, isOpts)
           opt = ''
         end
       elseif b ~= 0 then
-        -- On firmwares that have constants defined for the arrow chars, use them in place of
-        -- the \xc0 \xc1 chars (which are OpenTX-en)
-        -- Use the table to convert the char, else use string.char if not in the table
+        -- Convert protocol arrow bytes to EdgeTX characters.
         opt = opt .. (({
-          [192] = CHAR_UP or (__opentx and __opentx.CHAR_UP),
-          [193] = CHAR_DOWN or (__opentx and __opentx.CHAR_DOWN)
+          [192] = CHAR_UP,
+          [193] = CHAR_DOWN
         })[b] or string.char(b))
       end
     end
@@ -287,7 +285,7 @@ end
 local function fieldTextSelDisplay_color(field, y, attr, color)
   local val = field.values[field.value+1] or "ERR"
   lcd.drawText(COL2, y, val, attr + color)
-  local strPix = lcd.sizeText and lcd.sizeText(val) or (10 * #val)
+  local strPix = lcd.sizeText(val)
   lcd.drawText(COL2 + strPix, y, field.unit, color)
 end
 
@@ -521,20 +519,9 @@ local function parseElrsInfoMessage(data)
   goodBadPkt = string.format("%u/%u   %s", badPkt, goodPkt, state)
 end
 
-local function parseElrsV1Message(data)
-  if (data[1] ~= 0xEA) or (data[2] ~= 0xEE) then
-    return
-  end
-
-  -- local badPkt = data[9]
-  -- local goodPkt = (data[10]*256) + data[11]
-  -- goodBadPkt = string.format("%u/%u   X", badPkt, goodPkt)
-  fieldPopup = {id = 0, status = 2, timeout = 0xFF, info = "ERROR: 1.x firmware"}
-  fieldTimeout = getTime() + 0xFFFF
-end
-
 local function refreshNext(skipPush)
   local command, data, forceRedraw
+  -- Parameter reads refresh values after writes. 0x2D write acknowledgments need no action.
   repeat
     command, data = crossfireTelemetryPop()
     if command == 0x29 then
@@ -548,8 +535,6 @@ local function refreshNext(skipPush)
       elseif fieldPopup then
         fieldTimeout = getTime() + fieldPopup.timeout
       end
-    elseif command == 0x2D then
-      parseElrsV1Message(data)
     elseif command == 0x2E then
       parseElrsInfoMessage(data)
       forceRedraw = true
@@ -781,11 +766,6 @@ local function runDevicePage(event)
   end
 end
 
-local function popupCompat(t, m, e)
-  -- Only use 2 of 3 arguments for older platforms
-  return popupConfirmation(t, e)
-end
-
 local function runPopupPage(event)
   if event == EVT_VIRTUAL_EXIT then
     crossfireTelemetryPush(0x2D, { deviceId, handsetId, fieldPopup.id, 5 }) -- lcsCancel
@@ -793,11 +773,11 @@ local function runPopupPage(event)
   end
 
   if fieldPopup.status == 0 and fieldPopup.lastStatus ~= 0 then -- stopped
-      popupCompat(fieldPopup.info, "Stopped!", event)
+      popupConfirmation(fieldPopup.info, "Stopped!", event)
       reloadAllField()
       fieldPopup = nil
   elseif fieldPopup.status == 3 then -- confirmation required
-    local result = popupCompat(fieldPopup.info, "PRESS [OK] to confirm", event)
+    local result = popupConfirmation(fieldPopup.info, "PRESS [OK] to confirm", event)
     fieldPopup.lastStatus = fieldPopup.status
     if result == "OK" then
       crossfireTelemetryPush(0x2D, { deviceId, handsetId, fieldPopup.id, 4 }) -- lcsConfirmed
@@ -810,7 +790,7 @@ local function runPopupPage(event)
     if fieldChunk == 0 then
       commandRunningIndicator = (commandRunningIndicator % 4) + 1
     end
-    local result = popupCompat(fieldPopup.info .. " [" .. string.sub("|/-\\", commandRunningIndicator, commandRunningIndicator) .. "]", "Press [RTN] to exit", event)
+    local result = popupConfirmation(fieldPopup.info .. " [" .. string.sub("|/-\\", commandRunningIndicator, commandRunningIndicator) .. "]", "Press [RTN] to exit", event)
     fieldPopup.lastStatus = fieldPopup.status
     if result == "CANCEL" then
       crossfireTelemetryPush(0x2D, { deviceId, handsetId, fieldPopup.id, 5 }) -- lcsCancel
@@ -847,22 +827,9 @@ local function setLCDvar()
   lcd_title_bw = nil
   fieldTextSelDisplay_bw = nil
   fieldTextSelDisplay_color = nil
-  -- Determine if popupConfirmation takes 3 arguments or 2
-  -- if pcall(popupConfirmation, "", "", EVT_VIRTUAL_EXIT) then
-  -- major 1 is assumed to be FreedomTX
-  local _, _, major = getVersion()
-  if major ~= 1 then
-    popupCompat = popupConfirmation
-  end
-
   if (lcd.RGB ~= nil) then
-    local ver, radio, maj, minor, rev, osname = getVersion()
-
-    if osname ~= nil and osname == "EdgeTX" then
-      textWidth, textSize = lcd.sizeText("Qg") -- determine standard font height for EdgeTX
-    else
-      textSize = 21                            -- use this for OpenTX
-    end
+    local _, fontHeight = lcd.sizeText("Qg")
+    textSize = fontHeight
 
     COL1 = 3
     COL2 = LCD_W/2
@@ -903,9 +870,9 @@ local function checkCrsfModule()
   -- Loop through the modules and look for one set to CRSF (5)
   for modIdx = 0, 1 do
     local mod = model.getModule(modIdx)
-    if mod and (mod.Type == nil or mod.Type == 5) then
+    if mod and mod.Type == 5 then
       -- CRSF found, put module type in Loading message
-      local modDescrip = (mod.Type == nil) and " awaiting" or (modIdx == 0) and " Internal" or " External"
+      local modDescrip = (modIdx == 0) and " Internal" or " External"
       -- Prefix with "Lua rXXX" from between EXITVER parens
       deviceName = string.match(EXITVER, "%((.*)%)") .. modDescrip .. " TX..."
       checkCrsfModule = nil
@@ -916,7 +883,7 @@ local function checkCrsfModule()
   -- No CRSF module found, save an error message for run()
   lcd.clear()
   local y = 0
-  lcd.drawText(2, y, "  No ExpressLRS", MIDSIZE)
+  lcd.drawText(2, y, "  No CRSF module", MIDSIZE)
   y = y + (textSize * 2) - 2
   local msgs = {
     " Enable a CRSF Internal",
