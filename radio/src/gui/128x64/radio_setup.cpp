@@ -22,6 +22,10 @@
 #define LANGUAGE_PACKS_DEFINITION
 
 #include "edgetx.h"
+
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+#include "sdcard.h"
+#endif
 #include "tasks/mixer_task.h"
 #include "hal/adc_driver.h"
 #include "hal/usb_driver.h"
@@ -127,6 +131,92 @@ enum {
   ITEM_RADIO_SETUP_MAX
 };
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+static bool factoryStorageRadioSetupRowIsEditable(uint8_t row)
+{
+  switch (row) {
+#if defined(RTCLOCK)
+    case ITEM_RADIO_SETUP_DATE:
+    case ITEM_RADIO_SETUP_TIME:
+#endif
+    case ITEM_RADIO_SETUP_SOUND_LABEL:
+#if defined(AUDIO)
+    case ITEM_RADIO_SETUP_BEEP_MODE:
+    case ITEM_RADIO_SETUP_SPEAKER_PITCH:
+#endif
+    case ITEM_RADIO_SETUP_SPEAKER_VOLUME:
+    case ITEM_RADIO_SETUP_BEEP_VOLUME:
+    case ITEM_RADIO_SETUP_BEEP_LENGTH:
+    case ITEM_RADIO_SETUP_WAV_VOLUME:
+    case ITEM_RADIO_SETUP_BACKGROUND_VOLUME:
+    case ITEM_RADIO_SETUP_START_SOUND:
+#if defined(VARIO)
+    case ITEM_RADIO_SETUP_VARIO_VOLUME:
+    case ITEM_RADIO_SETUP_VARIO_PITCH:
+    case ITEM_RADIO_SETUP_VARIO_RANGE:
+    case ITEM_RADIO_SETUP_VARIO_REPEAT:
+#endif
+#if defined(HAPTIC)
+    case ITEM_RADIO_SETUP_HAPTIC_MODE:
+    case ITEM_RADIO_SETUP_HAPTIC_LENGTH:
+    case ITEM_RADIO_SETUP_HAPTIC_STRENGTH:
+    case ITEM_RADIO_SETUP_PWR_ON_OFF_HAPTIC:
+#endif
+    case ITEM_RADIO_SETUP_ALARMS_LABEL:
+    case ITEM_RADIO_SETUP_BATTERY_WARNING:
+    case ITEM_RADIO_SETUP_INACTIVITY_ALARM:
+#if defined(BACKLIGHT_GPIO) || defined(OLED_SCREEN)
+    case ITEM_RADIO_SETUP_BACKLIGHT_MODE:
+    case ITEM_RADIO_SETUP_BACKLIGHT_DELAY:
+    case ITEM_RADIO_SETUP_BRIGHTNESS:
+#endif
+#if !defined(OLED_SCREEN)
+    case ITEM_RADIO_SETUP_CONTRAST:
+#endif
+    case ITEM_RADIO_SETUP_DISABLE_SPLASH:
+#if defined(PCBMODALAI)
+    case ITEM_RADIO_SETUP_BOOT_MENU:
+#endif
+#if defined(PWR_BUTTON_PRESS)
+    case ITEM_RADIO_SETUP_PWR_AUTO_OFF:
+#endif
+#if defined(GPS)
+    case ITEM_RADIO_SETUP_TIMEZONE:
+    case ITEM_RADIO_SETUP_GPSFORMAT:
+#endif
+    case ITEM_RADIO_SETUP_IMPERIAL:
+    case ITEM_RADIO_SETUP_SWITCHES_DELAY:
+    case ITEM_RADIO_SETUP_USB_MODE:
+    case ITEM_VIEW_OPTIONS_LABEL:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static event_t filterFactoryStorageRadioSetupEvent(event_t event)
+{
+  if (!storageIsReadOnly()) return event;
+
+  const uint8_t row = menuVerticalPosition - HEADER_LINE;
+  if (factoryStorageRadioSetupRowIsEditable(row)) return event;
+
+  s_editMode = 0;
+  if (IS_KEY_EVT(event, KEY_ENTER)) {
+    if (event == EVT_KEY_BREAK(KEY_ENTER)) {
+      POPUP_WARNING("SD card required");
+    }
+    return 0;
+  }
+  return event;
+}
+
+static bool factoryStorageUsbModeIsAvailable(int mode)
+{
+  return mode != USB_MASS_STORAGE_MODE || storageAllowsMassStorage();
+}
+#endif
+
 PACK(struct RadioSetupExpandState {
   uint8_t sound:1;
   uint8_t alarms:1;
@@ -152,6 +242,9 @@ uint8_t viewOptCheckBox(coord_t y, const char* title, uint8_t value, uint8_t att
 
 void menuRadioSetup(event_t event)
 {
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  event = filterFactoryStorageRadioSetupEvent(event);
+#endif
 #if defined(RTCLOCK)
   struct gtm t;
   gettime(&t);
@@ -776,7 +869,15 @@ void menuRadioSetup(event_t event)
         break;
 
       case ITEM_RADIO_SETUP_USB_MODE:
-        g_eeGeneral.USBMode = editChoice(LCD_W-2, y, STR_USBMODE, STR_USBMODES, g_eeGeneral.USBMode, USB_UNSELECTED_MODE, USB_MAX_MODE, attr|RIGHT, event);
+        g_eeGeneral.USBMode = editChoice(
+            LCD_W-2, y, STR_USBMODE, STR_USBMODES, g_eeGeneral.USBMode,
+            USB_UNSELECTED_MODE, USB_MAX_MODE, attr|RIGHT, event, 0,
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+            factoryStorageUsbModeIsAvailable
+#else
+            nullptr
+#endif
+        );
         break;
 
 #if defined(JACK_DETECT_GPIO)

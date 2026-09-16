@@ -46,27 +46,38 @@
 #define FACTORY_TEST_EXTRA_INPUTS
 #define FACTORY_TEST_POWER_BUTTON
 
-// EdgeTX switches, ordered from the upper pair toward the lower pair.
-#define HELM_SWITCH_A_HIGH BS_R1_A
-#define HELM_SWITCH_A_LOW BS_R1_B
-#define HELM_SWITCH_B_HIGH BS_L1_A
-#define HELM_SWITCH_B_LOW BS_L1_B
-#define HELM_SWITCH_C_HIGH BS_R2_A
-#define HELM_SWITCH_C_LOW BS_R2_B
-#define HELM_SWITCH_D_HIGH BS_L2_A
-#define HELM_SWITCH_D_LOW BS_L2_B
-#define HELM_SWITCH_E_HIGH BS_R3_A
-#define HELM_SWITCH_E_LOW BS_R3_B
-#define HELM_SWITCH_F_HIGH BS_L3_A
-#define HELM_SWITCH_F_LOW BS_L3_B
-#define HELM_SWITCH_G_HIGH BS_R4_A
-#define HELM_SWITCH_G_LOW BS_R4_B
-#define HELM_SWITCH_H_HIGH BS_L4_A
-#define HELM_SWITCH_H_LOW BS_L4_B
-#define HELM_SWITCH_I_HIGH BS_R5_A
-#define HELM_SWITCH_I_LOW BS_R5_B
+// Right-side EdgeTX switches.
+#define HELM_SWITCH_A BS_R2_A
+#define HELM_SWITCH_B_HIGH BS_R1_A
+#define HELM_SWITCH_B_LOW BS_R1_B
+#define HELM_SWITCH_C_HIGH BS_R3_A
+#define HELM_SWITCH_C_LOW BS_R3_B
+#define HELM_SWITCH_D_HIGH BS_R5_A
+#define HELM_SWITCH_D_LOW BS_R5_B
+#define HELM_SWITCH_E_HIGH BS_R4_A
+#define HELM_SWITCH_E_LOW BS_R4_B
+
+// Left-side EdgeTX switches.
+#define HELM_SWITCH_F BS_L2_A
+#define HELM_SWITCH_G BS_L1_A
+#define HELM_SWITCH_H_HIGH BS_L3_A
+#define HELM_SWITCH_H_LOW BS_L3_B
+#define HELM_SWITCH_I_HIGH LOW_L_B
+#define HELM_SWITCH_I_LOW LOW_L_C
 #define HELM_SWITCH_J_HIGH BS_L5_A
 #define HELM_SWITCH_J_LOW BS_L5_B
+#define HELM_SWITCH_K_HIGH BS_L4_A
+#define HELM_SWITCH_K_LOW BS_L4_B
+
+// Lower five-way switch axes.
+#define HELM_SWITCH_L_HIGH LOW_L_D
+#define HELM_SWITCH_L_LOW LOW_L_A
+#define HELM_SWITCH_M_HIGH LOW_R_A
+#define HELM_SWITCH_M_LOW LOW_R_D
+
+// Hide the lower five-way axes from the compact main-view switch display.
+#define MAIN_VIEW_HIDDEN_SWITCHES \
+  ((1u << 8) | (1u << 11) | (1u << 12))
 
 // Upper-left: A=left, B=up, C=down, D=right, E=center.
 // Upper-right: A=right, B=down, C=up, D=left, E=center.
@@ -79,18 +90,6 @@
 #define HELM_KEY_UP UPR_R_C
 #define HELM_KEY_DOWN UPR_R_B
 #define HELM_KEY_ENTER UPR_R_E
-
-// Lower-left: A=left, B=up, C=down, D=right, E=center.
-#define HELM_TRIM_LHL LOW_L_A
-#define HELM_TRIM_LHR LOW_L_D
-#define HELM_TRIM_LVD LOW_L_C
-#define HELM_TRIM_LVU LOW_L_B
-
-// Lower-right: A=right, B=down, C=up, D=left, E=center.
-#define HELM_TRIM_RVD LOW_R_B
-#define HELM_TRIM_RVU LOW_R_C
-#define HELM_TRIM_RHL LOW_R_D
-#define HELM_TRIM_RHR LOW_R_A
 
 // Gimbals.
 #define HELM_ADC_STICK_LH GIMBAL_LH

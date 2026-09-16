@@ -27,6 +27,9 @@
 #include "hal/rgbleds.h"
 
 #include "analogs.h"
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+#include "sdcard.h"
+#endif
 #include "switches.h"
 
 #if defined(BLUETOOTH)
@@ -108,6 +111,51 @@ enum {
 #endif
   ITEM_RADIO_HARDWARE_MAX
 };
+
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+static bool factoryStorageHardwareRowIsEditable(uint8_t row)
+{
+  switch (row) {
+    case ITEM_RADIO_HARDWARE_LABEL_STICKS:
+#if defined(BATTGRAPH)
+    case ITEM_RADIO_HARDWARE_BATT_RANGE:
+#endif
+    case ITEM_RADIO_HARDWARE_BATTERY_CALIB:
+    case ITEM_RADIO_HARDWARE_RTC_CHECK:
+#if defined(AUDIO_MUTE_GPIO)
+    case ITEM_RADIO_HARDWARE_AUDIO_MUTE:
+#endif
+    case ITEM_RADIO_HARDWARE_INTERNAL_MODULE_BAUDRATE:
+#if (defined(BACKLIGHT_GPIO) || defined(OLED_SCREEN)) && (LCD_W == 128)
+    case ITEM_RADIO_HARDWARE_SCREEN_INVERT:
+#endif
+    case ITEM_RADIO_HARDWARE_DEBUG:
+#if defined(FUNCTION_SWITCHES)
+    case ITEM_RADIO_HARDWARE_DEBUG_FS:
+#endif
+      return true;
+    default:
+      return false;
+  }
+}
+
+static event_t filterFactoryStorageHardwareEvent(event_t event)
+{
+  if (!storageIsReadOnly()) return event;
+
+  const uint8_t row = menuVerticalPosition - HEADER_LINE;
+  if (factoryStorageHardwareRowIsEditable(row)) return event;
+
+  s_editMode = 0;
+  if (IS_KEY_EVT(event, KEY_ENTER)) {
+    if (event == EVT_KEY_BREAK(KEY_ENTER)) {
+      POPUP_WARNING("SD card required");
+    }
+    return 0;
+  }
+  return event;
+}
+#endif
 
 #if defined(EXTERNAL_ANTENNA)
 static void onHardwareAntennaSwitchConfirm(const char * result)
@@ -401,6 +449,9 @@ static bool editInversion(bool state, event_t event, coord_t y, LcdFlags flags)
 
 void menuRadioHardware(event_t event)
 {
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  event = filterFactoryStorageHardwareEvent(event);
+#endif
   uint8_t old_editMode = s_editMode;
 
   uint8_t MENU_TAB_ARRAY_NAME[HEADER_LINE + ITEM_RADIO_HARDWARE_MAX];
@@ -527,7 +578,7 @@ void menuRadioHardware(event_t event)
         lcdDrawTextIndented(y, STR_BAUDRATE);
         lcdDrawTextAtIndex(HW_SETTINGS_COLUMN2, y, STR_CRSF_BAUDRATE, CROSSFIRE_STORE_TO_INDEX(g_eeGeneral.internalModuleBaudrate),attr | LEFT);
         if (attr) {
-          g_eeGeneral.internalModuleBaudrate = CROSSFIRE_INDEX_TO_STORE(checkIncDecModel(event, CROSSFIRE_STORE_TO_INDEX(g_eeGeneral.internalModuleBaudrate), 0, CROSSFIRE_MAX_INTERNAL_BAUDRATE));
+          g_eeGeneral.internalModuleBaudrate = CROSSFIRE_INDEX_TO_STORE(checkIncDecGen(event, CROSSFIRE_STORE_TO_INDEX(g_eeGeneral.internalModuleBaudrate), 0, CROSSFIRE_MAX_INTERNAL_BAUDRATE));
           if (checkIncDec_Ret) {
               restartModule(INTERNAL_MODULE);
           }

@@ -10,6 +10,7 @@
 
 #include "ff.h"
 
+#if !defined(HELM_FACTORY_READ_ONLY_STORAGE)
 enum class FactorySdEntryType : uint8_t {
   File,
   Directory,
@@ -28,6 +29,7 @@ extern const FactorySdEntry factorySdEntries[];
 extern const uint16_t factorySdEntryCount;
 extern const uint16_t factorySdFileCount;
 extern const uint32_t factorySdDataSize;
+#endif
 
 enum class FactoryResetStage : uint8_t {
   None,
@@ -52,6 +54,7 @@ enum class FactoryResetPendingState : uint8_t {
   None,
   Restoring,
   Test,
+  Calibration,
 };
 
 using FactoryResetProgress = void (*)(FactoryResetStage stage,
@@ -61,6 +64,7 @@ using FactoryResetProgress = void (*)(FactoryResetStage stage,
 
 FactoryResetPendingState factoryResetPendingState();
 FactoryResetResult factoryResetRestoreSd(FactoryResetProgress progress);
+bool factoryResetBeginWithoutSd();
 FRESULT factoryResetClearPending();
 bool factoryResetInputTestActive();
 void factoryResetSetInputTestActive(bool active);

@@ -34,10 +34,12 @@
             packages = with pkgs; [
               cmake
               dfu-util
+              dosfstools
               file
               gawk
               git
               gnumake
+              mtools
               python
               toolchainPkgs.gcc-arm-embedded-14
               unzip

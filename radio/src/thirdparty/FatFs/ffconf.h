@@ -173,7 +173,11 @@
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE) && !defined(BOOT)
+#define FF_VOLUMES		2
+#else
 #define FF_VOLUMES		1
+#endif
 /* Number of volumes (logical drives) to be used. (1-10) */
 
 

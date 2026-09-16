@@ -127,6 +127,7 @@ elseif(PCB STREQUAL M196)
     -DHAPTIC
     -DFUNCTION_SWITCHES
     -DHELM_CMAKE_HAS_FUNCTION_SWITCHES
+    -DHELM_FACTORY_READ_ONLY_STORAGE
     -DHELM_HOST_KEY_INJECTION
     -DSOFTWARE_VOLUME
   )
@@ -234,6 +235,9 @@ add_library(board OBJECT EXCLUDE_FROM_ALL
   targets/common/arm/stm32/stm32_switch_driver.cpp
   targets/common/arm/stm32/stm32_ws2812.cpp
 )
+if(PCB STREQUAL M196)
+  target_sources(board PRIVATE ${TARGET_SRC_DIR}/eeprom_93aa66.cpp)
+endif()
 set(FIRMWARE_SRC ${FIRMWARE_SRC} $<TARGET_OBJECTS:board>)
 
 if(BIND_KEY)
@@ -276,20 +280,46 @@ if(FACTORY_RESET)
   file(GLOB_RECURSE FACTORY_SD_INPUTS CONFIGURE_DEPENDS
     LIST_DIRECTORIES false "${FACTORY_SD_DIR}/*")
   set(FACTORY_SD_IMAGE "${CMAKE_CURRENT_BINARY_DIR}/factory_sd_image.cpp")
-  add_custom_command(
-    OUTPUT "${FACTORY_SD_IMAGE}"
-    COMMAND ${PYTHON_EXECUTABLE}
-      "${RADIO_DIRECTORY}/util/pack_factory_sd.py"
-      --input "${FACTORY_SD_DIR}"
-      --output "${FACTORY_SD_IMAGE}"
-    DEPENDS
-      "${RADIO_DIRECTORY}/util/pack_factory_sd.py"
-      ${FACTORY_SD_INPUTS}
-    COMMENT "Packing ${MODAL_BOARD} factory SD image"
-    VERBATIM
-  )
+  if(PCB STREQUAL M196)
+    set(FACTORY_SD_BINARY "${CMAKE_CURRENT_BINARY_DIR}/factory_sd.img")
+    add_custom_command(
+      OUTPUT "${FACTORY_SD_IMAGE}" "${FACTORY_SD_BINARY}"
+      COMMAND ${PYTHON_EXECUTABLE}
+        "${RADIO_DIRECTORY}/util/pack_factory_sd.py"
+        --input "${FACTORY_SD_DIR}"
+        --output "${FACTORY_SD_IMAGE}"
+        --image "${FACTORY_SD_BINARY}"
+      DEPENDS
+        "${RADIO_DIRECTORY}/util/pack_factory_sd.py"
+        ${FACTORY_SD_INPUTS}
+      COMMENT "Building ${MODAL_BOARD} factory FAT image"
+      VERBATIM
+    )
+  else()
+    add_custom_command(
+      OUTPUT "${FACTORY_SD_IMAGE}"
+      COMMAND ${PYTHON_EXECUTABLE}
+        "${RADIO_DIRECTORY}/util/pack_factory_sd_archive.py"
+        --input "${FACTORY_SD_DIR}"
+        --output "${FACTORY_SD_IMAGE}"
+      DEPENDS
+        "${RADIO_DIRECTORY}/util/pack_factory_sd_archive.py"
+        ${FACTORY_SD_INPUTS}
+      COMMENT "Packing ${MODAL_BOARD} factory SD archive"
+      VERBATIM
+    )
+  endif()
   set_source_files_properties("${FACTORY_SD_IMAGE}" PROPERTIES GENERATED TRUE)
-  list(APPEND SRC factory_reset.cpp "${FACTORY_SD_IMAGE}")
+  if(PCB STREQUAL M196)
+    list(APPEND SRC
+      factory_reset.cpp
+      storage/factory_volume.cpp
+      storage/helm_device_settings.cpp
+      "${FACTORY_SD_IMAGE}"
+    )
+  else()
+    list(APPEND SRC factory_reset_archive.cpp "${FACTORY_SD_IMAGE}")
+  endif()
   list(APPEND GUI_SRC radio_factory_reset.cpp)
 endif()
 

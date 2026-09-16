@@ -488,11 +488,11 @@ bool stm32_hal_adc_init(const stm32_adc_t* ADCs, uint8_t n_ADC,
     uint8_t nconv = adc->n_channels;
     if (nconv > 0) {
 
+      // Enable the peripheral clock before accessing the ADC common registers.
+      adc_enable_clock(adc->ADCx);
+
       // enable common instance
       LL_ADC_CommonInit(__LL_ADC_COMMON_INSTANCE(adc->ADCx), &commonInit);
-  
-      // enable periph clock
-      adc_enable_clock(adc->ADCx);
   
       // configure each channel
       const uint8_t* chan = adc->channels;

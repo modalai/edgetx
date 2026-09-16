@@ -49,7 +49,7 @@ static Window* splashScreen = nullptr;
 
 void drawSplash()
 {
-  if (!sdMounted()) sdInit();
+  if (!storageMounted()) sdInit();
 
   splashScreen = new Window(MainWindow::instance(), {0, 0, LCD_W, LCD_H});
   lv_obj_set_parent(splashScreen->getLvObj(), lv_layer_top());
