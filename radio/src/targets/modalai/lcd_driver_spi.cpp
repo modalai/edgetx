@@ -150,9 +150,9 @@ void lcdHardwareInit()
      lcdWriteCommand(0xf8); // Set booster
      lcdWriteCommand(0x00); // 5x
      lcdWriteCommand(0xa3); // Set bias=1/7
-     lcdWriteCommand(0x20); // Set internal rb/ra=3.0
+     lcdWriteCommand(0x22); // Set internal rb/ra=2 (superseded by 0x24 below)
      lcdWriteCommand(0x2f); // All built-in power circuits on
-     lcdWriteCommand(0x24); // Set internal rb/ra=5.0
+     lcdWriteCommand(0x24); // Set internal rb/ra=4 -- this is the one that sticks
      lcdWriteCommand(0x81); // Set contrast
      lcdWriteCommand(0x0A); // Set Vop
      lcdWriteCommand(0xa6); // Set display mode
