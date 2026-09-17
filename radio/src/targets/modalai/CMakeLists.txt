@@ -332,9 +332,14 @@ set(GUI_SRC ${GUI_SRC}
   view_channels.cpp
   view_telemetry.cpp
   view_about.cpp
-  view_lcd_tuning.cpp
   bmp.cpp
 )
+
+# Zorro Blue bench tool: drives the lcdSet*() knobs that only the M0207 ST7565
+# SPI driver exposes.
+if(PCB STREQUAL M207)
+  set(GUI_SRC ${GUI_SRC} view_lcd_tuning.cpp)
+endif()
 
 set(FIRMWARE_SRC
   ${FIRMWARE_SRC}

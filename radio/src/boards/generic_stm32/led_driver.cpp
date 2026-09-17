@@ -36,7 +36,14 @@
 #define GPIO_LED_GPIO_OFF             gpio_clear
 #endif
 
-#if defined(FUNCTION_SWITCHES) && !defined(FUNCTION_SWITCHES_RGB_LEDS)
+// A target can have function switches without a dedicated LED GPIO per switch:
+// M196 has no FSLED pins and supplies its own (strong) fsLed* below.
+#if defined(FUNCTION_SWITCHES) && !defined(FUNCTION_SWITCHES_RGB_LEDS) && \
+    defined(FSLED_GPIO_PIN_1)
+  #define HAS_FSLED_GPIOS
+#endif
+
+#if defined(HAS_FSLED_GPIOS)
 static const uint32_t fsLeds[] = {FSLED_GPIO_PIN_1, FSLED_GPIO_PIN_2,
 				  FSLED_GPIO_PIN_3, FSLED_GPIO_PIN_4,
 				  FSLED_GPIO_PIN_5, FSLED_GPIO_PIN_6};
@@ -60,7 +67,7 @@ __weak void ledInit()
   gpio_init(LED_BLUE_GPIO, GPIO_OUT, GPIO_PIN_SPEED_LOW);
 #endif
 
-#if defined(FUNCTION_SWITCHES) && !defined(FUNCTION_SWITCHES_RGB_LEDS)
+#if defined(HAS_FSLED_GPIOS)
   for (size_t i = 0; i < DIM(fsLeds); i++) {
     gpio_init(fsLeds[i], GPIO_OUT, GPIO_PIN_SPEED_LOW);
   }
@@ -82,7 +89,7 @@ uint8_t getRGBColorIndex(uint32_t color)
   }
   return 0; // Custom value set with Companion
 }
-#elif defined(FUNCTION_SWITCHES)
+#elif defined(HAS_FSLED_GPIOS)
 __weak void fsLedOff(uint8_t index)
 {
   gpio_clear(fsLeds[index]);

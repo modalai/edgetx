@@ -97,7 +97,7 @@ static inline void check_struct()
   #endif
 #elif defined(RADIO_GX12)
   CHKSIZE(RadioData, 1065);
-#elif defined(RADIO_MODAL)
+#elif defined(RADIO_MODAL) || defined(RADIO_HELM)
   // One byte larger than stock: the bitfield run ends exactly on a byte
   // boundary at invertLCD, so bootMenu:2 (plus its pad) opens a third byte.
   // radio.yml is keyed by field name, so older files still load; the missing

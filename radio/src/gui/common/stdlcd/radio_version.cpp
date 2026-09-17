@@ -29,6 +29,11 @@
 
 #include "fw_version.h"
 
+#if defined(FACTORY_RESET)
+// 2.12.4 moved BUTTON() out of translations.h; edgetx.h no longer pulls it in.
+#include "translations/translation_def.h"
+#endif
+
 #define MENU_BODY_TOP    (FH + 1)
 #define MENU_BODY_BOTTOM (LCD_H)
 

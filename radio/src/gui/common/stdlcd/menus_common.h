@@ -146,7 +146,7 @@ void menuFactoryInputTest(event_t event);
 void menuFactoryCalibration(event_t event);
 #endif
 void menuGhostModuleConfig(event_t event);
-#if defined(PCBMODALAI)
+#if defined(PCBM207)
 void menuRadioLcdTuning(event_t event);
 #endif
 
