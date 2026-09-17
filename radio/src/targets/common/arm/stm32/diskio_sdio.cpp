@@ -343,7 +343,10 @@ static DSTATUS sdio_initialize(BYTE lun)
 // On STM32H750 it also handles SDRAM-targeted reads: the SDMMC FIFO
 // overruns when DMA writes directly to the comparatively slow SDRAM,
 // so those reads are bounced through internal SRAM in 8 KB chunks.
-#if defined(STM32H7)
+// The 16-sector (8 KB) buffer only earns its keep on a board that actually has
+// SDRAM to bounce through. M0207/M0196 are H753 with no external RAM, and
+// RAM_D1 is the scarcest region on them, so keep the single-sector buffer.
+#if defined(STM32H7) && defined(SDRAM)
 #define SCRATCH_SECTORS 16
 #else
 #define SCRATCH_SECTORS 1
