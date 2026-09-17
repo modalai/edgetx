@@ -272,7 +272,20 @@ void MPU_Config()
   #endif // RADIO_MODAL
 
   /* Region 4: dedicated DMA buffers (cache disabled) */
-  // RADIO_MODAL, breaks advanced usb_joystick with unaligned memcpy functions
+  //
+  // TEX/C/B below must encode "Normal, non-cacheable", i.e. TEX=0b001, C=0,
+  // B=0. The obvious-looking TEX=0b001, C=0, B=1 is a *reserved* encoding in
+  // the ARMv7-M attribute table; Cortex-M7 treats it as Device memory, where
+  // unaligned accesses fault. That is what used to crash the advanced USB
+  // joystick's unaligned memcpy and why this region was previously disabled
+  // for RADIO_MODAL -- the problem was the encoding, not the region.
+  //
+  // Leaving the region off is not a viable workaround: the drivers here do no
+  // cache maintenance at all (stm32_adc.cpp has no SCB_InvalidateDCache), so
+  // they rely on this region to stay coherent. With it disabled, the ADC DMA
+  // writes samples to RAM while the ISR reads the same buffer back through the
+  // D-cache and copies stale values into adcValues -- sticks and pots freeze
+  // until unrelated traffic happens to evict the line.
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER4;
   MPU_InitStruct.BaseAddress = (uint32_t)&_dram_addr;
@@ -283,9 +296,9 @@ void MPU_Config()
   MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
   MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  
+
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
   /* Enable bus fault exception */
