@@ -122,7 +122,11 @@ static inline void sendByte(uint8_t*& p_buf, uint8_t b)
     *p_buf++ = b;
 }
 
-#if defined(LUA)
+// Multi_Buffer is only defined under MULTIMODULE (lua/api_general.cpp), so the
+// forward-programming path needs both guards; telemetry/spektrum.cpp already
+// spells it this way for the same buffer. Without this, MULTIMODULE=NO builds
+// fail here even though nothing on the radio can use forward programming.
+#if defined(LUA) && defined(MULTIMODULE)
 static uint8_t isFPDataReady()
 {
     // Check for Forward Programming data
@@ -197,7 +201,7 @@ static void setupPulsesLemonDSMP(uint8_t module, uint8_t*& p_buf)
         updateModuleStatus(flags);
     }
 
-#if defined(LUA)
+#if defined(LUA) && defined(MULTIMODULE)
     if ((version> 1) && isFPDataReady()) {  // Sent any forward prog data??
         sendFPLemonDSMP(p_buf);
         Multi_Buffer[3] = 0x00;  // Data sent, clear LUA to send more
