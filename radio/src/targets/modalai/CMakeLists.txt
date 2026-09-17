@@ -28,6 +28,14 @@ add_definitions(-DDEFAULT_VIEW_TELEMETRY)
 if(PCB STREQUAL M207)
   set(MODAL_BOARD m0207)
   set(FACTORY_RESET YES)
+  # M207 sets HARDWARE_EXTERNAL_MODULE NO and drives a CRSF internal module,
+  # so the Ghost and Multi TX protocols are dead weight. They are also what
+  # made the factory reset menu not fit: 2.12.4 plus the helm features leaves
+  # RAM_D1 about 11 KB short, and dropping these frees ~27 KB. M196 gets the
+  # same treatment from its own build flags.
+  set(GHOST NO)
+  set(MULTIMODULE NO)
+  set(INTERNAL_MODULE_MULTI NO)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   #set(HAPTIC YES)
   set(GUI_DIR 128x64)
