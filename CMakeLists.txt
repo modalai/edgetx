@@ -23,7 +23,14 @@ else()
   if(DEFINED ENV{EDGETX_VERSION_SUFFIX})
     set(VERSION_SUFFIX "-$ENV{EDGETX_VERSION_SUFFIX}")
   else()
-    set(VERSION_SUFFIX "-selfbuild") # Default suffix for when not in automated build environments
+    # ModalAI release identity. VERSION above stays truthful about which EdgeTX
+    # this is based on (2.12.4); this carries our own increment, so the About
+    # screen reads e.g. "2.12.4-modalai.10" -- upstream base and our release in
+    # one string. Bump it together with the matching git tag so the firmware can
+    # never disagree with the tag it was built from.
+    set(MODALAI_RELEASE "modalai.10" CACHE STRING
+        "ModalAI release identity appended to the EdgeTX version")
+    set(VERSION_SUFFIX "-${MODALAI_RELEASE}")
   endif()
 endif()
 
