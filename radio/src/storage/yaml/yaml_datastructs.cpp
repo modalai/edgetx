@@ -37,7 +37,10 @@
   #include "yaml_datastructs_x10.cpp"
  #endif
 #elif defined(PCBM207)
- #include "yaml_datastructs_128x64.cpp"
+ // Not the shared 128x64 descriptor: M207's ModelData is 150 bytes larger than
+ // the X7/X9LITE layout that file is generated for, so sharing it puts every
+ // field after the divergence at the wrong bit offset.
+ #include "yaml_datastructs_m207.cpp"
 #elif defined(PCBTX15)
  #include "yaml_datastructs_tx15.cpp"
 #elif defined(PCBT15)

@@ -79,7 +79,11 @@ elseif((PCB STREQUAL X9D) OR (PCB STREQUAL X9D+))
     set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_x9d.cpp)
   endif()
 elseif(PCB STREQUAL M207)
-  set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_128x64.cpp)
+  # M207 needs its own descriptor: its ModelData is 150 bytes larger than the
+  # X7/X9LITE layout yaml_datastructs_128x64.cpp is generated for. Sharing that
+  # file silently shifts every field past the divergence, and nothing catches
+  # it at build time -- CHKSIZE only checks the struct size, not the descriptor.
+  set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_m207.cpp)
 else()
   message(FATAL_ERROR "PCB '${PCB}' is not supported by YAML storage")
 endif()
