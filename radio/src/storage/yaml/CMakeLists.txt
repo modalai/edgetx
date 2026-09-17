@@ -78,13 +78,16 @@ elseif((PCB STREQUAL X9D) OR (PCB STREQUAL X9D+))
   else()
     set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_x9d.cpp)
   endif()
-elseif((PCB STREQUAL M207) OR (PCB STREQUAL M196))
-  # The modalai boards need their own descriptor: their ModelData is 150 bytes
+elseif(PCB STREQUAL M207)
+  # Each modalai board needs its own descriptor. Their ModelData is 150 bytes
   # larger than the X7/X9LITE layout yaml_datastructs_128x64.cpp is generated
-  # for. Sharing that file silently shifts every field past the divergence, and
-  # nothing catches it at build time -- CHKSIZE only checks the struct size,
-  # not the descriptor.
+  # for, and M196 is a further 22 bytes larger than M207 because it has
+  # function switches. Sharing a descriptor silently shifts every field past
+  # the divergence, and nothing catches it at build time -- CHKSIZE only
+  # checks the struct size, not the descriptor.
   set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_m207.cpp)
+elseif(PCB STREQUAL M196)
+  set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_m196.cpp)
 else()
   message(FATAL_ERROR "PCB '${PCB}' is not supported by YAML storage")
 endif()
