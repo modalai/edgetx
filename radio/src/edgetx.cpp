@@ -1637,7 +1637,9 @@ void edgeTxInit()
 #endif
 
 #if defined(TEST_BUILD_WARNING)
-    ALERT(STR_TEST_WARNING, TR_TEST_NOTSAFE, AU_ERROR);
+    // TR_TEST_NOTSAFE upstream: the i18n TR_ macros are no longer visible here
+    // since 2.12's translation rework, only the STR_ accessors are.
+    ALERT(STR_TEST_WARNING, STR_TEST_NOTSAFE, AU_ERROR);
 #endif
 
 #if defined(HELM_FACTORY_READ_ONLY_STORAGE)
