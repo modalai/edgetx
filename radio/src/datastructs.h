@@ -97,6 +97,12 @@ static inline void check_struct()
   #endif
 #elif defined(RADIO_GX12)
   CHKSIZE(RadioData, 1065);
+#elif defined(RADIO_MODAL)
+  // One byte larger than stock: the bitfield run ends exactly on a byte
+  // boundary at invertLCD, so bootMenu:2 (plus its pad) opens a third byte.
+  // radio.yml is keyed by field name, so older files still load; the missing
+  // bootMenu simply zero-inits to Telem.
+  CHKSIZE(RadioData, 946);
 #else
   CHKSIZE(RadioData, 945);
 #endif
@@ -104,7 +110,7 @@ static inline void check_struct()
 #if defined(RADIO_TPRO) || defined(RADIO_TPROV2) || defined(RADIO_BUMBLEBEE)
   CHKSIZE(ModelData, 6355);
 #elif defined(RADIO_MODAL)
-  CHKSIZE(ModelData, 6329);
+  CHKSIZE(ModelData, 6479);
 #elif defined(RADIO_FAMILY_T20)
   CHKSIZE(ModelData, 6391);
 #elif defined(RADIO_GX12)
