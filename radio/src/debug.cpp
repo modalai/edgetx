@@ -65,7 +65,8 @@ static_assert(sizeof(DebugMonitorSnapshot) == 1428,
               "Debug monitor snapshot ABI changed");
 
 extern "C" {
-DebugMonitorSnapshot debugMonitorSnapshot = {};
+// The host reads this snapshot asynchronously. Keep it in non-cacheable D2 RAM.
+DebugMonitorSnapshot debugMonitorSnapshot __DMA_NO_CACHE;
 }
 
 static void copyDebugMonitorLabel(char *destination, const char *source,
@@ -130,6 +131,12 @@ static uint32_t getDebugMonitorActiveChannels()
 
 void debugMonitorCapture()
 {
+  static bool initialized = false;
+  if (!initialized) {
+    memset(&debugMonitorSnapshot, 0, sizeof(debugMonitorSnapshot));
+    initialized = true;
+  }
+
   static tmr10ms_t lastCapture = (tmr10ms_t)-10;
   const tmr10ms_t now = get_tmr10ms();
   if ((tmr10ms_t)(now - lastCapture) < 10) return;

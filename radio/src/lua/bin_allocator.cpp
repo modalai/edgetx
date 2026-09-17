@@ -95,9 +95,9 @@ class BinAllocator
   typedef BinAllocator<40,300> BinAllocator_slots1;
   typedef BinAllocator<80,100> BinAllocator_slots2;
 #elif defined(STM32H7)
-  // slots1+slots2 in BSS (RAM_D1, 512K); slots3 in .dram (RAM_D2, 288K)
-  typedef BinAllocator<28,300>   BinAllocator_slots1;   //   8,400 bytes in RAM_D1
-  typedef BinAllocator<256,60>   BinAllocator_slots2;   //  15,360 bytes in RAM_D1
+  // Keep the CPU-only small-object pools in DTCM. Leave the large pool in D2.
+  typedef BinAllocator<28,300>   BinAllocator_slots1;   //   8,400 bytes in DTCM
+  typedef BinAllocator<256,60>   BinAllocator_slots2;   //  15,360 bytes in DTCM
   typedef BinAllocator<1024,100> BinAllocator_slots3;   // 102,400 bytes in RAM_D2
   #define HAS_SLOTS3
 #else
@@ -105,10 +105,13 @@ class BinAllocator
   typedef BinAllocator<92,50> BinAllocator_slots2;
 #endif
 
+#if defined(HAS_SLOTS3)
+BinAllocator_slots1 slots1 __CCMRAM;
+BinAllocator_slots2 slots2 __CCMRAM;
+BinAllocator_slots3 slots3 __DMA_NO_CACHE;
+#else
 BinAllocator_slots1 slots1;
 BinAllocator_slots2 slots2;
-#if defined(HAS_SLOTS3)
-BinAllocator_slots3 slots3 __attribute__((section(".dram"), aligned(4)));
 #endif
 
 #if defined(DEBUG)
@@ -215,9 +218,9 @@ static void * bin_realloc(void * ptr, size_t size)
 void lua_bin_alloc_init()
 {
 #if defined(HAS_SLOTS3)
-  // .dram section is NOLOAD (not zero-initialized) and C++ constructors may not
-  // run for objects placed there via __attribute__((section)). Use placement new
-  // to explicitly construct slots3 before first Lua allocation.
+  // The .ccm and .dram sections are NOLOAD. Initialize all pools before use.
+  new(&slots1) BinAllocator_slots1();
+  new(&slots2) BinAllocator_slots2();
   new(&slots3) BinAllocator_slots3();
 #endif
 }
