@@ -82,6 +82,14 @@ void boardBLPreJump()
 
 void boardBLInit()
 {
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    // The bootloader does not call boardInit(), so this is the only place the
+    // encoder gets set up for it. Until 2.12 boot.cpp called rotaryEncoderInit()
+    // itself; that call moved into this per-target hook, and without it PD10/PD11
+    // stay at their analog reset default and the file list cannot be scrolled.
+    rotaryEncoderInit();
+#endif
+
     // TODO: register SD card or internal flash for DFU
     // It may be prefered to only update via SD card firmware files
     // usbRegisterDFUMedia((void*)extflash_dfu_media);
