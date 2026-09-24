@@ -50,6 +50,7 @@ void usbInit();
 void usbStart();
 void usbStop();
 bool usbStarted();
+bool usbJoystickReady();
 bool usbPluggedInStorageMode();
 bool usbPluggedInJoystickMode();
 bool usbPluggedInVCPMode();

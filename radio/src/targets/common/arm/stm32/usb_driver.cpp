@@ -227,6 +227,12 @@ bool usbStarted()
   return usbDriverStarted;
 }
 
+bool usbJoystickReady()
+{
+  return usbDriverStarted && getSelectedUsbMode() == USB_JOYSTICK_MODE &&
+         hUsbDevice.dev_state == USBD_STATE_CONFIGURED;
+}
+
 #if defined(BOOT)
 #if defined(FIRMWARE_QSPI)
 int usbRegisterDFUMedia(const void* dfu_media)

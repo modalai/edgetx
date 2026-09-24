@@ -308,6 +308,57 @@ mixData:
    speedUp: 0
    speedDown: 0
    name: ""
+ -
+   destCh: 16
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "L1"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: "BIND"
+ -
+   destCh: 17
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "L3"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: "UNBIND"
+ -
+   destCh: 18
+   srcRaw: "MAX"
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   delayPrec: 0
+   speedPrec: 0
+   flightModes: 000000000
+   weight: 100
+   offset: 0
+   swtch: "L2"
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: "VRXSCAN"
 expoData: 
  -
    mode: 3
@@ -425,6 +476,16 @@ flightModeData:
             val: 0
          3:
             val: 0
+logicalSw:
+   0:
+      func: FUNC_STICKY
+      def: "NONE,NONE"
+   1:
+      func: FUNC_STICKY
+      def: "NONE,NONE"
+   2:
+      func: FUNC_STICKY
+      def: "NONE,NONE"
 thrTraceSrc: Thr
 gvars:
    0:
@@ -1010,6 +1071,24 @@ usbJoystickCh:
       inversion: 0
       param: 3
       btn_num: 0
+      switch_npos: 0
+   16:
+      mode: CH_BUTTON
+      inversion: 0
+      param: 4
+      btn_num: 0
+      switch_npos: 0
+   17:
+      mode: CH_BUTTON
+      inversion: 0
+      param: 4
+      btn_num: 1
+      switch_npos: 0
+   18:
+      mode: CH_BUTTON
+      inversion: 0
+      param: 4
+      btn_num: 2
       switch_npos: 0
 radioGFDisabled: GLOBAL
 radioTrainerDisabled: GLOBAL

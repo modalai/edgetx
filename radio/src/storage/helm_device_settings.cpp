@@ -78,7 +78,8 @@ struct __attribute__((packed)) CoreSettings {
   int8_t switchesDelay;
   uint8_t internalModuleBaudrate;
   uint8_t usbMode;
-  uint8_t reserved[11];
+  uint8_t internalModuleDisabled;
+  uint8_t reserved[10];
 };
 
 struct __attribute__((packed)) DeviceRecord {
@@ -109,6 +110,7 @@ FactoryDefaults factoryDefaults __DMA_NO_CACHE;
 bool haveActiveRecord;
 bool haveFactoryDefaults;
 uint8_t activeSlot;
+bool internalModuleEnabled = true;
 HelmDeviceSettingsStatus currentStatus = HelmDeviceSettingsStatus::Unused;
 
 uint32_t crc32(const DeviceRecord& record)
@@ -192,6 +194,7 @@ CoreSettings captureCore()
   core.switchesDelay = g_eeGeneral.switchesDelay;
   core.internalModuleBaudrate = g_eeGeneral.internalModuleBaudrate;
   core.usbMode = g_eeGeneral.USBMode;
+  core.internalModuleDisabled = !internalModuleEnabled;
   return core;
 }
 
@@ -236,9 +239,10 @@ void applyCore(const CoreSettings& core)
   g_eeGeneral.gpsFormat = core.gpsFormat != 0;
   g_eeGeneral.switchesDelay = core.switchesDelay;
   g_eeGeneral.internalModuleBaudrate = core.internalModuleBaudrate;
-  g_eeGeneral.USBMode = core.usbMode == USB_MASS_STORAGE_MODE
-                            ? USB_JOYSTICK_MODE
-                            : core.usbMode;
+  g_eeGeneral.USBMode = core.usbMode == USB_SERIAL_MODE
+                            ? USB_SERIAL_MODE
+                            : USB_JOYSTICK_MODE;
+  internalModuleEnabled = core.internalModuleDisabled == 0;
 }
 
 DeviceRecord captureRecord(HelmDeviceWorkflow workflow, bool clearDeveloper)
@@ -385,6 +389,16 @@ HelmDeviceSettingsStatus helmDeviceSettingsLoadAndApply()
 HelmDeviceSettingsStatus helmDeviceSettingsStatus()
 {
   return currentStatus;
+}
+
+bool helmDeviceSettingsInternalModuleEnabled()
+{
+  return internalModuleEnabled;
+}
+
+void helmDeviceSettingsSetInternalModuleEnabled(bool enabled)
+{
+  internalModuleEnabled = enabled;
 }
 
 bool helmDeviceSettingsSetWorkflow(HelmDeviceWorkflow workflow)

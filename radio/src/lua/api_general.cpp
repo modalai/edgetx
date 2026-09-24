@@ -32,6 +32,10 @@
 #include "hal/rotary_encoder.h"
 #include "switches.h"
 #include "input_mapping.h"
+#if defined(RADIO_HELM)
+#include "hal/usb_driver.h"
+#include "storage/helm_device_settings.h"
+#endif
 #if defined(LED_STRIP_GPIO)
 #include "boards/generic_stm32/rgb_leds.h"
 #include "hal/rgbleds.h"
@@ -3100,6 +3104,116 @@ static int luaSetIMU_Y(lua_State* const L)
   return 1;
 }
 
+#if defined(RADIO_HELM)
+/*luadoc
+@function getRadioSettings()
+
+Return the HELM radio settings.
+
+@retval table The internal module state and the USB mode.
+
+@status current Introduced in HELM firmware.
+*/
+static int luaGetRadioSettings(lua_State* const L)
+{
+  lua_newtable(L);
+  lua_pushtableboolean(L, "internalModuleEnabled",
+                       helmDeviceSettingsInternalModuleEnabled());
+  lua_pushtablestring(L, "usbMode",
+                      g_eeGeneral.USBMode == USB_SERIAL_MODE ? "serial"
+                                                            : "joystick");
+  return 1;
+}
+
+/*luadoc
+@function isUsbJoystickReady()
+
+Return true when a USB host configured the HELM joystick.
+
+@retval boolean The USB joystick readiness state.
+
+@status current Introduced in HELM firmware.
+*/
+static int luaIsUsbJoystickReady(lua_State* const L)
+{
+  lua_pushboolean(L, usbJoystickReady());
+  return 1;
+}
+
+/*luadoc
+@function setRadioSettings(values)
+
+Set one or more HELM radio settings.
+
+@param values A table with internalModuleEnabled or usbMode.
+
+@retval boolean true after all values pass validation.
+
+@status current Introduced in HELM firmware.
+*/
+static int luaSetRadioSettings(lua_State* const L)
+{
+  luaL_checktype(L, 1, LUA_TTABLE);
+
+  bool setInternalModule = false;
+  bool internalModuleEnabled = helmDeviceSettingsInternalModuleEnabled();
+  bool setUsbMode = false;
+  uint8_t usbMode = g_eeGeneral.USBMode == USB_SERIAL_MODE
+                        ? USB_SERIAL_MODE
+                        : USB_JOYSTICK_MODE;
+
+  for (lua_pushnil(L); lua_next(L, 1); lua_pop(L, 1)) {
+    if (lua_type(L, -2) != LUA_TSTRING) {
+      return luaL_error(L, "setRadioSettings key must be a string");
+    }
+
+    const char* key = lua_tostring(L, -2);
+    if (!strcmp(key, "internalModuleEnabled")) {
+      if (lua_type(L, -1) != LUA_TBOOLEAN) {
+        return luaL_error(L,
+                          "internalModuleEnabled must be a boolean");
+      }
+      setInternalModule = true;
+      internalModuleEnabled = lua_toboolean(L, -1);
+    }
+    else if (!strcmp(key, "usbMode")) {
+      if (lua_type(L, -1) != LUA_TSTRING) {
+        return luaL_error(L, "usbMode must be a string");
+      }
+      const char* value = lua_tostring(L, -1);
+      if (!strcmp(value, "joystick")) {
+        usbMode = USB_JOYSTICK_MODE;
+      }
+      else if (!strcmp(value, "serial")) {
+        usbMode = USB_SERIAL_MODE;
+      }
+      else {
+        return luaL_error(L, "usbMode must be 'joystick' or 'serial'");
+      }
+      setUsbMode = true;
+    }
+    else {
+      return luaL_error(L, "unknown radio setting '%s'", key);
+    }
+  }
+
+  bool changed = false;
+  if (setInternalModule &&
+      internalModuleEnabled != helmDeviceSettingsInternalModuleEnabled()) {
+    helmDeviceSettingsSetInternalModuleEnabled(internalModuleEnabled);
+    changed = true;
+  }
+  if (setUsbMode && usbMode != g_eeGeneral.USBMode) {
+    g_eeGeneral.USBMode = usbMode;
+    changed = true;
+  }
+  if (changed) storageDirty(EE_GENERAL);
+
+  lua_pushboolean(L, true);
+  return 1;
+}
+#endif
+
 
 #define KEY_EVENTS(xxx, yyy)                                    \
   { "EVT_"#xxx"_FIRST", LRO_NUMVAL(EVT_KEY_FIRST(yyy)) },       \
@@ -3116,6 +3230,11 @@ LROT_BEGIN(etxlib, NULL, 0)
 #endif
   LROT_FUNCENTRY( getVersion, luaGetVersion )
   LROT_FUNCENTRY( getGeneralSettings, luaGetGeneralSettings )
+#if defined(RADIO_HELM)
+  LROT_FUNCENTRY( getRadioSettings, luaGetRadioSettings )
+  LROT_FUNCENTRY( isUsbJoystickReady, luaIsUsbJoystickReady )
+  LROT_FUNCENTRY( setRadioSettings, luaSetRadioSettings )
+#endif
   LROT_FUNCENTRY( getGlobalTimer, luaGetGlobalTimer )
   LROT_FUNCENTRY( getRotEncSpeed, luaGetRotEncSpeed )
   LROT_FUNCENTRY( getRotEncMode, luaGetRotEncMode )

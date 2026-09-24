@@ -94,6 +94,13 @@ class BinAllocator
 #if defined(SIMU)
   typedef BinAllocator<40,300> BinAllocator_slots1;
   typedef BinAllocator<80,100> BinAllocator_slots2;
+#elif defined(RADIO_HELM)
+  // Source compilation and the bounded HELM field cache need more small slots.
+  // Keep CPU-only pools in DTCM and the large pool in D2.
+  typedef BinAllocator<28,600>   BinAllocator_slots1; // 16,800 bytes in DTCM
+  typedef BinAllocator<128,512>  BinAllocator_slots2; // 65,536 bytes in DTCM
+  typedef BinAllocator<1024,100> BinAllocator_slots3; // 102,400 bytes in RAM_D2
+  #define HAS_SLOTS3
 #elif defined(STM32H7)
   // Keep the CPU-only small-object pools in DTCM. Leave the large pool in D2.
   typedef BinAllocator<28,300>   BinAllocator_slots1;   //   8,400 bytes in DTCM

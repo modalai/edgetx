@@ -82,6 +82,7 @@
 // Upper-left: A=left, B=up, C=down, D=right, E=center.
 // Upper-right: A=right, B=down, C=up, D=left, E=center.
 #define HELM_KEY_EXIT UPR_L_E
+#define HELM_KEY_MENU UPR_L_B
 #define HELM_KEY_SYS UPR_L_A
 #define HELM_KEY_MDL UPR_L_D
 #define HELM_KEY_TELE UPR_L_C

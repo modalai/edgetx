@@ -187,6 +187,8 @@ static void telemetryTimerCb(timer_handle_t* h)
 
 void telemetryStart()
 {
+  outputTelemetryBuffer.reset();
+
   if (!timer_is_created(&telemetryTimer)) {
     timer_create(&telemetryTimer, telemetryTimerCb, "Telem", 2, true);
   }

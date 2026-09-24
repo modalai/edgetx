@@ -25,6 +25,8 @@ enum class HelmDeviceSettingsStatus : uint8_t {
 
 HelmDeviceSettingsStatus helmDeviceSettingsLoadAndApply();
 HelmDeviceSettingsStatus helmDeviceSettingsStatus();
+bool helmDeviceSettingsInternalModuleEnabled();
+void helmDeviceSettingsSetInternalModuleEnabled(bool enabled);
 bool helmDeviceSettingsSetWorkflow(HelmDeviceWorkflow workflow);
 bool helmDeviceSettingsSaveCurrent();
 bool helmDeviceSettingsReset();

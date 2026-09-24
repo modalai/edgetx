@@ -29,6 +29,10 @@
 #include "tasks/mixer_task.h"
 #include "os/async.h"
 
+#if defined(RADIO_HELM)
+#include "storage/helm_device_settings.h"
+#endif
+
 #include "pulses/pxx2.h"
 #include "pulses/flysky.h"
 
@@ -268,6 +272,12 @@ uint8_t getModuleType(uint8_t module)
   uint8_t type = g_model.moduleData[module].type;
 
 #if defined(HARDWARE_INTERNAL_MODULE)
+#if defined(RADIO_HELM)
+  if (module == INTERNAL_MODULE &&
+      !helmDeviceSettingsInternalModuleEnabled()) {
+    return MODULE_TYPE_NONE;
+  }
+#endif
   if (module == INTERNAL_MODULE && isInternalModuleAvailable(type)) {
     return type;
   }

@@ -39,6 +39,7 @@
               gawk
               git
               gnumake
+              lua5_3
               mtools
               python
               toolchainPkgs.gcc-arm-embedded-14

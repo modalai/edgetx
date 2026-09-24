@@ -401,6 +401,14 @@ void menuMainView(event_t event)
         g_eeGeneral.view = (g_eeGeneral.view + (4 * ALTERNATE_VIEW) + ((event == EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4 * ALTERNATE_VIEW);
       break;
 
+#if defined(RADIO_HELM) && defined(LUA)
+    case EVT_KEY_BREAK(KEY_MENU):
+      killAllEvents();
+      f_chdir(SCRIPTS_TOOLS_PATH);
+      luaExec(SCRIPTS_TOOLS_PATH "/Helm.lua");
+      break;
+#endif
+
     case EVT_KEY_CONTEXT_MENU:
       if (modelHasNotes()) {
         POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
