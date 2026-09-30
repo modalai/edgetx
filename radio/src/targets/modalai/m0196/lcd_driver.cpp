@@ -49,7 +49,9 @@ constexpr uint8_t ST7567_BOOSTER_4X = 0x00;
 constexpr uint8_t ST7567_CONTRAST_OFFSET = 20;
 constexpr uint8_t ST7567_EV_MAX = 63;
 constexpr uint8_t ST7567_PAGE_COUNT = LCD_H / 8;
-constexpr uint32_t LCD_RESET_LOW_TIME_MS = 1;
+// Keep reset asserted through the LCD module's cold power-up interval. The
+// debugger leaves the supply stable before reset, which masks a slow ramp.
+constexpr uint32_t LCD_RESET_LOW_TIME_MS = 150;
 constexpr uint32_t LCD_RESET_SETTLE_TIME_MS = 1;
 constexpr uint32_t LCD_POWER_SETTLE_TIME_MS = 20;
 constexpr uint32_t LCD_POWER_OFF_TIME_MS = 250;
