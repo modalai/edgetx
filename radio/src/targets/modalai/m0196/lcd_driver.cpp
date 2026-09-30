@@ -298,29 +298,29 @@ void lcdInit()
 {
   if (lcdInitFinished) return;
 
-  // Diagnostic: repeat the complete sequence before other board subsystems
-  // start. This test checks whether the first pass primes the LCD.
-  for (uint8_t pass = 0; pass < 2; ++pass) {
-    lcdHardwareInit();
+  lcdHardwareInit();
 
-    // Complete the reset and power-control sequence within the ST7567's 5 ms
-    // startup window.
-    LCD_RST_LOW();
-    delay_ms(LCD_RESET_LOW_TIME_MS);
-    LCD_RST_HIGH();
-    delay_ms(LCD_RESET_SETTLE_TIME_MS);
-    lcdConfigureController();
+  // Complete the reset and power-control sequence within the ST7567's 5 ms
+  // startup window.
+  LCD_RST_LOW();
+  delay_ms(LCD_RESET_LOW_TIME_MS);
+  LCD_RST_HIGH();
+  delay_ms(LCD_RESET_SETTLE_TIME_MS);
+  lcdConfigureController();
 
-    delay_ms(LCD_POWER_SETTLE_TIME_MS);
-    lcdInitFinished = true;
-    lcdClear();
-    lcdRefresh(true);
-    lcdWriteCommand(ST7567_DISPLAY_ON);
+  delay_ms(LCD_POWER_SETTLE_TIME_MS);
+  lcdInitFinished = true;
+  lcdClear();
+  lcdRefresh(true);
+  lcdWriteCommand(ST7567_DISPLAY_ON);
 
-    if (pass == 0) {
-      delay_ms(LCD_INIT_RETRY_DELAY_MS);
-    }
-  }
+  // Diagnostic: after the proven delay, replay only the controller commands
+  // and framebuffer. Do not reset the LCD or reconfigure the MCU peripherals.
+  delay_ms(LCD_INIT_RETRY_DELAY_MS);
+  lcdConfigureController();
+  delay_ms(LCD_POWER_SETTLE_TIME_MS);
+  lcdRefresh(true);
+  lcdWriteCommand(ST7567_DISPLAY_ON);
 }
 
 void lcdInitFinish()
