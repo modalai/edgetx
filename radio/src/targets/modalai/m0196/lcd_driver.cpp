@@ -52,7 +52,6 @@ constexpr uint8_t ST7567_PAGE_COUNT = LCD_H / 8;
 constexpr uint32_t LCD_RESET_LOW_TIME_MS = 150;
 constexpr uint32_t LCD_RESET_SETTLE_TIME_MS = 1;
 constexpr uint32_t LCD_POWER_SETTLE_TIME_MS = 20;
-constexpr uint32_t LCD_INIT_RETRY_DELAY_MS = 3000;
 constexpr uint32_t LCD_POWER_OFF_TIME_MS = 250;
 constexpr uint32_t LCD_DMA_TIMEOUT_MS = 20;
 
@@ -311,14 +310,6 @@ void lcdInit()
   delay_ms(LCD_POWER_SETTLE_TIME_MS);
   lcdInitFinished = true;
   lcdClear();
-  lcdRefresh(true);
-  lcdWriteCommand(ST7567_DISPLAY_ON);
-
-  // Diagnostic: after the proven delay, replay only the controller commands
-  // and framebuffer. Do not reset the LCD or reconfigure the MCU peripherals.
-  delay_ms(LCD_INIT_RETRY_DELAY_MS);
-  lcdConfigureController();
-  delay_ms(LCD_POWER_SETTLE_TIME_MS);
   lcdRefresh(true);
   lcdWriteCommand(ST7567_DISPLAY_ON);
 }

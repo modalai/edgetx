@@ -185,6 +185,12 @@ void boardBLInit()
 
 void boardBLEarlyInit()
 {
+  // Hold the LCD in reset before any bootloader delay. Preload the output
+  // latch before output mode. This order prevents a high pulse during setup.
+  stm32_gpio_enable_clock(gpio_get_port(LCD_RST_GPIO));
+  gpio_clear(LCD_RST_GPIO);
+  gpio_init(LCD_RST_GPIO, GPIO_OUT, GPIO_PIN_SPEED_MEDIUM);
+
 #if defined(HELM_HAS_SOFT_POWER)
   // Assert the latch before the operator releases the momentary button.
   pwrOn();
