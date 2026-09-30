@@ -49,11 +49,10 @@ constexpr uint8_t ST7567_BOOSTER_4X = 0x00;
 constexpr uint8_t ST7567_CONTRAST_OFFSET = 20;
 constexpr uint8_t ST7567_EV_MAX = 63;
 constexpr uint8_t ST7567_PAGE_COUNT = LCD_H / 8;
-// Keep reset asserted through the LCD module's cold power-up interval. The
-// debugger leaves the supply stable before reset, which masks a slow ramp.
 constexpr uint32_t LCD_RESET_LOW_TIME_MS = 150;
 constexpr uint32_t LCD_RESET_SETTLE_TIME_MS = 1;
 constexpr uint32_t LCD_POWER_SETTLE_TIME_MS = 20;
+constexpr uint32_t LCD_INIT_RETRY_DELAY_MS = 3000;
 constexpr uint32_t LCD_POWER_OFF_TIME_MS = 250;
 constexpr uint32_t LCD_DMA_TIMEOUT_MS = 20;
 
@@ -299,21 +298,29 @@ void lcdInit()
 {
   if (lcdInitFinished) return;
 
-  lcdHardwareInit();
+  // Diagnostic: repeat the complete sequence before other board subsystems
+  // start. This test checks whether the first pass primes the LCD.
+  for (uint8_t pass = 0; pass < 2; ++pass) {
+    lcdHardwareInit();
 
-  // Complete the reset and power-control sequence within the ST7567's 5 ms
-  // startup window.
-  LCD_RST_LOW();
-  delay_ms(LCD_RESET_LOW_TIME_MS);
-  LCD_RST_HIGH();
-  delay_ms(LCD_RESET_SETTLE_TIME_MS);
-  lcdConfigureController();
+    // Complete the reset and power-control sequence within the ST7567's 5 ms
+    // startup window.
+    LCD_RST_LOW();
+    delay_ms(LCD_RESET_LOW_TIME_MS);
+    LCD_RST_HIGH();
+    delay_ms(LCD_RESET_SETTLE_TIME_MS);
+    lcdConfigureController();
 
-  delay_ms(LCD_POWER_SETTLE_TIME_MS);
-  lcdInitFinished = true;
-  lcdClear();
-  lcdRefresh(true);
-  lcdWriteCommand(ST7567_DISPLAY_ON);
+    delay_ms(LCD_POWER_SETTLE_TIME_MS);
+    lcdInitFinished = true;
+    lcdClear();
+    lcdRefresh(true);
+    lcdWriteCommand(ST7567_DISPLAY_ON);
+
+    if (pass == 0) {
+      delay_ms(LCD_INIT_RETRY_DELAY_MS);
+    }
+  }
 }
 
 void lcdInitFinish()
