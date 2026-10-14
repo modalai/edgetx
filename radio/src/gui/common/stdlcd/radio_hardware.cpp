@@ -32,6 +32,10 @@
 #endif
 #include "switches.h"
 
+#if !defined(BATTERY_RANGE_MAX)
+  #define BATTERY_RANGE_MAX 160
+#endif
+
 #if defined(BLUETOOTH)
   #include "bluetooth_driver.h"
 #endif
@@ -523,7 +527,7 @@ void menuRadioHardware(event_t event)
           if (menuHorizontalPosition==0)
             CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMin, -60, g_eeGeneral.vBatMax+29); // min=3.0V
           else
-            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, +40); // max=16.0V
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, BATTERY_RANGE_MAX-120);
         }
         break;
 #endif

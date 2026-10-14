@@ -189,6 +189,13 @@ void per10ms()
 
   g_tmr10ms++;
 
+#if defined(HELM_HAS_INTERNAL_FAN)
+  fanTick10ms();
+#endif
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+  helmLightBrightnessTick10ms();
+#endif
+
 #if defined(GUI)
   if (lightOffCounter) lightOffCounter--;
   if (flashCounter) flashCounter--;
@@ -374,6 +381,10 @@ void generalDefault()
     g_eeGeneral.vBatMin = BATTERY_MIN - 90;
   if (BATTERY_MAX != 120)
     g_eeGeneral.vBatMax = BATTERY_MAX - 120;
+
+#if defined(RADIO_HELM)
+  g_eeGeneral.bootMenu = BOOT_MENU_HUB;
+#endif
 
 #if defined(SURFACE_RADIO)
   g_eeGeneral.stickMode = 0;
@@ -617,6 +628,10 @@ ls_telemetry_value_t maxTelemValue(source_t channel)
 void checkBacklight()
 {
   static uint8_t tmr10ms ;
+
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+  ledSetBrightness(100 - g_eeGeneral.backlightBright);
+#endif
 
   uint8_t x = g_blinkTmr10ms;
   if (tmr10ms != x) {
@@ -1471,6 +1486,11 @@ void edgeTxInit()
   storageReadRadioSettings(false);
 #endif
 
+#if defined(HELM_FACTORY_READ_ONLY_STORAGE)
+  // Restore the EEPROM value that radio.yml cannot persist on Helm.
+  helmDeviceSettingsPrepareLightLock();
+#endif
+
 #if defined(GUI) && !defined(COLORLCD)
 #if LCD_W == 128
   lcdSetInvert(g_eeGeneral.invertLCD);
@@ -1490,7 +1510,7 @@ void edgeTxInit()
   }
 #else // defined(STARTUP_ANIMATION)
   pwrOn();
-#if defined(HAPTIC)
+#if defined(HAPTIC) && !defined(PWR_BUTTON_STARTUP_GATE)
   if (!g_eeGeneral.disablePwrOnOffHaptic &&
       (g_eeGeneral.hapticMode != e_mode_quiet))
     haptic.play(15, 3, PLAY_NOW);
@@ -1561,10 +1581,17 @@ void edgeTxInit()
       // Fallback view if the hub script is missing or exits
       menuHandlers[0] = menuMainView;
 #if defined(LUA)
+#if defined(RADIO_HELM)
+      if (isFileAvailable(SCRIPTS_TOOLS_PATH "/Helm.lua")) {
+        f_chdir(SCRIPTS_TOOLS_PATH);
+        luaExec(SCRIPTS_TOOLS_PATH "/Helm.lua");
+      }
+#else
       if (isFileAvailable(SCRIPTS_TOOLS_PATH "/Joystick.lua")) {
         f_chdir(SCRIPTS_TOOLS_PATH);
         luaExec(SCRIPTS_TOOLS_PATH "/Joystick.lua");
       }
+#endif
 #endif
       break;
     default:  // BOOT_MENU_TELEMETRY
@@ -1737,6 +1764,10 @@ int main()
 #endif
 
   boardInit();
+
+#if defined(PWR_BUTTON_STARTUP_GATE)
+  boardPowerOnStartupGate();
+#endif
 
   modulePortInit();
   pulsesInit();

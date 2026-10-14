@@ -25,19 +25,44 @@ constexpr coord_t CHANNEL_NAME_OFFSET = 0;
 constexpr coord_t CHANNEL_VALUE_OFFSET = CHANNEL_NAME_OFFSET + 41;
 constexpr coord_t CHANNEL_BAR_WIDTH = 70;
 
+#if defined(RADIO_HELM)
+constexpr coord_t HELM_CHANNEL_COLUMN_WIDTH = LCD_W / 2;
+constexpr coord_t HELM_CHANNEL_LABEL_RIGHT = 13;
+constexpr coord_t HELM_CHANNEL_BAR_OFFSET = 15;
+constexpr coord_t HELM_CHANNEL_BAR_WIDTH =
+    HELM_CHANNEL_COLUMN_WIDTH - HELM_CHANNEL_BAR_OFFSET - 3;
+#endif
+
 static bool mixersView = false;
 
 void menuChannelsViewCommon(event_t event)
 {
-  uint8_t ch;
-
   switch (event) {
     case EVT_KEY_BREAK(KEY_ENTER):
       mixersView = !mixersView;
       break;
   }
 
-  ch = 8 * (g_eeGeneral.view / ALTERNATE_VIEW);
+  // Screen title
+  lcdDrawText(LCD_W / 2, 0, mixersView ? STR_MIXERS_MONITOR : STR_CHANNELS_MONITOR, CENTERED);
+  lcdInvertLine(0);
+
+#if defined(RADIO_HELM)
+  // The HELM uses 16 channels. Show all channels without numeric output values.
+  for (uint8_t ch = 0; ch < 16; ch++) {
+    const coord_t column = ch / 8;
+    const coord_t x = column * HELM_CHANNEL_COLUMN_WIDTH;
+    const coord_t y = 9 + (ch % 8) * 7;
+    const int32_t val = mixersView ? ex_chans[ch] : channelOutputs[ch];
+
+    lcdDrawNumber(x + HELM_CHANNEL_LABEL_RIGHT, y + 1, ch + 1,
+                  TINSIZE | RIGHT);
+    drawGauge(x + HELM_CHANNEL_BAR_OFFSET, y, HELM_CHANNEL_BAR_WIDTH, 6,
+              val, RESX);
+  }
+#else
+  uint8_t ch =
+      8 * ((g_eeGeneral.view / ALTERNATE_VIEW) % CHANNEL_MONITOR_PAGE_COUNT);
 
   coord_t vx = CHANNEL_VALUE_OFFSET;
   coord_t bw = CHANNEL_BAR_WIDTH;
@@ -45,10 +70,6 @@ void menuChannelsViewCommon(event_t event)
     vx += 8;
     bw -= 8;
   }
-
-  // Screen title
-  lcdDrawText(LCD_W / 2, 0, mixersView ? STR_MIXERS_MONITOR : STR_CHANNELS_MONITOR, CENTERED);
-  lcdInvertLine(0);
 
   // Channels
   for (uint8_t line = 0; line < 8; line++) {
@@ -106,6 +127,7 @@ void menuChannelsViewCommon(event_t event)
 
     ++ch;
   }
+#endif
 }
 
 void menuChannelsView(event_t event)
@@ -115,13 +137,21 @@ void menuChannelsView(event_t event)
       popMenu();
       break;
 
+#if !defined(RADIO_HELM)
     case EVT_KEY_NEXT_PAGE:
-      g_eeGeneral.view = (g_eeGeneral.view + (4 * ALTERNATE_VIEW) + ALTERNATE_VIEW) % (4 * ALTERNATE_VIEW);
+      g_eeGeneral.view =
+          (g_eeGeneral.view +
+           (CHANNEL_MONITOR_PAGE_COUNT * ALTERNATE_VIEW) + ALTERNATE_VIEW) %
+          (CHANNEL_MONITOR_PAGE_COUNT * ALTERNATE_VIEW);
       break;
 
     case EVT_KEY_PREVIOUS_PAGE:
-      g_eeGeneral.view = (g_eeGeneral.view + (4 * ALTERNATE_VIEW) - ALTERNATE_VIEW) % (4 * ALTERNATE_VIEW);
+      g_eeGeneral.view =
+          (g_eeGeneral.view +
+           (CHANNEL_MONITOR_PAGE_COUNT * ALTERNATE_VIEW) - ALTERNATE_VIEW) %
+          (CHANNEL_MONITOR_PAGE_COUNT * ALTERNATE_VIEW);
       break;
+#endif
   }
 
   menuChannelsViewCommon(event);

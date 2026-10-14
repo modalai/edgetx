@@ -1,4 +1,4 @@
-checksum: 11443
+checksum: 26521
 manuallyEdited: 0
 timezoneMinutes: 0
 ppmunit: 0
@@ -23,7 +23,7 @@ calib:
       spanPos: 504
 currModel: 0
 contrast: 20
-vBatWarn: 65
+vBatWarn: 140
 txVoltageCalibration: 0
 backlightMode: backlight_mode_all
 antennaMode: MODE_PER_MODEL
@@ -55,8 +55,8 @@ gpsFormat: 0
 audioMuteEnable: 0
 speakerPitch: 0
 speakerVolume: 12
-vBatMin: 60
-vBatMax: 80
+vBatMin: 132
+vBatMax: 168
 backlightBright: 0
 globalTimer: 90
 bluetoothBaudrate: 0
@@ -121,6 +121,12 @@ switchConfig:
    SM:
       name: ""
       type: 3POS
+   SN:
+      name: ""
+      type: 2POS
+   SO:
+      name: ""
+      type: 2POS
    SW1:
       name: ""
       type: 2POS
@@ -154,5 +160,5 @@ modelTelemetryDisabled: 0
 disableTrainerPoweroffAlarm: 0
 disablePwrOnOffHaptic: 0
 invertLCD: 0
-bootMenu: 0
+bootMenu: 2
 pwrOffIfInactive: 0

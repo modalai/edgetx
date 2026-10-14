@@ -39,6 +39,10 @@
 
 #define HELM_HAS_INTERNAL_MODULE
 #define HELM_HAS_INTERNAL_FAN
+#define HELM_HAS_SHARED_LIGHT_BRIGHTNESS
+
+// The Helm radio uses only CRSF channels 1 through 16.
+#define CHANNEL_MONITOR_PAGE_COUNT 1
 #define HELM_HAS_HAPTICS
 #define HELM_HAS_SD_CARD
 
@@ -72,8 +76,30 @@
 // Lower five-way switch axes.
 #define HELM_SWITCH_L_HIGH LOW_L_D
 #define HELM_SWITCH_L_LOW LOW_L_A
-#define HELM_SWITCH_M_HIGH LOW_R_A
-#define HELM_SWITCH_M_LOW LOW_R_D
+#define HELM_SWITCH_M_HIGH LOW_R_D
+#define HELM_SWITCH_M_LOW LOW_R_A
+
+// Lower five-way switch center buttons.
+#define HELM_SWITCH_N LOW_L_E
+#define HELM_SWITCH_O LOW_R_E
+
+// Lower-right five-way switch light controls.
+#define HELM_LIGHT_BRIGHTNESS_UP LOW_R_C
+#define HELM_LIGHT_BRIGHTNESS_DOWN LOW_R_B
+
+// Match the installed switch orientation. Switch H matches EdgeTX directly.
+#define SWITCHES_A_INVERTED
+#define SWITCHES_B_INVERTED
+#define SWITCHES_C_INVERTED
+#define SWITCHES_D_INVERTED
+#define SWITCHES_E_INVERTED
+#define SWITCHES_F_INVERTED
+#define SWITCHES_G_INVERTED
+#define SWITCHES_I_INVERTED
+#define SWITCHES_J_INVERTED
+#define SWITCHES_K_INVERTED
+#define SWITCHES_L_INVERTED
+#define SWITCHES_M_INVERTED
 
 // Hide the lower five-way axes from the compact main-view switch display.
 #define MAIN_VIEW_HIDDEN_SWITCHES \
@@ -81,21 +107,21 @@
 
 // Upper-left: A=left, B=up, C=down, D=right, E=center.
 // Upper-right: A=right, B=down, C=up, D=left, E=center.
-#define HELM_KEY_EXIT UPR_L_E
-#define HELM_KEY_MENU UPR_L_B
-#define HELM_KEY_SYS UPR_L_A
+#define HELM_KEY_EXIT UPR_L_A
+#define HELM_KEY_MENU UPR_L_E
+#define HELM_KEY_SYS UPR_L_B
 #define HELM_KEY_MDL UPR_L_D
 #define HELM_KEY_TELE UPR_L_C
 #define HELM_KEY_PAGEUP UPR_R_A
 #define HELM_KEY_PAGEDN UPR_R_D
-#define HELM_KEY_UP UPR_R_C
-#define HELM_KEY_DOWN UPR_R_B
+#define HELM_KEY_UP UPR_R_B
+#define HELM_KEY_DOWN UPR_R_C
 #define HELM_KEY_ENTER UPR_R_E
 
 // Gimbals.
 #define HELM_ADC_STICK_LH GIMBAL_LH
+#define HELM_ADC_STICK_LH_INVERTED
 #define HELM_ADC_STICK_LV GIMBAL_LV
-#define HELM_ADC_STICK_LV_INVERTED
 #define HELM_ADC_STICK_RV GIMBAL_RV
 #define HELM_ADC_STICK_RH GIMBAL_RH
 #define HELM_ADC_STICK_RH_INVERTED

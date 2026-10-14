@@ -27,6 +27,9 @@ extern uint16_t sessionTimer;
 
 void boardInit();
 void boardOff();
+#if defined(PWR_BUTTON_STARTUP_GATE)
+void boardPowerOnStartupGate();
+#endif
 
 enum {
   PCBREV_HELM_BASIC = 0,
@@ -55,9 +58,11 @@ extern HardwareOptions hardwareOptions;
   #define NUM_FUNCTIONS_SWITCHES 0
 #endif
 
-#define BATTERY_WARN 65
-#define BATTERY_MIN 60
-#define BATTERY_MAX 80
+#define BATTERY_WARN 140  // 14.0 V, 3.5 V per cell
+#define BATTERY_MIN 132   // 13.2 V, 3.3 V per cell
+#define BATTERY_MAX 168   // 16.8 V, 4.2 V per cell
+#define BATTERY_WARNING_MAX 168
+#define BATTERY_RANGE_MAX 168
 #define BATT_SCALE 123
 #define BATTERY_DIVIDER 23711
 #define VOLTAGE_DROP 0
@@ -132,6 +137,18 @@ void ledOff();
 void ledRed();
 void ledGreen();
 void ledBlue();
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+#if !defined(BOOT)
+bool helmLightsDisabled();
+#endif
+void ledSetBrightness(uint8_t percent);
+void helmLightBrightnessTick10ms();
+#endif
+
+#if defined(HELM_HAS_INTERNAL_FAN)
+void fanSetPower(uint8_t percent);
+void fanTick10ms();
+#endif
 
 #define LCD_W 128
 #define LCD_H 64

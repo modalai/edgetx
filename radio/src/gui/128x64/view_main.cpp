@@ -397,8 +397,15 @@ void menuMainView(event_t event)
     case EVT_KEY_PREVIOUS_PAGE:
       if (view_base == VIEW_INPUTS)
         g_eeGeneral.view ^= ALTERNATE_VIEW;
-      else
-        g_eeGeneral.view = (g_eeGeneral.view + (4 * ALTERNATE_VIEW) + ((event == EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4 * ALTERNATE_VIEW);
+      else {
+        const uint8_t pageCount =
+            view_base == VIEW_CHAN_MONITOR ? CHANNEL_MONITOR_PAGE_COUNT : 4;
+        g_eeGeneral.view =
+            (g_eeGeneral.view + (pageCount * ALTERNATE_VIEW) +
+             ((event == EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW :
+                                                  ALTERNATE_VIEW)) %
+            (pageCount * ALTERNATE_VIEW);
+      }
       break;
 
 #if defined(RADIO_HELM) && defined(LUA)

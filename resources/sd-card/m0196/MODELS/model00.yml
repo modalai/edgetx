@@ -465,6 +465,18 @@ customFn:
       swtch: "ONE"
       func: ADJUST_GVAR
       def: "3,Cst,0,1"
+   12:
+      swtch: "SN2"
+      func: ADJUST_GVAR
+      def: "1,Cst,0,1"
+   13:
+      swtch: "SN2"
+      func: ADJUST_GVAR
+      def: "2,Cst,0,1"
+   14:
+      swtch: "SO2"
+      func: ADJUST_GVAR
+      def: "3,Cst,0,1"
 flightModeData:
    0:
       gvars:

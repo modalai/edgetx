@@ -79,7 +79,8 @@ struct __attribute__((packed)) CoreSettings {
   uint8_t internalModuleBaudrate;
   uint8_t usbMode;
   uint8_t internalModuleDisabled;
-  uint8_t reserved[10];
+  uint8_t fanStrengthEncoded;
+  uint8_t reserved[9];
 };
 
 struct __attribute__((packed)) DeviceRecord {
@@ -111,7 +112,15 @@ bool haveActiveRecord;
 bool haveFactoryDefaults;
 uint8_t activeSlot;
 bool internalModuleEnabled = true;
+uint8_t fanStrength = 100;
 HelmDeviceSettingsStatus currentStatus = HelmDeviceSettingsStatus::Unused;
+
+void syncFanOutput()
+{
+#if defined(HELM_HAS_INTERNAL_FAN)
+  fanSetPower(internalModuleEnabled ? fanStrength : 0);
+#endif
+}
 
 uint32_t crc32(const DeviceRecord& record)
 {
@@ -151,6 +160,23 @@ bool validRecord(const DeviceRecord& record)
 bool sequenceNewer(uint32_t first, uint32_t second)
 {
   return static_cast<int32_t>(first - second) > 0;
+}
+
+int8_t readLatestRecord(DeviceRecord records[2])
+{
+  if (!helmEepromRead(SLOT_ADDRESS[0], &records[0], sizeof(records[0])) ||
+      !helmEepromRead(SLOT_ADDRESS[1], &records[1], sizeof(records[1]))) {
+    return -2;
+  }
+
+  const bool valid[] = {validRecord(records[0]), validRecord(records[1])};
+  if (!valid[0] && !valid[1]) return -1;
+
+  return valid[1] &&
+                 (!valid[0] || sequenceNewer(records[1].header.sequence,
+                                              records[0].header.sequence))
+             ? 1
+             : 0;
 }
 
 CoreSettings captureCore()
@@ -195,6 +221,7 @@ CoreSettings captureCore()
   core.internalModuleBaudrate = g_eeGeneral.internalModuleBaudrate;
   core.usbMode = g_eeGeneral.USBMode;
   core.internalModuleDisabled = !internalModuleEnabled;
+  core.fanStrengthEncoded = fanStrength + 1;
   return core;
 }
 
@@ -243,6 +270,11 @@ void applyCore(const CoreSettings& core)
                             ? USB_SERIAL_MODE
                             : USB_JOYSTICK_MODE;
   internalModuleEnabled = core.internalModuleDisabled == 0;
+  fanStrength = core.fanStrengthEncoded == 0
+                    ? 100
+                    : core.fanStrengthEncoded - 1;
+  if (fanStrength > 100) fanStrength = 100;
+  syncFanOutput();
 }
 
 DeviceRecord captureRecord(HelmDeviceWorkflow workflow, bool clearDeveloper)
@@ -339,9 +371,18 @@ HelmDeviceWorkflow currentWorkflow()
 
 }  // namespace
 
+void helmDeviceSettingsPrepareLightLock()
+{
+  DeviceRecord records[2];
+  const int8_t slot = readLatestRecord(records);
+  if (slot < 0) return;
+  g_eeGeneral.backlightBright = records[slot].core.backlightBright;
+}
+
 HelmDeviceSettingsStatus helmDeviceSettingsLoadAndApply()
 {
   if (!storageIsReadOnly()) {
+    syncFanOutput();
     currentStatus = HelmDeviceSettingsStatus::Unused;
     return currentStatus;
   }
@@ -353,25 +394,22 @@ HelmDeviceSettingsStatus helmDeviceSettingsLoadAndApply()
   haveFactoryDefaults = true;
 
   DeviceRecord records[2];
-  if (!helmEepromRead(SLOT_ADDRESS[0], &records[0], sizeof(records[0])) ||
-      !helmEepromRead(SLOT_ADDRESS[1], &records[1], sizeof(records[1]))) {
+  const int8_t slot = readLatestRecord(records);
+  if (slot == -2) {
+    syncFanOutput();
     currentStatus = HelmDeviceSettingsStatus::Fault;
     haveActiveRecord = false;
     return currentStatus;
   }
 
-  const bool valid[] = {validRecord(records[0]), validRecord(records[1])};
-  if (!valid[0] && !valid[1]) {
+  if (slot < 0) {
+    syncFanOutput();
     currentStatus = HelmDeviceSettingsStatus::InputTestRequired;
     haveActiveRecord = false;
     return currentStatus;
   }
 
-  activeSlot = valid[1] &&
-                       (!valid[0] || sequenceNewer(records[1].header.sequence,
-                                                  records[0].header.sequence))
-                   ? 1
-                   : 0;
+  activeSlot = slot;
   activeRecord = records[activeSlot];
   haveActiveRecord = true;
   applyCore(activeRecord.core);
@@ -399,6 +437,18 @@ bool helmDeviceSettingsInternalModuleEnabled()
 void helmDeviceSettingsSetInternalModuleEnabled(bool enabled)
 {
   internalModuleEnabled = enabled;
+  syncFanOutput();
+}
+
+uint8_t helmDeviceSettingsFanStrength()
+{
+  return fanStrength;
+}
+
+void helmDeviceSettingsSetFanStrength(uint8_t percent)
+{
+  fanStrength = percent > 100 ? 100 : percent;
+  syncFanOutput();
 }
 
 bool helmDeviceSettingsSetWorkflow(HelmDeviceWorkflow workflow)

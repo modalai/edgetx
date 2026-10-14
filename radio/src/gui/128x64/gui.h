@@ -32,6 +32,10 @@
 
 #define MIXES_2ND_COLUMN               (10*FW)
 
+#if !defined(CHANNEL_MONITOR_PAGE_COUNT)
+  #define CHANNEL_MONITOR_PAGE_COUNT   (MAX_OUTPUT_CHANNELS / 8)
+#endif
+
 void drawWheel(coord_t centrex, int16_t wval);
 void drawThrottle(coord_t centrex, int16_t tval);
 

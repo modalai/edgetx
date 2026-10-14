@@ -91,7 +91,11 @@
 #define TR_PPM_POL                      "-","+"
 #define TR_PWR_OFF_DELAYS               "0s","0.5s","1s","2s","3s"
 #define TR_BOOT_MENU                    "Boot menu"
-#define TR_VBOOTMENU                    "Telem","Main","Hub"
+#if defined(RADIO_HELM)
+  #define TR_VBOOTMENU                  "Telem","Main","HELM"
+#else
+  #define TR_VBOOTMENU                  "Telem","Main","Hub"
+#endif
 #define TR_SPLASHSCREEN_DELAYS          "1s","2s","3s","4s","6s","8s","10s","15s"
 #define TR_FSGROUPS                     "-","1","2","3","4"
 

@@ -26,11 +26,18 @@
 #if defined(HELM_FACTORY_READ_ONLY_STORAGE)
 #include "sdcard.h"
 #endif
+#if defined(HELM_HAS_INTERNAL_FAN)
+#include "storage/helm_device_settings.h"
+#endif
 #include "tasks/mixer_task.h"
 #include "hal/adc_driver.h"
 #include "hal/usb_driver.h"
 #include "hal/audio_driver.h"
 #include "input_mapping.h"
+
+#if !defined(BATTERY_WARNING_MAX)
+  #define BATTERY_WARNING_MAX 120
+#endif
 
 const unsigned char sticks[]  = {
 #include "sticks.lbm"
@@ -48,6 +55,12 @@ int8_t slider_5pos(coord_t y, int8_t value, event_t event, uint8_t attr, const c
 #define CASE_TX_MODE(x) x,
 #else
 #define CASE_TX_MODE(x)
+#endif
+
+#if defined(HELM_HAS_INTERNAL_FAN)
+#define CASE_HELM_FAN(x) x,
+#else
+#define CASE_HELM_FAN(x)
 #endif
 
 enum {
@@ -110,6 +123,7 @@ enum {
   ITEM_RADIO_SETUP_PPM,
   IF_FAI_CHOICE(ITEM_RADIO_SETUP_FAI)
   ITEM_RADIO_SETUP_SWITCHES_DELAY,
+  CASE_HELM_FAN(ITEM_RADIO_SETUP_FAN_STRENGTH)
   ITEM_RADIO_SETUP_USB_MODE,
   CASE_JACK_DETECT(ITEM_RADIO_SETUP_JACK_MODE)
   ITEM_RADIO_SETUP_RX_CHANNEL_ORD,
@@ -186,6 +200,9 @@ static bool factoryStorageRadioSetupRowIsEditable(uint8_t row)
 #endif
     case ITEM_RADIO_SETUP_IMPERIAL:
     case ITEM_RADIO_SETUP_SWITCHES_DELAY:
+#if defined(HELM_HAS_INTERNAL_FAN)
+    case ITEM_RADIO_SETUP_FAN_STRENGTH:
+#endif
     case ITEM_RADIO_SETUP_USB_MODE:
     case ITEM_VIEW_OPTIONS_LABEL:
       return true;
@@ -336,6 +353,7 @@ void menuRadioSetup(event_t event)
     0, 0,
     IF_FAI_CHOICE(0)
     0,
+    CASE_HELM_FAN(0)
     0, // USB mode
     CASE_JACK_DETECT(0) // Jack mode
     0, // Channel order
@@ -592,7 +610,7 @@ void menuRadioSetup(event_t event)
       case ITEM_RADIO_SETUP_BATTERY_WARNING:
         lcdDrawTextIndented(y, STR_BATTERYWARNING);
         putsVolts(LCD_W-7, y, g_eeGeneral.vBatWarn, attr|RIGHT);
-        if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatWarn, 30, 120); //3-12V
+        if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatWarn, 30, BATTERY_WARNING_MAX);
         break;
 
       case ITEM_RADIO_SETUP_MEMORY_WARNING:
@@ -867,6 +885,24 @@ void menuRadioSetup(event_t event)
         lcdDrawText(lcdLastRightPos, y, STR_MS, attr);
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.switchesDelay, -15, 100-15);
         break;
+
+#if defined(HELM_HAS_INTERNAL_FAN)
+      case ITEM_RADIO_SETUP_FAN_STRENGTH:
+      {
+        lcdDrawTextAlignedLeft(y, "Fan Strength");
+        uint8_t steps = (helmDeviceSettingsFanStrength() + 2) / 5;
+        drawSlider(RADIO_SETUP_2ND_COLUMN, y, 23, steps, 20, attr);
+        lcdDrawNumber(LCD_W - FW - 1, y, steps * 5, attr | RIGHT);
+        lcdDrawChar(LCD_W - FW, y, '%', attr);
+        if (attr) {
+          steps = checkIncDec(event, steps, 0, 20, EE_GENERAL);
+          if (checkIncDec_Ret) {
+            helmDeviceSettingsSetFanStrength(steps * 5);
+          }
+        }
+        break;
+      }
+#endif
 
       case ITEM_RADIO_SETUP_USB_MODE:
         g_eeGeneral.USBMode = editChoice(

@@ -108,9 +108,48 @@ uint8_t isBacklightEnabled()
   return (BACKLIGHT_TIMER->CCR4 != 0 || BACKLIGHT_TIMER->CCR2 != 0);
 }
 #elif defined(PCBX7) || defined(PCBXLITE) || defined(PCBX9LITE) || defined(PCBM207) || defined(PCBM196)
-void backlightInit()
+
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+namespace {
+
+uint8_t helmBacklightDuty(uint8_t level)
+{
+  const uint16_t brightness = level >= 100 ? 0 : 100 - level;
+  return (brightness * brightness + 99) / 100;
+}
+
+void connectBacklightPwm()
 {
   gpio_init_af(BACKLIGHT_GPIO, BACKLIGHT_GPIO_AF, GPIO_PIN_SPEED_LOW);
+}
+
+void disconnectBacklightPwm()
+{
+  BACKLIGHT_COUNTER_REGISTER = 0;
+  gpio_clear(BACKLIGHT_GPIO);
+  gpio_init(BACKLIGHT_GPIO, GPIO_OUT, GPIO_PIN_SPEED_LOW);
+}
+
+}  // namespace
+#endif
+
+void backlightInit()
+{
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+#if defined(BOOT)
+  constexpr bool lightsDisabled = false;
+#else
+  const bool lightsDisabled = helmLightsDisabled();
+#endif
+  if (lightsDisabled) {
+    gpio_clear(BACKLIGHT_GPIO);
+    gpio_init(BACKLIGHT_GPIO, GPIO_OUT, GPIO_PIN_SPEED_LOW);
+  } else {
+    gpio_init_af(BACKLIGHT_GPIO, BACKLIGHT_GPIO_AF, GPIO_PIN_SPEED_LOW);
+  }
+#else
+  gpio_init_af(BACKLIGHT_GPIO, BACKLIGHT_GPIO_AF, GPIO_PIN_SPEED_LOW);
+#endif
   stm32_timer_enable_clock(BACKLIGHT_TIMER);
 
 #if defined(BACKLIGHT_BDTR) // TODO perhaps it can be always done
@@ -124,14 +163,35 @@ void backlightInit()
     BACKLIGHT_TIMER->CCMR2 = BACKLIGHT_CCMR2;
   #endif
   BACKLIGHT_TIMER->CCER = BACKLIGHT_CCER;
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+  BACKLIGHT_COUNTER_REGISTER = lightsDisabled ? 0 : 100;
+#else
   BACKLIGHT_COUNTER_REGISTER = 100;
+#endif
   BACKLIGHT_TIMER->EGR = 0;
   BACKLIGHT_TIMER->CR1 = TIM_CR1_CEN; // Counter enable
 }
 
 void backlightEnable(uint8_t level)
 {
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+#if !defined(BOOT)
+  if (helmLightsDisabled()) {
+    disconnectBacklightPwm();
+    return;
+  }
+#endif
+  const uint8_t duty = helmBacklightDuty(level);
+  if (duty == 0) {
+    disconnectBacklightPwm();
+    return;
+  }
+
+  BACKLIGHT_COUNTER_REGISTER = duty;
+  connectBacklightPwm();
+#else
   BACKLIGHT_COUNTER_REGISTER = 100 - level;
+#endif
 }
 
 void backlightFullOn()
@@ -141,7 +201,11 @@ void backlightFullOn()
 
 void backlightDisable()
 {
+#if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
+  disconnectBacklightPwm();
+#else
   BACKLIGHT_COUNTER_REGISTER = 0;
+#endif
 }
 
 uint8_t isBacklightEnabled()

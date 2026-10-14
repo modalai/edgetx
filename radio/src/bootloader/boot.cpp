@@ -63,6 +63,7 @@ static __attribute__((noreturn)) void jumpTo(uint32_t addr)
 
 // Optional board hook
 __weak void boardBLEarlyInit() {}
+__weak void boardBLPowerOnGate() {}
 __weak bool boardBLStartCondition() { return false; }
 __weak void boardBLPreJump() {}
 __weak void boardBLInit() {}
@@ -78,6 +79,7 @@ void bootloaderInitApp()
   pwrInit();
   keysInit();
   delaysInit();
+  boardBLPowerOnGate();
 
   bool boot_dfu = abnormalRebootGetCmd() == REBOOT_CMD_DFU; 
   if (!boot_dfu) {

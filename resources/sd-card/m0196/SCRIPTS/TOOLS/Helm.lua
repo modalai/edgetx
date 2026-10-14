@@ -53,6 +53,9 @@ local currentFolderName = nil
 local commandRunningIndicator = 1
 local expectChunksRemain = -1
 local deviceIsELRS_TX = nil
+local scrollStart = 0
+local scrollField = nil
+local scrollValue = nil
 local linkstatTimeout = 100
 local titleShowWarn = nil
 local titleShowWarnTimeout = 100
@@ -345,8 +348,44 @@ local function fieldTextSelLoad(field, data, offset)
   field.unit = fieldGetStrOrOpts(data, offset+4)
 end
 
+local function scrollSelectedValue(field, value, attr)
+  local charWidth = textSize < 10 and 6 or 10
+  local maxChars = math.max(1, math.ceil((LCD_W - COL2) / charWidth))
+  if #value <= maxChars then
+    if scrollField == field then scrollField = nil scrollValue = nil end
+    return value
+  end
+
+  if attr == 0 then
+    if scrollField == field then scrollField = nil scrollValue = nil end
+    return string.sub(value, 1, maxChars)
+  end
+
+  if scrollField ~= field or scrollValue ~= value then
+    scrollField = field
+    scrollValue = value
+    scrollStart = getTime()
+  end
+
+  local overflow = #value - maxChars
+  local scrollStep = 80
+  local pauseStart = 100
+  local pauseEnd = 300
+  local cycleTicks = pauseStart + overflow * scrollStep + pauseEnd
+  local elapsed = (getTime() - scrollStart) % cycleTicks
+  local offset = 0
+  if elapsed >= pauseStart and elapsed < pauseStart + overflow * scrollStep then
+    offset = math.floor((elapsed - pauseStart) / scrollStep)
+  elseif elapsed >= pauseStart + overflow * scrollStep then
+    offset = overflow
+  end
+
+  return string.sub(value, offset + 1, offset + maxChars)
+end
+
 local function fieldTextSelDisplay(field, y, attr)
-  lcd.drawText(COL2, y, fieldChoice(field, field.value), attr)
+  local val = fieldChoice(field, field.value)
+  lcd.drawText(COL2, y, scrollSelectedValue(field, val, attr), attr)
   lcd.drawText(lcd.getLastPos(), y, field.unit, 0)
 end
 
