@@ -36,6 +36,7 @@
 
 // #include "delays_driver.h"
 #include "debug.h"
+#include "hal/watchdog_driver.h"
 
 #include <string.h>
 
@@ -138,7 +139,7 @@ struct {
 #endif
 
 #define BLOCK_SIZE FF_MAX_SS
-#if defined(RADIO_PA01)
+#if defined(RADIO_PA01) || defined(PCBM207)
   #define SD_TIMEOUT 1000 /* 1000ms */
 #else
   #define SD_TIMEOUT 300 /* 300ms */
@@ -379,6 +380,7 @@ static int sdio_check_card_state_with_timeout(uint32_t timeout)
   uint32_t timer = HAL_GetTick();
   /* block until SDIO IP is ready again or a timeout occur */
   while(HAL_GetTick() - timer < timeout) {
+    WDG_RESET();
     auto state = sdio_check_card_state();
     if (state != SD_TRANSFER_BUSY) {
       return state == SD_TRANSFER_OK ? 0 : -1;
@@ -420,10 +422,14 @@ static DRESULT _read_dma(BYTE* buff, DWORD sector, UINT count)
 
   // Wait for the reading process to complete or a timeout to occur
   uint32_t timeout = HAL_GetTick();
-  while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT));
+  while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT)) {
+    WDG_RESET();
+  }
 
   if (ReadStatus == 0) {
     TRACE("SD read timeout (s:%u c:%u)", sector, (uint32_t)count);
+    // Leaving the transfer running wedges the SDMMC: every later command fails
+    HAL_SD_Abort(&sdio);
     return RES_ERROR;
   }
 
@@ -483,10 +489,14 @@ static DRESULT _write_dma(const BYTE *buff, DWORD sector, UINT count)
 
   // Wait that the writing process is completed or a timeout occurs
   uint32_t timeout = HAL_GetTick();
-  while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT));
+  while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT)) {
+    WDG_RESET();
+  }
 
   if (WriteStatus == 0) {
     TRACE("SD write timeout (s:%u/c:%u)", sector, (uint32_t)count);
+    // Leaving the transfer running wedges the SDMMC: every later command fails
+    HAL_SD_Abort(&sdio);
     return RES_ERROR;
   }
 

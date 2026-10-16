@@ -19,7 +19,9 @@
  * GNU General Public License for more details.
  */
 
-#if defined(BOOT)
+// A 512-byte buffer turns every USB write into single-block SD writes, which slow
+// cards take far longer to program; the ModalAI H7 radios have RAM to spare
+#if defined(BOOT) || defined(PCBMODALAI)
   #define MASS_STORAGE_BUFFER_SIZE 4096U
 #else
   #define MASS_STORAGE_BUFFER_SIZE 512U
