@@ -76,8 +76,59 @@ bool boardBLStartCondition()
     return !gpio_read(BL_KEY);
 }
 
+// M0207 MDL key (H.06)
+#define MODULE_BL_KEY GPIO_PIN(GPIOH, 6)
+#define MODULE_BL_TX GPIO_PIN(GPIOE, 1)   // UART8_TX to the internal module
+
+// The internal ELRS module can't be reset or power-cycled from here (its PWR and
+// BOOTCMD lines aren't connected), and its bootloader only waits ~2 s after power-on
+// for 'bbbb' before it starts the application, long before EdgeTX has USB up. So a
+// module whose application was broken by an interrupted update can't be reached.
+// Holding MDL at power-on answers that window from here: the bootloader then stays in
+// XMODEM until "serialpassthrough rfmod 0 921600" and an update replace the image.
+static void intmoduleHoldInBootloader()
+{
+  gpio_init(MODULE_BL_KEY, GPIO_IN_PU, GPIO_PIN_SPEED_LOW);
+  delay_ms(1);
+  if (gpio_read(MODULE_BL_KEY)) return;
+
+  // Run UART8 from the HSI for a known baud rate, whatever the PLLs feed APB1
+  LL_RCC_HSI_Enable();
+  while (!LL_RCC_HSI_IsReady()) {
+  }
+  uint32_t hsi = HSI_VALUE >> (LL_RCC_HSI_GetDivider() >> RCC_CR_HSIDIV_Pos);
+  uint32_t clock_source = LL_RCC_GetUSARTClockSource(LL_RCC_USART234578_CLKSOURCE);
+  LL_RCC_SetUSARTClockSource(LL_RCC_USART234578_CLKSOURCE_HSI);
+
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART8);
+  gpio_init_af(MODULE_BL_TX, GPIO_AF8, GPIO_PIN_SPEED_HIGH);
+  UART8->CR1 = 0;
+  UART8->BRR = (hsi + 921600 / 2) / 921600;
+  UART8->CR1 = USART_CR1_TE | USART_CR1_UE;
+
+  // 2.2 s: longer than the module bootloader waits for its first byte
+  for (int burst = 0; burst < 110; burst++) {
+    for (int i = 0; i < 6; i++) {
+      while (!LL_USART_IsActiveFlag_TXE_TXFNF(UART8)) {
+      }
+      LL_USART_TransmitData8(UART8, 'b');
+    }
+    delay_ms(20);
+  }
+  while (!LL_USART_IsActiveFlag_TC(UART8)) {
+  }
+
+  // Leave UART8 as reset left it for the firmware
+  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_UART8);
+  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_UART8);
+  LL_APB1_GRP1_DisableClock(LL_APB1_GRP1_PERIPH_UART8);
+  LL_RCC_SetUSARTClockSource(clock_source);
+  gpio_init_analog(MODULE_BL_TX);
+}
+
 void boardBLPreJump()
 {
+  intmoduleHoldInBootloader();
 }
 
 void boardBLInit()
