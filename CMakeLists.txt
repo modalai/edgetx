@@ -28,7 +28,7 @@ else()
     # screen reads e.g. "2.12.4-modalai.10" -- upstream base and our release in
     # one string. Bump it together with the matching git tag so the firmware can
     # never disagree with the tag it was built from.
-    set(MODALAI_RELEASE "modalai.10" CACHE STRING
+    set(MODALAI_RELEASE "modalai.11" CACHE STRING
         "ModalAI release identity appended to the EdgeTX version")
     set(VERSION_SUFFIX "-${MODALAI_RELEASE}")
   endif()
