@@ -75,6 +75,9 @@ namespace {
 
 constexpr uint32_t POWER_GATE_REBOOT_CMD = 0x50574754U;  // "PWGT"
 constexpr uint32_t POWER_ON_HOLD_MS = 1000;
+// Applying power charges C37 on the button node, which reads as a short
+// press. Keep the backlight off until a press outlasts that transient.
+constexpr uint32_t POWER_ON_BACKLIGHT_DELAY_MS = 150;
 constexpr uint32_t POWER_ON_SAMPLE_MS = 10;
 constexpr uint32_t POWER_ON_DISPLAY_REFRESH_MS = 50;
 
@@ -410,17 +413,21 @@ void boardPowerOnStartupGate()
     return;
   }
 
-  backlightFullOn();
-
   const uint32_t started = timersGetMsTick();
   uint32_t nextRefresh = 0;
   bool accepted = false;
+  bool backlightOn = false;
 
   while (pwrPressed()) {
     const uint32_t elapsed = timersGetMsTick() - started;
     if (elapsed >= POWER_ON_HOLD_MS) {
       accepted = true;
       break;
+    }
+
+    if (!backlightOn && elapsed >= POWER_ON_BACKLIGHT_DELAY_MS) {
+      backlightFullOn();
+      backlightOn = true;
     }
 
     if (elapsed >= nextRefresh) {
