@@ -84,6 +84,9 @@ namespace {
 
 constexpr uint8_t FAN_START_DUTY = 100;
 constexpr uint8_t FAN_START_TICKS_10MS = 25;
+// Lowest duty that keeps the fan turning. Fan Strength 1-100 % maps onto
+// FAN_MIN_DUTY-100 %, so every slider step changes the speed. 0 is linear.
+constexpr uint8_t FAN_MIN_DUTY = 0;
 
 uint8_t fanDuty;
 uint8_t fanStartTicks;
@@ -96,9 +99,16 @@ void setFanPwm(uint8_t percent)
 
 }  // namespace
 
+uint8_t fanDutyFromPercent(uint8_t percent)
+{
+  if (percent == 0) return 0;
+  return FAN_MIN_DUTY + ((100 - FAN_MIN_DUTY) * percent + 50) / 100;
+}
+
 void fanSetPower(uint8_t percent)
 {
   if (percent > 100) percent = 100;
+  percent = fanDutyFromPercent(percent);
 
   const bool start = fanDuty == 0 && percent > 0;
   fanDuty = percent;
@@ -125,7 +135,11 @@ void ledInit()
 
   stm32_timer_enable_clock(RGB_LED_TIMER);
   RGB_LED_TIMER->ARR = 100;
-  RGB_LED_TIMER->PSC = RGB_LED_TIMER_FREQ / 50000 - 1;
+  // 2.5 MHz ticks with ARR = 100 give ~24.75 kHz PWM at 1 % steps. The fan is a
+  // 2-wire BLDC switched on its low side; at the old ~495 Hz every off gap
+  // browned out its internal driver and it stalled even at 85-95 % duty.
+  // The RGB channels on this timer are unaffected by the higher frequency.
+  RGB_LED_TIMER->PSC = RGB_LED_TIMER_FREQ / 2500000 - 1;
   RGB_LED_TIMER->CCMR1 = TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 |
                          TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_2;
   RGB_LED_TIMER->CCMR2 = TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2;
