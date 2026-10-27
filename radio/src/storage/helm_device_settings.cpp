@@ -304,6 +304,21 @@ DeviceRecord captureRecord(HelmDeviceWorkflow workflow, bool clearDeveloper)
   return record;
 }
 
+// True when the records differ only in sequence and CRC, so a commit would
+// leave every stored setting unchanged.
+bool sameStoredSettings(const DeviceRecord& a, const DeviceRecord& b)
+{
+  constexpr size_t skipStart = offsetof(DeviceRecord, header.sequence);
+  constexpr size_t skipEnd = offsetof(DeviceRecord, header.crc) + sizeof(uint32_t);
+  static_assert(offsetof(DeviceRecord, header.crc) == skipStart + sizeof(uint32_t),
+                "HELM record sequence and CRC must be adjacent");
+
+  const auto* aBytes = reinterpret_cast<const uint8_t*>(&a);
+  const auto* bBytes = reinterpret_cast<const uint8_t*>(&b);
+  return memcmp(aBytes, bBytes, skipStart) == 0 &&
+         memcmp(aBytes + skipEnd, bBytes + skipEnd, sizeof(DeviceRecord) - skipEnd) == 0;
+}
+
 bool commit(const DeviceRecord& desired)
 {
   const uint8_t targetSlot = haveActiveRecord ? activeSlot ^ 1u : 0;
@@ -455,7 +470,13 @@ bool helmDeviceSettingsSetWorkflow(HelmDeviceWorkflow workflow)
 {
   if (!storageIsReadOnly()) return true;
   const auto desired = captureRecord(workflow, false);
-  if (!commit(desired)) return false;
+  // Changes EdgeTX does not store here, such as the main view, still mark the
+  // radio settings dirty. Skip the commit, which blocks the UI for the EEPROM
+  // write, when no stored setting changed.
+  if (!(haveActiveRecord && sameStoredSettings(desired, activeRecord)) &&
+      !commit(desired)) {
+    return false;
+  }
   currentStatus = statusForWorkflow(static_cast<uint8_t>(workflow));
   return true;
 }

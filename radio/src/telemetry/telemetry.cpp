@@ -409,10 +409,25 @@ void telemetryInterrupt10ms()
 #if !defined(SIMU)
     telemetryData.rssi.reset();
 #endif
-    for (auto & telemetryItem: telemetryItems) {
-      if (telemetryItem.isAvailable()) {
-        telemetryItem.setOld();
+#if defined(CROSSFIRE) && defined(HELM_HAS_INTERNAL_MODULE)
+    static uint8_t localTicks;
+    bool localTick160ms = (++localTicks & 0x0F) == 0;
+#endif
+    for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
+      TelemetryItem & telemetryItem = telemetryItems[i];
+      if (!telemetryItem.isAvailable()) {
+        continue;
       }
+#if defined(CROSSFIRE) && defined(HELM_HAS_INTERNAL_MODULE)
+      // Readings from the Helm's own module age on their own timeout.
+      if (crossfireIsHelmLocalSensor(g_model.telemetrySensors[i])) {
+        if (localTick160ms && telemetryItem.timeout > 0) {
+          telemetryItem.timeout--;
+        }
+        continue;
+      }
+#endif
+      telemetryItem.setOld();
     }
   }
 }

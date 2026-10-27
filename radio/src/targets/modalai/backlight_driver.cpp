@@ -138,6 +138,11 @@ void backlightInit()
 #if defined(HELM_HAS_SHARED_LIGHT_BRIGHTNESS)
 #if defined(BOOT)
   constexpr bool lightsDisabled = false;
+#elif defined(PWR_BUTTON_STARTUP_GATE)
+  // Start dark. The startup gate lights the screen once the power button
+  // press outlasts a plug-in transient, and normal backlight handling takes
+  // over after an MCU-only reset.
+  constexpr bool lightsDisabled = true;
 #else
   const bool lightsDisabled = helmLightsDisabled();
 #endif

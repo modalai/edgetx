@@ -999,6 +999,25 @@ telemetrySensors:
          custom: 
             ratio: 0
             offset: 0
+   23:
+      id1: 
+         id: 8205
+      id2: 
+         instance: 0
+      label: "RTmp"
+      subId: 0
+      type: TYPE_CUSTOM
+      unit: 11
+      prec: 1
+      autoOffset: 0
+      filter: 0
+      logs: 1
+      persistent: 0
+      onlyPositive: 0
+      cfg: 
+         custom: 
+            ratio: 0
+            offset: 0
 screens: 
    0:
       type: VALUES
@@ -1054,6 +1073,20 @@ screens:
                      val: tele(3)
                   1:
                      val: tele(9)
+   2:
+      type: VALUES
+      u: 
+         lines: 
+            0:
+               sources: 
+                  0:
+                     val: tele(23)
+                  1:
+                     val: tele(6)
+            1:
+               sources: 
+                  0:
+                     val: tele(5)
 view: 0
 modelRegistrationID: ""
 usbJoystickExtMode: 1
