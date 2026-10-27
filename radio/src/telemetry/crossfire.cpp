@@ -120,15 +120,43 @@ const CrossfireSensor & getCrossfireSensor(uint8_t id, uint8_t subId)
     return crossfireSensors[UNKNOWN_INDEX];
 }
 
+static void setCrossfireTelemetryValue(uint8_t index, int32_t value)
+{
+  const CrossfireSensor & sensor = crossfireSensors[index];
+  setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId,
+                    value, sensor.unit, sensor.precision);
+}
+
 void processCrossfireTelemetryValue(uint8_t index, int32_t value)
 {
   if (!TELEMETRY_STREAMING())
     return;
 
-  const CrossfireSensor & sensor = crossfireSensors[index];
-  setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId,
-                    value, sensor.unit, sensor.precision);
+  setCrossfireTelemetryValue(index, value);
 }
+
+#if defined(HELM_HAS_INTERNAL_MODULE)
+// The Helm's internal module reports the handset's own packet rate, TX power
+// and board temperature. None of them depend on the RX link, so they are shown
+// without one.
+constexpr uint8_t HELM_MODULE_TEMP_SOURCE_ID = 0x20;
+
+static bool isHelmLocalLinkValue(uint8_t module, uint8_t index)
+{
+  return module == INTERNAL_MODULE &&
+         (index == RF_MODE_INDEX || index == TX_POWER_INDEX);
+}
+
+bool crossfireIsHelmLocalSensor(const TelemetrySensor & sensor)
+{
+  if (sensor.type != TELEM_TYPE_CUSTOM)
+    return false;
+  if (sensor.id == (TEMP_ID | (HELM_MODULE_TEMP_SOURCE_ID << 8)))
+    return true;
+  return sensor.id == LINK_ID &&
+         (sensor.instance == RF_MODE_INDEX || sensor.instance == TX_POWER_INDEX);
+}
+#endif
 
 template <int N>
 bool getCrossfireTelemetryValue(uint8_t index, int32_t& value,
@@ -309,6 +337,11 @@ void processCrossfireTelemetryFrame(uint8_t module, uint8_t* rxBuffer,
                      crossfireModuleStatus[module].isELRS) {
             value += 1;  // 0 = Antenna 1, 1 = Antenna 2
           }
+#if defined(HELM_HAS_INTERNAL_MODULE)
+          if (isHelmLocalLinkValue(module, i))
+            setCrossfireTelemetryValue(i, value);
+          else
+#endif
           processCrossfireTelemetryValue(i, value);
           if (i == RX_QUALITY_INDEX) {
             if (value) {

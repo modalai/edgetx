@@ -122,6 +122,10 @@ extern CrossfireModuleStatus crossfireModuleStatus[2];
 void processCrossfireTelemetryFrame(uint8_t module, uint8_t* rxBuffer,
                                     uint8_t rxBufferCount);
 void crossfireSetDefault(int index, uint16_t id, uint8_t subId);
+#if defined(HELM_HAS_INTERNAL_MODULE)
+struct TelemetrySensor;
+bool crossfireIsHelmLocalSensor(const TelemetrySensor & sensor);
+#endif
 
 const uint32_t CROSSFIRE_BAUDRATES[] = {
   115200,
